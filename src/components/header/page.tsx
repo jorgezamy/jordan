@@ -20,13 +20,13 @@ export const HeaderPage = () => {
 
         {/* Navegación */}
         <nav className="flex gap-8">
-          <Link
+          {/*<Link
             href="/groups"
             className="text-white text-lg font-bold hover:text-gray-300 transition-colors"
           >
             Próximamente
           </Link>
-          {/* <Link
+           <Link
             href="/groups"
             className="text-white text-lg font-bold hover:text-gray-300 transition-colors"
           >

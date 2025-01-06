@@ -8,7 +8,7 @@ export default function Home() {
           ¡Próximamente!
         </h1>
         <p className="text-lg sm:text-2xl text-gray-600 mb-6">
-          Estamos trabajando en algo increíble, ¡vuelve pronto!
+          Estamos trabajando para el reino de los cielos, ¡vuelve pronto!
         </p>
         <div className="flex justify-center">
           <div className="w-32 h-1 bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 rounded-full"></div>
