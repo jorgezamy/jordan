@@ -42,13 +42,45 @@ export default function Home() {
             <FaFacebookF />
           </a>
           <a
-            href="https://whatsapp.com/channel/0029Var39AA6WaKpedjRDJ1Y"
+            href="https://wa.me/524425813349?text=¡Hola,%20buen%20día!%20😊"
             target="_blank"
             rel="noopener noreferrer"
-            className="hover:text-teal-500"
+            className="hover:text-teal-500 transition-colors duration-300"
           >
             <FaWhatsapp />
           </a>
+        </div>
+      </div>
+
+      <div className="w-full max-w-md">
+        <div className="relative overflow-hidden rounded-3xl border border-teal-100 bg-white/80 backdrop-blur-sm shadow-[0_10px_40px_rgba(20,184,166,0.15)] p-6">
+          <div className="absolute -top-10 -right-10 w-32 h-32 bg-teal-100 rounded-full blur-3xl opacity-60"></div>
+
+          <div className="relative z-10 text-center">
+            <div className="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-teal-500 text-white text-2xl shadow-lg mb-4">
+              <FaWhatsapp />
+            </div>
+
+            <h2 className="text-xl font-semibold text-gray-800">
+              Mientras tanto...
+            </h2>
+
+            <p className="mt-2 text-gray-600 leading-relaxed">
+              No te pierdas las reflexiones, mensajes y contenido exclusivo.
+              Únete a nuestro canal oficial de WhatsApp.
+            </p>
+
+            <a
+              href="https://whatsapp.com/channel/0029Var39AA6WaKpedjRDJ1Y"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group mt-6 inline-flex items-center gap-3 rounded-2xl bg-teal-500 px-6 py-4 text-white font-medium shadow-lg shadow-teal-500/30 transition-all duration-300 hover:scale-[1.03] hover:bg-teal-600"
+            >
+              <FaWhatsapp className="text-xl transition-transform duration-300 group-hover:rotate-12" />
+
+              <span>Seguir canal de WhatsApp</span>
+            </a>
+          </div>
         </div>
       </div>
     </div>
