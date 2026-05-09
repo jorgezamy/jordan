@@ -1,6 +1,8 @@
-import { initializeApp, getApps, getApp } from "firebase/app";
+// firebaseConfig.js
 
-import { getFirestore } from "firebase/firestore";
+import { initializeApp } from "firebase/app";
+
+import { initializeFirestore, persistentLocalCache } from "firebase/firestore";
 
 import { getAuth, signInAnonymously } from "firebase/auth";
 
@@ -15,23 +17,29 @@ const firebaseConfig = {
 };
 
 /**
- * ✅ Evita reinicializaciones
+ * ✅ Firebase App
  */
-const app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+const app = initializeApp(firebaseConfig);
 
-export const db = getFirestore(app);
+/**
+ * ✅ Firestore optimizado
+ */
+export const db = initializeFirestore(app, {
+  localCache: persistentLocalCache(),
+});
 
+/**
+ * ✅ Auth
+ */
 export const auth = getAuth(app);
 
 /**
- * ✅ Login anónimo SOLO una vez
+ * ✅ Login anónimo automático
  */
-if (typeof window !== "undefined" && !auth.currentUser) {
-  signInAnonymously(auth)
-    .then(() => {
-      console.log("✅ Login anónimo correcto");
-    })
-    .catch((error) => {
-      console.error("❌ Error login anónimo:", error);
-    });
-}
+signInAnonymously(auth)
+  .then(() => {
+    console.log("✅ Login anónimo correcto");
+  })
+  .catch((error) => {
+    console.error("❌ Error en login anónimo:", error);
+  });
