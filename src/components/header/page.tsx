@@ -13,7 +13,7 @@ export const HeaderPage = () => {
               width={150}
               height={100}
               alt="Logo"
-              className="h-12" // Ajusta el tamaño del logo
+              className="h-12 w-auto" // Ajusta el tamaño del logo
             />
           </Link>
         </div>
