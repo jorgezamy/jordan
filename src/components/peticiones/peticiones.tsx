@@ -102,11 +102,52 @@ export default function Peticiones() {
           ...docSnap.data(),
         })) as Peticion[];
 
-        docs.sort((a, b) => ESTADO_ORDEN[a.estado] - ESTADO_ORDEN[b.estado]);
+        const ahora = new Date();
 
-        console.log("📌 Peticiones:", docs.length);
+        const docsFiltrados = docs.filter((p) => {
+          /**
+           * ✅ Pendientes nunca desaparecen
+           */
+          if (p.estado === "pendiente") {
+            return true;
+          }
 
-        setPeticiones(docs);
+          /**
+           * ✅ Resueltas duran 1 mes
+           */
+          if (p.estado === "resuelto" && p.fechaResuelta) {
+            const fechaResuelta = p.fechaResuelta.toDate();
+
+            const unMesDespues = new Date(fechaResuelta);
+
+            unMesDespues.setMonth(unMesDespues.getMonth() + 1);
+
+            return ahora <= unMesDespues;
+          }
+
+          /**
+           * ✅ Eliminadas duran 2 semanas
+           */
+          if (p.estado === "eliminada" && p.fechaEliminada) {
+            const fechaEliminada = p.fechaEliminada.toDate();
+
+            const dosSemanasDespues = new Date(fechaEliminada);
+
+            dosSemanasDespues.setDate(dosSemanasDespues.getDate() + 14);
+
+            return ahora <= dosSemanasDespues;
+          }
+
+          return false;
+        });
+
+        docsFiltrados.sort(
+          (a, b) => ESTADO_ORDEN[a.estado] - ESTADO_ORDEN[b.estado],
+        );
+
+        console.log("📌 Peticiones visibles:", docsFiltrados.length);
+
+        setPeticiones(docsFiltrados);
         setLoading(false);
       },
 
