@@ -182,7 +182,7 @@ export default function Peticiones() {
     const textoPlano = editor.getText().trim();
 
     if (!anonimo && !nombre.trim()) {
-      return alert("Debes escribir tu nombre.");
+      return alert("Debes escribir el nombre.");
     }
 
     if (!textoPlano) {
