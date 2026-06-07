@@ -347,7 +347,7 @@ export default function Peticiones() {
         disabled={guardando}
         className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
       >
-        {guardando ? "Creando..." : "Crear"}
+        {guardando ? "AGREGANDO..." : "AGREGAR PETICIÓN"}
       </button>
 
       {/* ========================= */}
