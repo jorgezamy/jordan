@@ -47,7 +47,7 @@ Auth state is managed globally via React Context in `src/context/AuthContext.tsx
 - Two tabs: "Iniciar sesión" (login) and "Registrarse" (register)
 - Register tab fields: email, password, confirm password, secret word
 - All password fields use a shared `PasswordInput` component with an eye toggle (show/hide), each field has independent visibility state
-- Triggered from the header; closes on success or backdrop click
+- Triggered from the header; closes **only via the X button** (backdrop click intentionally disabled — admins must confirm intent to close)
 
 After logout, the user is automatically signed back in anonymously so Firestore access continues.
 
@@ -100,11 +100,30 @@ Responsive header designed for a non-tech-savvy audience:
 
 ### Styling
 
-Tailwind CSS v3 with a custom `primary` color `#003241` (dark teal, used for the header background). No separate design system — styles are inline Tailwind classes.
+Tailwind CSS v3. No separate design system — styles are inline Tailwind classes.
 
-**Color palette rule:** use `primary` (and its opacity variants like `primary/5`, `primary/20`, etc.) everywhere instead of Tailwind's built-in `indigo-*` palette. This keeps the UI consistent with the header color. Examples:
-- Borders on inputs: `border-primary/40`, focus: `border-primary`
-- Focus rings: `ring-primary`
+**Color tokens** are defined in `tailwind.config.ts` under `theme.extend.colors`. Never use hardcoded hex values or Tailwind's built-in `indigo-*`, `red-*`, `green-*` palettes directly — always use the semantic tokens below.
+
+| Token | Value | Use |
+|---|---|---|
+| `primary` | `#003241` | Header bg, borders, text, rings |
+| `primary-dark` | `#004d63` | Hover state for primary buttons (`hover:bg-primary-dark`) |
+| `danger` | `#ef4444` | Delete/cancel buttons (`bg-danger`) |
+| `danger-hover` | `#dc2626` | Hover on delete buttons (`hover:bg-danger-hover`) |
+| `danger-subtle` | `#fef2f2` | Error alert background (`bg-danger-subtle`) |
+| `danger-border` | `#fee2e2` | Error alert border (`border-danger-border`) |
+| `danger-text` | `#dc2626` | Error alert text (`text-danger-text`) |
+| `success` | `#22c55e` | Resolve/confirm buttons (`bg-success`) |
+| `success-hover` | `#16a34a` | Hover on resolve buttons (`hover:bg-success-hover`) |
+| `success-subtle` | `#dcfce7` | Success message background (`bg-success-subtle`) |
+| `success-border` | `#4ade80` | Success message border (`border-success-border`) |
+| `success-text` | `#15803d` | Success message text (`text-success-text`) |
+
+**Usage examples:**
+- Input borders: `border-primary/40`, focus: `border-primary`
+- Focus rings: `ring-primary` or `ring-primary/20`
 - Subtle section backgrounds: `bg-primary/5`
 - Section text: `text-primary`, muted: `text-primary/70`, labels: `text-primary/60`
-- Primary action button: `bg-primary hover:bg-[#004d63]`
+- Primary button: `bg-primary hover:bg-primary-dark`
+- Error alert: `bg-danger-subtle border border-danger-border text-danger-text`
+- Success alert: `bg-success-subtle border border-success-border text-success-text`

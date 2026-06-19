@@ -359,7 +359,7 @@ export default function Peticiones() {
       <button
         onClick={guardarPeticion}
         disabled={guardando}
-        className="w-full bg-primary text-white py-2 rounded-lg hover:bg-[#004d63] transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full bg-primary text-white py-2 rounded-lg hover:bg-primary-dark transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {guardando ? "AGREGANDO..." : "AGREGAR PETICIÓN"}
       </button>
@@ -369,7 +369,7 @@ export default function Peticiones() {
       {/* ========================= */}
 
       {mensajeExito && (
-        <div className="mt-4 bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg text-sm text-center animate-pulse">
+        <div className="mt-4 bg-success-subtle border border-success-border text-success-text px-4 py-3 rounded-lg text-sm text-center animate-pulse">
           {mensajeExito}
         </div>
       )}
@@ -396,10 +396,10 @@ export default function Peticiones() {
                 <span
                   className={`px-3 py-1 text-sm font-semibold rounded-full whitespace-nowrap ${
                     p.estado === "resuelto"
-                      ? "bg-green-500 text-white"
+                      ? "bg-success text-white"
                       : p.estado === "pendiente"
                         ? "bg-yellow-400 text-gray-900"
-                        : "bg-red-500 text-white"
+                        : "bg-danger text-white"
                   }`}
                 >
                   {p.estado === "resuelto"
@@ -500,8 +500,8 @@ export default function Peticiones() {
                           }
                           className={`px-4 py-1.5 rounded-md text-sm text-white font-medium transition ${
                             confirmando.accion === "resuelto"
-                              ? "bg-green-500 hover:bg-green-600"
-                              : "bg-red-500 hover:bg-red-600"
+                              ? "bg-success hover:bg-success-hover"
+                              : "bg-danger hover:bg-danger-hover"
                           }`}
                         >
                           Sí, confirmar
@@ -518,14 +518,14 @@ export default function Peticiones() {
                     <div className="flex gap-2 justify-center">
                       <button
                         onClick={() => pedirConfirmacion(p.id, "resuelto")}
-                        className="bg-green-500 text-white px-3 py-1 rounded-md text-sm hover:bg-green-600 transition"
+                        className="bg-success text-white px-3 py-1 rounded-md text-sm hover:bg-success-hover transition"
                         title="Marcar como resuelta"
                       >
                         ✔
                       </button>
                       <button
                         onClick={() => pedirConfirmacion(p.id, "eliminada")}
-                        className="bg-red-500 text-white px-3 py-1 rounded-md text-sm hover:bg-red-600 transition"
+                        className="bg-danger text-white px-3 py-1 rounded-md text-sm hover:bg-danger-hover transition"
                         title="Eliminar petición"
                       >
                         🗑

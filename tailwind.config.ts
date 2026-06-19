@@ -12,7 +12,24 @@ export default {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
-        primary: "#003241", // Define un color personalizado llamado 'primary'
+        primary: {
+          DEFAULT: "#003241",
+          dark: "#004d63",
+        },
+        danger: {
+          DEFAULT: "#ef4444",
+          hover: "#dc2626",
+          subtle: "#fef2f2",
+          border: "#fee2e2",
+          text: "#dc2626",
+        },
+        success: {
+          DEFAULT: "#22c55e",
+          hover: "#16a34a",
+          subtle: "#dcfce7",
+          border: "#4ade80",
+          text: "#15803d",
+        },
       },
     },
   },

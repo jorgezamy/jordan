@@ -57,7 +57,7 @@ function PasswordInput({ value, onChange, placeholder = "••••••", re
         value={value}
         onChange={onChange}
         required={required}
-        className="w-full rounded-lg border-2 border-indigo-400 bg-gray-50 px-3 py-2 pr-10 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 outline-none"
+        className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 pr-10 text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-colors"
         placeholder={placeholder}
       />
       <button
@@ -139,144 +139,164 @@ export default function AuthModal({
 
   return (
     <div
-      className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
+      className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
     >
-      <div className="relative bg-white rounded-xl shadow-xl w-full max-w-md p-6">
+      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+
+        {/* Encabezado */}
+        <div className="px-8 pt-8 pb-5 text-center">
+          <div className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-primary/10 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+          </div>
+          <h2 className="text-lg font-semibold text-primary">Área de miembros</h2>
+        </div>
+
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 text-xl leading-none"
+          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900 transition"
           aria-label="Cerrar"
         >
-          ✕
+          <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
         </button>
 
-        <h2 className="text-xl font-bold text-gray-800 mb-5 text-center">
-          Área de miembros
-        </h2>
-
         {/* Tabs */}
-        <div className="flex mb-6 border-b border-gray-200">
+        <div className="flex px-8 border-b border-gray-100">
           <button
             onClick={() => switchTab("login")}
-            className={`flex-1 pb-3 text-sm font-semibold transition-colors ${
+            className={`flex-1 pb-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
               tab === "login"
-                ? "text-indigo-600 border-b-2 border-indigo-600"
-                : "text-gray-500 hover:text-gray-700"
+                ? "text-primary border-primary"
+                : "text-gray-400 border-transparent hover:text-gray-600"
             }`}
           >
             Iniciar sesión
           </button>
           <button
             onClick={() => switchTab("register")}
-            className={`flex-1 pb-3 text-sm font-semibold transition-colors ${
+            className={`flex-1 pb-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
               tab === "register"
-                ? "text-indigo-600 border-b-2 border-indigo-600"
-                : "text-gray-500 hover:text-gray-700"
+                ? "text-primary border-primary"
+                : "text-gray-400 border-transparent hover:text-gray-600"
             }`}
           >
             Registrarse
           </button>
         </div>
 
-        {/* Login Form */}
-        {tab === "login" && (
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Correo electrónico
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full rounded-lg border-2 border-indigo-400 bg-gray-50 px-3 py-2 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 outline-none"
-                placeholder="correo@ejemplo.com"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Contraseña
-              </label>
-              <PasswordInput
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            {error && <p className="text-red-500 text-sm">{error}</p>}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? "Entrando..." : "Entrar"}
-            </button>
-          </form>
-        )}
+        <div className="px-8 py-6">
+          {/* Formulario de login */}
+          {tab === "login" && (
+            <form onSubmit={handleLogin} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1.5">
+                  Correo electrónico
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-colors"
+                  placeholder="correo@ejemplo.com"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1.5">
+                  Contraseña
+                </label>
+                <PasswordInput
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+              </div>
+              {error && (
+                <p className="text-sm text-danger-text bg-danger-subtle border border-danger-border rounded-lg px-3 py-2">
+                  {error}
+                </p>
+              )}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-primary text-white py-2.5 rounded-lg hover:bg-primary-dark transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? "Entrando..." : "Entrar"}
+              </button>
+            </form>
+          )}
 
-        {/* Register Form */}
-        {tab === "register" && (
-          <form onSubmit={handleRegister} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Correo electrónico
-              </label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-                className="w-full rounded-lg border-2 border-indigo-400 bg-gray-50 px-3 py-2 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 outline-none"
-                placeholder="correo@ejemplo.com"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Contraseña
-              </label>
-              <PasswordInput
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Mínimo 6 caracteres"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Confirmar contraseña
-              </label>
-              <PasswordInput
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">
-                Palabra secreta
-              </label>
-              <PasswordInput
-                value={secretWord}
-                onChange={(e) => setSecretWord(e.target.value)}
-                placeholder="Ingresa la palabra secreta"
-                required
-              />
-              <p className="text-xs text-gray-400 mt-1">
-                Solo miembros con la palabra secreta pueden registrarse.
-              </p>
-            </div>
-            {error && <p className="text-red-500 text-sm">{error}</p>}
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? "Registrando..." : "Crear cuenta"}
-            </button>
-          </form>
-        )}
+          {/* Formulario de registro */}
+          {tab === "register" && (
+            <form onSubmit={handleRegister} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1.5">
+                  Correo electrónico
+                </label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-colors"
+                  placeholder="correo@ejemplo.com"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1.5">
+                  Contraseña
+                </label>
+                <PasswordInput
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Mínimo 6 caracteres"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1.5">
+                  Confirmar contraseña
+                </label>
+                <PasswordInput
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-600 mb-1.5">
+                  Palabra secreta
+                </label>
+                <PasswordInput
+                  value={secretWord}
+                  onChange={(e) => setSecretWord(e.target.value)}
+                  placeholder="Ingresa la palabra secreta"
+                  required
+                />
+                <p className="text-xs text-gray-500 mt-1.5">
+                  Solo miembros con la palabra secreta pueden registrarse.
+                </p>
+              </div>
+              {error && (
+                <p className="text-sm text-danger-text bg-danger-subtle border border-danger-border rounded-lg px-3 py-2">
+                  {error}
+                </p>
+              )}
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-primary text-white py-2.5 rounded-lg hover:bg-primary-dark transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {loading ? "Registrando..." : "Crear cuenta"}
+              </button>
+            </form>
+          )}
+        </div>
       </div>
     </div>
   );
