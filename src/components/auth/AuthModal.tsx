@@ -102,14 +102,9 @@ export default function AuthModal({
     setLoading(true);
     try {
       await resetPassword(email);
-      setSuccess("Te enviamos un correo para restablecer tu contraseña.");
-    } catch (err: unknown) {
-      const code = (err as { code?: string }).code ?? "";
-      if (code === "auth/user-not-found" || code === "auth/invalid-email") {
-        setError("No encontramos una cuenta con ese correo.");
-      } else {
-        setError("Ocurrió un error. Intenta de nuevo.");
-      }
+      setSuccess("Si ese correo está registrado, recibirás un enlace en breve.");
+    } catch {
+      setError("Ocurrió un error. Intenta de nuevo.");
     } finally {
       setLoading(false);
     }

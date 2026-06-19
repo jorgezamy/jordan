@@ -26,11 +26,31 @@ This is a Next.js 16 (App Router) + TypeScript project for **Centro Cristiano Jo
 
 Import `db` and `auth` from `../../../firebaseConfig` (path relative to component location).
 
-Firebase credentials are loaded from `NEXT_PUBLIC_FIREBASE_*` environment variables (needs a `.env.local` file).
+Firebase client credentials are loaded from `NEXT_PUBLIC_FIREBASE_*` environment variables.
 
 **Required Firebase console settings:**
 - Firestore: enabled with appropriate rules
 - Authentication: enable **Email/Password** provider and **Anonymous** provider
+
+### Resend + Firebase Admin (password reset)
+
+Password reset emails are sent via **Resend** from the API route `src/app/api/reset-password/route.ts`. Firebase Admin SDK generates the secure reset link; Resend delivers the branded email.
+
+- `resetPassword()` in `AuthContext` POSTs to `/api/reset-password` — it no longer calls Firebase client SDK directly
+- The API route always returns `{ ok: true }` even when the email doesn't exist (prevents email enumeration)
+- The success message in `AuthModal` is intentionally vague: "Si ese correo está registrado, recibirás un enlace en breve."
+
+**Required `.env.local` variables (server-side, no `NEXT_PUBLIC_` prefix):**
+```
+RESEND_API_KEY=re_xxxxxxxxxxxx
+FIREBASE_ADMIN_PROJECT_ID=jordan-85626
+FIREBASE_ADMIN_CLIENT_EMAIL=firebase-adminsdk-xxxxx@jordan-85626.iam.gserviceaccount.com
+FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
+```
+
+Firebase Admin credentials come from Firebase Console → Configuración del proyecto → Cuentas de servicio → Generar nueva clave privada.
+
+The `from` address is currently `onboarding@resend.dev` (Resend sandbox). To switch to a custom domain, verify it in Resend and update the `from` field in the route.
 
 ### Authentication system
 

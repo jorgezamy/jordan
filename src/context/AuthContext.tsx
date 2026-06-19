@@ -14,7 +14,6 @@ import {
   signOut,
   signInAnonymously,
   onAuthStateChanged,
-  sendPasswordResetEmail,
   User,
 } from "firebase/auth";
 
@@ -55,7 +54,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const resetPassword = async (email: string) => {
-    await sendPasswordResetEmail(auth, email);
+    const res = await fetch("/api/reset-password", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email }),
+    });
+    if (!res.ok) throw new Error("reset-failed");
   };
 
   return (
