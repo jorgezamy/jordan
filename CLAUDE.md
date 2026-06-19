@@ -46,6 +46,7 @@ Auth state is managed globally via React Context in `src/context/AuthContext.tsx
 **Login modal** lives in `src/components/auth/AuthModal.tsx`:
 - Two tabs: "Iniciar sesión" (login) and "Registrarse" (register)
 - Register tab fields: email, password, confirm password, secret word
+- All password fields use a shared `PasswordInput` component with an eye toggle (show/hide), each field has independent visibility state
 - Triggered from the header; closes on success or backdrop click
 
 After logout, the user is automatically signed back in anonymously so Firestore access continues.
@@ -71,6 +72,18 @@ The `Peticion` document shape:
   fechaEliminada?: Timestamp,
 }
 ```
+
+### Header (`src/components/header/page.tsx`)
+
+Responsive header designed for a non-tech-savvy audience:
+
+- **"Peticiones" pill button** — always visible on all screen sizes (white pill, high contrast). It's the primary CTA and must never be hidden behind a menu.
+- **Auth is admin-only** — regular visitors never need to log in. Auth controls are de-emphasized accordingly:
+  - Desktop: subtle "Iniciar sesión" border button, or email + "Cerrar sesión" when logged in
+  - Mobile (not logged in): lock icon (`🔒` SVG) — recognizable but unobtrusive
+  - Mobile (logged in): avatar circle with user's email initial, opens a dropdown with email + logout
+- Hamburger menu is **only used for auth on mobile** — "Peticiones" is never inside it
+- `allowedDevOrigins` in `next.config.ts` includes `192.168.1.28` and `192.168.1.29` for LAN testing
 
 ### Component conventions
 
