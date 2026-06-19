@@ -70,8 +70,12 @@ The `Peticion` document shape:
   fechaCreacion: Timestamp,
   fechaResuelta?: Timestamp,
   fechaEliminada?: Timestamp,
+  telefono?: string,       // optional, for pastor follow-up only
+  correo?: string,         // optional, for pastor follow-up only
 }
 ```
+
+`telefono` and `correo` are filled in the form by anyone (public form), but **only saved to Firestore when non-empty** (conditional spread). They are only displayed in the card list to logged-in users (`user !== null`) — never exposed to public visitors.
 
 ### Header (`src/components/header/page.tsx`)
 
