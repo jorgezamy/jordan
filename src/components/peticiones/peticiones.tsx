@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo } from "react";
 
 import { db } from "../../../firebaseConfig";
+import { useAuth } from "../../context/AuthContext";
 
 import {
   collection,
@@ -36,8 +37,6 @@ const ESTADO_ORDEN = {
   eliminada: 3,
 };
 
-const PASSWORD_ADMIN = "12345";
-
 function formatFecha(timestamp?: Timestamp) {
   if (!timestamp) return "";
 
@@ -51,6 +50,11 @@ function formatFecha(timestamp?: Timestamp) {
 }
 
 export default function Peticiones() {
+  const { user } = useAuth();
+  const [confirmando, setConfirmando] = useState<{
+    id: string;
+    accion: "resuelto" | "eliminada";
+  } | null>(null);
   const [nombre, setNombre] = useState("");
   const [anonimo, setAnonimo] = useState(false);
   const [peticiones, setPeticiones] = useState<Peticion[]>([]);
@@ -58,9 +62,6 @@ export default function Peticiones() {
   const [guardando, setGuardando] = useState(false);
   const [mensajeExito, setMensajeExito] = useState("");
 
-  /**
-   * ✅ Query memoizada
-   */
   const peticionesQuery = useMemo(
     () =>
       query(
@@ -71,9 +72,6 @@ export default function Peticiones() {
     [],
   );
 
-  /**
-   * ✅ TipTap optimizado
-   */
   const editor = useEditor({
     extensions: [StarterKit],
 
@@ -89,9 +87,6 @@ export default function Peticiones() {
     },
   });
 
-  /**
-   * ✅ Listener realtime
-   */
   useEffect(() => {
     const unsubscribe = onSnapshot(
       peticionesQuery,
@@ -105,36 +100,21 @@ export default function Peticiones() {
         const ahora = new Date();
 
         const docsFiltrados = docs.filter((p) => {
-          /**
-           * ✅ Pendientes nunca desaparecen
-           */
           if (p.estado === "pendiente") {
             return true;
           }
 
-          /**
-           * ✅ Resueltas duran 1 mes
-           */
           if (p.estado === "resuelto" && p.fechaResuelta) {
             const fechaResuelta = p.fechaResuelta.toDate();
-
             const unMesDespues = new Date(fechaResuelta);
-
             unMesDespues.setMonth(unMesDespues.getMonth() + 1);
-
             return ahora <= unMesDespues;
           }
 
-          /**
-           * ✅ Eliminadas duran 2 semanas
-           */
           if (p.estado === "eliminada" && p.fechaEliminada) {
             const fechaEliminada = p.fechaEliminada.toDate();
-
             const dosSemanasDespues = new Date(fechaEliminada);
-
             dosSemanasDespues.setDate(dosSemanasDespues.getDate() + 14);
-
             return ahora <= dosSemanasDespues;
           }
 
@@ -145,37 +125,19 @@ export default function Peticiones() {
           (a, b) => ESTADO_ORDEN[a.estado] - ESTADO_ORDEN[b.estado],
         );
 
-        console.log("📌 Peticiones visibles:", docsFiltrados.length);
-
         setPeticiones(docsFiltrados);
         setLoading(false);
       },
 
       (error) => {
         console.error("❌ Firebase Error:", error);
-
         setLoading(false);
       },
     );
 
-    return () => {
-      console.log("🧹 Listener limpiado");
-      unsubscribe();
-    };
+    return () => unsubscribe();
   }, [peticionesQuery]);
 
-  /**
-   * ✅ Validación password
-   */
-  const validarPassword = useCallback(() => {
-    const pass = prompt("Ingresa la contraseña:");
-
-    return pass === PASSWORD_ADMIN;
-  }, []);
-
-  /**
-   * ✅ Guardar petición
-   */
   const guardarPeticion = async () => {
     if (!editor || guardando) return;
 
@@ -203,50 +165,39 @@ export default function Peticiones() {
         fechaCreacion: serverTimestamp(),
       });
 
-      console.log("✅ Petición guardada");
-
       setMensajeExito("✅ Petición creada exitosamente");
-
-      setTimeout(() => {
-        setMensajeExito("");
-      }, 3000);
+      setTimeout(() => setMensajeExito(""), 3000);
 
       setNombre("");
       setAnonimo(false);
-
       editor.commands.clearContent();
     } catch (error) {
       console.error("❌ Error guardando:", error);
-
       alert("Ocurrió un error al guardar.");
     } finally {
       setGuardando(false);
     }
   };
 
-  /**
-   * ✅ Cambiar estado
-   */
+  const pedirConfirmacion = (id: string, accion: "resuelto" | "eliminada") => {
+    setConfirmando({ id, accion });
+  };
+
+  const cancelarConfirmacion = () => setConfirmando(null);
+
   const actualizarEstado = async (
     id: string,
     estado: "resuelto" | "eliminada",
   ) => {
-    if (!validarPassword()) {
-      return alert("Contraseña incorrecta");
-    }
-
+    setConfirmando(null);
     try {
       const docRef = doc(db, "peticiones", id);
 
       await updateDoc(docRef, {
         estado,
         ...(estado === "resuelto"
-          ? {
-              fechaResuelta: serverTimestamp(),
-            }
-          : {
-              fechaEliminada: serverTimestamp(),
-            }),
+          ? { fechaResuelta: serverTimestamp() }
+          : { fechaEliminada: serverTimestamp() }),
       });
 
       const mensaje =
@@ -255,15 +206,9 @@ export default function Peticiones() {
           : "🗑️ Petición eliminada";
 
       setMensajeExito(mensaje);
-
-      setTimeout(() => {
-        setMensajeExito("");
-      }, 3000);
-
-      console.log(`✅ Estado actualizado: ${estado}`);
+      setTimeout(() => setMensajeExito(""), 3000);
     } catch (error) {
       console.error("❌ Error actualizando:", error);
-
       alert("Ocurrió un error.");
     }
   };
@@ -398,40 +343,69 @@ export default function Peticiones() {
 
               <div
                 className="text-gray-700 text-sm mt-3 prose prose-sm max-w-none"
-                dangerouslySetInnerHTML={{
-                  __html: p.texto,
-                }}
+                dangerouslySetInnerHTML={{ __html: p.texto }}
               />
 
               <div className="text-xs text-gray-500 mt-3">
                 {p.estado === "pendiente" && (
                   <span>Creada: {formatFecha(p.fechaCreacion)}</span>
                 )}
-
                 {p.estado === "resuelto" && (
                   <span>Resuelta: {formatFecha(p.fechaResuelta)}</span>
                 )}
-
                 {p.estado === "eliminada" && (
                   <span>Eliminada: {formatFecha(p.fechaEliminada)}</span>
                 )}
               </div>
 
-              {p.estado === "pendiente" && (
-                <div className="flex gap-2 mt-4 justify-center">
-                  <button
-                    onClick={() => actualizarEstado(p.id, "resuelto")}
-                    className="bg-green-500 text-white px-3 py-1 rounded-md text-sm hover:bg-green-600 transition"
-                  >
-                    ✔
-                  </button>
-
-                  <button
-                    onClick={() => actualizarEstado(p.id, "eliminada")}
-                    className="bg-red-500 text-white px-3 py-1 rounded-md text-sm hover:bg-red-600 transition"
-                  >
-                    🗑
-                  </button>
+              {user && p.estado === "pendiente" && (
+                <div className="mt-4">
+                  {confirmando?.id === p.id ? (
+                    <div className="flex flex-col items-center gap-2">
+                      <p className="text-sm text-gray-600 font-medium">
+                        {confirmando.accion === "resuelto"
+                          ? "¿Marcar esta petición como resuelta?"
+                          : "¿Eliminar esta petición?"}
+                      </p>
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() =>
+                            actualizarEstado(p.id, confirmando.accion)
+                          }
+                          className={`px-4 py-1.5 rounded-md text-sm text-white font-medium transition ${
+                            confirmando.accion === "resuelto"
+                              ? "bg-green-500 hover:bg-green-600"
+                              : "bg-red-500 hover:bg-red-600"
+                          }`}
+                        >
+                          Sí, confirmar
+                        </button>
+                        <button
+                          onClick={cancelarConfirmacion}
+                          className="px-4 py-1.5 rounded-md text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="flex gap-2 justify-center">
+                      <button
+                        onClick={() => pedirConfirmacion(p.id, "resuelto")}
+                        className="bg-green-500 text-white px-3 py-1 rounded-md text-sm hover:bg-green-600 transition"
+                        title="Marcar como resuelta"
+                      >
+                        ✔
+                      </button>
+                      <button
+                        onClick={() => pedirConfirmacion(p.id, "eliminada")}
+                        className="bg-red-500 text-white px-3 py-1 rounded-md text-sm hover:bg-red-600 transition"
+                        title="Eliminar petición"
+                      >
+                        🗑
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </li>

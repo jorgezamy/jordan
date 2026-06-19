@@ -21,11 +21,34 @@ This is a Next.js 16 (App Router) + TypeScript project for **Centro Cristiano Jo
 
 `firebaseConfig.js` (root level, not inside `src/`) initializes Firebase on import. It:
 - Connects to Firestore with persistent local cache enabled
-- Automatically signs in the user anonymously via Firebase Auth on load
+- Exports `db` (Firestore) and `auth` (Firebase Auth)
+- Signs in anonymously via `onAuthStateChanged` only if no user session is already persisted (prevents overriding a logged-in email/password session)
 
-Import `db` and `auth` from `../../../firebaseConfig` (path relative to component location). The anonymous sign-in is a side effect of importing the module.
+Import `db` and `auth` from `../../../firebaseConfig` (path relative to component location).
 
 Firebase credentials are loaded from `NEXT_PUBLIC_FIREBASE_*` environment variables (needs a `.env.local` file).
+
+**Required Firebase console settings:**
+- Firestore: enabled with appropriate rules
+- Authentication: enable **Email/Password** provider and **Anonymous** provider
+
+### Authentication system
+
+Auth state is managed globally via React Context in `src/context/AuthContext.tsx`.
+
+- `AuthProvider` wraps the entire app in `layout.tsx`
+- `useAuth()` hook exposes: `user`, `loading`, `login()`, `register()`, `logout()`
+- `user` is `null` for anonymous/unauthenticated users; only populated for registered (email/password) users
+- `onAuthStateChanged` filters out anonymous users (`u.isAnonymous`) so `user` only reflects real registered accounts
+
+**Registration is invite-only:** the register form requires a secret word (`12345`) before creating the account. This is validated client-side only — it is not enforced in Firebase rules.
+
+**Login modal** lives in `src/components/auth/AuthModal.tsx`:
+- Two tabs: "Iniciar sesión" (login) and "Registrarse" (register)
+- Register tab fields: email, password, confirm password, secret word
+- Triggered from the header; closes on success or backdrop click
+
+After logout, the user is automatically signed back in anonymously so Firestore access continues.
 
 ### Peticiones (Prayer Requests) feature
 
@@ -34,8 +57,8 @@ The core feature lives entirely in `src/components/peticiones/peticiones.tsx` as
 - Reads/writes to the Firestore `peticiones` collection (last 50, ordered by `fechaCreacion` desc)
 - Uses a realtime `onSnapshot` listener — no manual refresh needed
 - Filters visibility client-side by state: `pendiente` = always visible, `resuelto` = visible for 1 month, `eliminada` = visible for 2 weeks
-- Admin actions (mark resolved / delete) are gated by a hardcoded password prompt (`PASSWORD_ADMIN = "12345"`)
-- Uses **TipTap** (rich text editor) for the prayer text input; content is stored and rendered as HTML
+- Admin actions (mark resolved / delete) are **only visible to logged-in registered users** (`user !== null`)
+- Before executing an admin action, an inline confirmation UI replaces the action buttons within the card — no `window.confirm()` used
 
 The `Peticion` document shape:
 ```ts
@@ -53,6 +76,7 @@ The `Peticion` document shape:
 
 - Components live in `src/components/<feature>/` and are exported through `src/components/index.ts`
 - The pattern for component files is `page.tsx` inside a named folder (e.g., `header/page.tsx`), not a flat `Header.tsx`
+- Exception: new components like `AuthModal` use `ComponentName.tsx` directly inside `src/components/auth/`
 - `reactStrictMode` is disabled in `next.config.ts` (intentional, related to TipTap SSR)
 
 ### Styling

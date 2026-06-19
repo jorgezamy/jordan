@@ -4,7 +4,7 @@ import { initializeApp } from "firebase/app";
 
 import { initializeFirestore, persistentLocalCache } from "firebase/firestore";
 
-import { getAuth, signInAnonymously } from "firebase/auth";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "firebase/auth";
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -16,30 +16,20 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-/**
- * ✅ Firebase App
- */
 const app = initializeApp(firebaseConfig);
 
-/**
- * ✅ Firestore optimizado
- */
 export const db = initializeFirestore(app, {
   localCache: persistentLocalCache(),
 });
 
-/**
- * ✅ Auth
- */
 export const auth = getAuth(app);
 
-/**
- * ✅ Login anónimo automático
- */
-signInAnonymously(auth)
-  .then(() => {
-    console.log("✅ Login anónimo correcto");
-  })
-  .catch((error) => {
-    console.error("❌ Error en login anónimo:", error);
-  });
+// Only sign in anonymously if no user is already persisted
+const unsubscribe = onAuthStateChanged(auth, (user) => {
+  unsubscribe();
+  if (!user) {
+    signInAnonymously(auth).catch((error) => {
+      console.error("❌ Error en login anónimo:", error);
+    });
+  }
+});
