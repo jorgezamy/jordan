@@ -83,9 +83,11 @@ Responsive header designed for a non-tech-savvy audience:
 
 - **"Peticiones" pill button** — always visible on all screen sizes (white pill, high contrast). It's the primary CTA and must never be hidden behind a menu.
 - **Auth is admin-only** — regular visitors never need to log in. Auth controls are de-emphasized accordingly:
-  - Desktop: subtle "Iniciar sesión" border button, or email + "Cerrar sesión" when logged in
-  - Mobile (not logged in): lock icon (`🔒` SVG) — recognizable but unobtrusive
-  - Mobile (logged in): avatar circle with user's email initial, opens a dropdown with email + logout
+  - Desktop (not logged in): white text + white border button (`border-white/70`), no background fill, hover adds `bg-white/10`
+  - Desktop (logged in): same avatar circle as mobile — click opens an absolute-positioned dropdown popover (`bg-[#002535] rounded-xl shadow-2xl`)
+  - Mobile (not logged in): lock icon (`🔒` SVG) — recognizable but unobtrusive (`text-white/80 hover:text-white`)
+  - Mobile (logged in): avatar circle with user's email initial, click opens a full-width banner dropdown below the header
+- **`UserMenuContent`** — internal component defined at the top of `header/page.tsx` that renders the shared dropdown content (email + logout button). Both desktop popover and mobile banner use it, so styling changes only need to happen in one place. Email is `text-white` (no transparency). Logout button matches the "Iniciar sesión" style (`border-white/70`, `hover:bg-white/10`).
 - Hamburger menu is **only used for auth on mobile** — "Peticiones" is never inside it
 - `allowedDevOrigins` in `next.config.ts` includes `192.168.1.28` and `192.168.1.29` for LAN testing
 
@@ -99,3 +101,10 @@ Responsive header designed for a non-tech-savvy audience:
 ### Styling
 
 Tailwind CSS v3 with a custom `primary` color `#003241` (dark teal, used for the header background). No separate design system — styles are inline Tailwind classes.
+
+**Color palette rule:** use `primary` (and its opacity variants like `primary/5`, `primary/20`, etc.) everywhere instead of Tailwind's built-in `indigo-*` palette. This keeps the UI consistent with the header color. Examples:
+- Borders on inputs: `border-primary/40`, focus: `border-primary`
+- Focus rings: `ring-primary`
+- Subtle section backgrounds: `bg-primary/5`
+- Section text: `text-primary`, muted: `text-primary/70`, labels: `text-primary/60`
+- Primary action button: `bg-primary hover:bg-[#004d63]`

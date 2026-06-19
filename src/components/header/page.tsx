@@ -6,12 +6,25 @@ import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import AuthModal from "../auth/AuthModal";
 
+const UserMenuContent = ({ email, onLogout }: { email: string; onLogout: () => void }) => (
+  <>
+    <span className="text-white text-xs break-all leading-relaxed">{email}</span>
+    <button
+      onClick={onLogout}
+      className="text-white text-xs font-medium border border-white/70 rounded-md px-3 py-1.5 hover:bg-white/10 transition"
+    >
+      Cerrar sesión
+    </button>
+  </>
+);
+
 export const HeaderPage = () => {
   const { user, logout } = useAuth();
   const [showModal, setShowModal] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
 
   const initial = user?.email?.[0]?.toUpperCase();
+  const handleLogout = () => { logout(); setMenuOpen(false); };
 
   return (
     <>
@@ -42,19 +55,24 @@ export const HeaderPage = () => {
 
             {/* Auth desktop */}
             {user ? (
-              <div className="hidden sm:flex items-center gap-3 pl-3 border-l border-white/20">
-                <span className="text-white/50 text-xs truncate max-w-[140px]">{user.email}</span>
+              <div className="hidden sm:block relative">
                 <button
-                  onClick={logout}
-                  className="text-white/70 text-xs hover:text-white transition"
+                  onClick={() => setMenuOpen((v) => !v)}
+                  className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white text-xs font-bold flex items-center justify-center transition"
+                  aria-label="Menú de usuario"
                 >
-                  Cerrar sesión
+                  {initial}
                 </button>
+                {menuOpen && (
+                  <div className="absolute right-0 top-full mt-2 bg-[#002535] border border-white/10 rounded-xl shadow-2xl p-4 flex flex-col gap-3 min-w-[200px] z-50">
+                    <UserMenuContent email={user.email!} onLogout={handleLogout} />
+                  </div>
+                )}
               </div>
             ) : (
               <button
                 onClick={() => setShowModal(true)}
-                className="hidden sm:block text-white/80 text-xs border border-white/30 rounded-md px-3 py-1.5 hover:bg-white/10 hover:text-white transition"
+                className="hidden sm:block text-white text-xs font-medium border border-white/70 rounded-md px-3 py-1.5 hover:bg-white/10 transition"
               >
                 Iniciar sesión
               </button>
@@ -63,7 +81,6 @@ export const HeaderPage = () => {
             {/* Auth móvil */}
             <div className="sm:hidden">
               {user ? (
-                /* Avatar con inicial — solo aparece si hay admin logueado */
                 <button
                   onClick={() => setMenuOpen((v) => !v)}
                   className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white text-xs font-bold flex items-center justify-center transition"
@@ -72,7 +89,6 @@ export const HeaderPage = () => {
                   {initial}
                 </button>
               ) : (
-                /* Ícono de candado — reconocible como "acceder" sin distraer */
                 <button
                   onClick={() => setShowModal(true)}
                   className="w-8 h-8 flex items-center justify-center text-white/80 hover:text-white transition"
@@ -88,16 +104,10 @@ export const HeaderPage = () => {
           </div>
         </div>
 
-        {/* Dropdown móvil — solo se abre si hay usuario logueado */}
+        {/* Dropdown móvil */}
         {menuOpen && user && (
           <div className="sm:hidden bg-[#002535] border-t border-white/10 px-5 py-4 flex flex-col gap-3">
-            <span className="text-white/40 text-xs break-all">{user.email}</span>
-            <button
-              onClick={() => { logout(); setMenuOpen(false); }}
-              className="text-white/80 text-sm text-left hover:text-white transition"
-            >
-              Cerrar sesión
-            </button>
+            <UserMenuContent email={user.email!} onLogout={handleLogout} />
           </div>
         )}
       </header>

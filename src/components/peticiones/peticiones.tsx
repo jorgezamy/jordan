@@ -273,7 +273,7 @@ export default function Peticiones() {
           maxLength={80}
           onChange={(e) => setNombre(e.target.value)}
           placeholder={anonimo ? "Anónimo" : "Escribe aquí el nombre..."}
-          className="w-full rounded-lg border-2 border-indigo-400 bg-gray-50 px-3 py-2 shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 disabled:bg-gray-200"
+          className="w-full rounded-lg border-2 border-primary/40 bg-gray-50 px-3 py-2 shadow-sm focus:border-primary focus:ring-2 focus:ring-primary disabled:bg-gray-200"
         />
       </div>
 
@@ -286,7 +286,7 @@ export default function Peticiones() {
           Escribe aquí la necesidad
         </label>
 
-        <div className="border-2 border-indigo-400 rounded-lg p-3 bg-gray-50">
+        <div className="border-2 border-primary/40 rounded-lg p-3 bg-gray-50">
           <EditorContent editor={editor} />
         </div>
       </div>
@@ -295,13 +295,13 @@ export default function Peticiones() {
       {/* CONTACTO OPCIONAL */}
       {/* ========================= */}
 
-      <div className="mb-5 rounded-xl border border-indigo-200 bg-indigo-50 p-4">
+      <div className="mb-5 rounded-xl border border-primary/20 bg-primary/5 p-4">
           <div className="flex items-center gap-2 mb-1">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
               fill="currentColor"
-              className="w-4 h-4 text-indigo-500 shrink-0"
+              className="w-4 h-4 text-primary shrink-0"
             >
               <path
                 fillRule="evenodd"
@@ -309,11 +309,11 @@ export default function Peticiones() {
                 clipRule="evenodd"
               />
             </svg>
-            <span className="text-sm font-semibold text-indigo-700">
+            <span className="text-sm font-semibold text-primary">
               Información de contacto para seguimiento
             </span>
           </div>
-          <p className="text-xs text-indigo-500 mb-4 leading-relaxed">
+          <p className="text-xs text-primary/70 mb-4 leading-relaxed">
             Estos datos son <strong>completamente opcionales</strong> y{" "}
             <strong>solo serán visibles para los pastores</strong>. Nos permiten
             dar un seguimiento personalizado a esta petición.
@@ -321,9 +321,9 @@ export default function Peticiones() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
-              <label className="block text-xs font-medium text-indigo-700 mb-1">
+              <label className="block text-xs font-medium text-primary mb-1">
                 Teléfono{" "}
-                <span className="text-indigo-400 font-normal">(opcional)</span>
+                <span className="text-primary/50 font-normal">(opcional)</span>
               </label>
               <input
                 type="tel"
@@ -331,14 +331,14 @@ export default function Peticiones() {
                 onChange={(e) => setTelefono(e.target.value)}
                 maxLength={20}
                 placeholder="Ej. 55 1234 5678"
-                className="w-full rounded-lg border border-indigo-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+                className="w-full rounded-lg border border-primary/30 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary focus:outline-none"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-indigo-700 mb-1">
+              <label className="block text-xs font-medium text-primary mb-1">
                 Correo electrónico{" "}
-                <span className="text-indigo-400 font-normal">(opcional)</span>
+                <span className="text-primary/50 font-normal">(opcional)</span>
               </label>
               <input
                 type="email"
@@ -346,7 +346,7 @@ export default function Peticiones() {
                 onChange={(e) => setCorreo(e.target.value)}
                 maxLength={80}
                 placeholder="Ej. nombre@correo.com"
-                className="w-full rounded-lg border border-indigo-300 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm placeholder-gray-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-400 focus:outline-none"
+                className="w-full rounded-lg border border-primary/30 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary focus:outline-none"
               />
             </div>
           </div>
@@ -359,7 +359,7 @@ export default function Peticiones() {
       <button
         onClick={guardarPeticion}
         disabled={guardando}
-        className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full bg-primary text-white py-2 rounded-lg hover:bg-[#004d63] transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {guardando ? "AGREGANDO..." : "AGREGAR PETICIÓN"}
       </button>
@@ -428,8 +428,8 @@ export default function Peticiones() {
               </div>
 
               {user && (p.telefono || p.correo) && (
-                <div className="mt-3 flex flex-wrap gap-3 rounded-lg bg-indigo-50 border border-indigo-100 px-3 py-2">
-                  <span className="flex items-center gap-1 text-xs text-indigo-400 font-medium shrink-0">
+                <div className="mt-3 flex flex-wrap gap-3 rounded-lg bg-primary/5 border border-primary/15 px-3 py-2">
+                  <span className="flex items-center gap-1 text-xs text-primary/60 font-medium shrink-0">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -447,7 +447,7 @@ export default function Peticiones() {
                   {p.telefono && (
                     <a
                       href={`tel:${p.telefono}`}
-                      className="flex items-center gap-1 text-xs text-indigo-700 font-medium hover:underline"
+                      className="flex items-center gap-1 text-xs text-primary font-medium hover:underline"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -467,7 +467,7 @@ export default function Peticiones() {
                   {p.correo && (
                     <a
                       href={`mailto:${p.correo}`}
-                      className="flex items-center gap-1 text-xs text-indigo-700 font-medium hover:underline"
+                      className="flex items-center gap-1 text-xs text-primary font-medium hover:underline"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
