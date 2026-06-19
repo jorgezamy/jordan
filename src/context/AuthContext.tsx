@@ -14,6 +14,7 @@ import {
   signOut,
   signInAnonymously,
   onAuthStateChanged,
+  sendPasswordResetEmail,
   User,
 } from "firebase/auth";
 
@@ -23,6 +24,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  resetPassword: (email: string) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -52,8 +54,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     await signInAnonymously(auth);
   };
 
+  const resetPassword = async (email: string) => {
+    await sendPasswordResetEmail(auth, email);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, resetPassword }}>
       {children}
     </AuthContext.Provider>
   );

@@ -7,7 +7,7 @@ const SECRET_WORD = "12345";
 
 interface AuthModalProps {
   onClose: () => void;
-  defaultTab?: "login" | "register";
+  defaultTab?: "login" | "register" | "forgot";
 }
 
 function getFirebaseError(code: string): string {
@@ -76,21 +76,43 @@ export default function AuthModal({
   onClose,
   defaultTab = "login",
 }: AuthModalProps) {
-  const { login, register } = useAuth();
-  const [tab, setTab] = useState<"login" | "register">(defaultTab);
+  const { login, register, resetPassword } = useAuth();
+  const [tab, setTab] = useState<"login" | "register" | "forgot">(defaultTab);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [secretWord, setSecretWord] = useState("");
   const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
 
-  const switchTab = (t: "login" | "register") => {
+  const switchTab = (t: "login" | "register" | "forgot") => {
     setTab(t);
     setError("");
+    setSuccess("");
     setPassword("");
     setConfirmPassword("");
     setSecretWord("");
+  };
+
+  const handleForgot = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError("");
+    setSuccess("");
+    setLoading(true);
+    try {
+      await resetPassword(email);
+      setSuccess("Te enviamos un correo para restablecer tu contraseña.");
+    } catch (err: unknown) {
+      const code = (err as { code?: string }).code ?? "";
+      if (code === "auth/user-not-found" || code === "auth/invalid-email") {
+        setError("No encontramos una cuenta con ese correo.");
+      } else {
+        setError("Ocurrió un error. Intenta de nuevo.");
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -166,30 +188,90 @@ export default function AuthModal({
         </button>
 
         {/* Tabs */}
-        <div className="flex px-8 border-b border-gray-100">
-          <button
-            onClick={() => switchTab("login")}
-            className={`flex-1 pb-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
-              tab === "login"
-                ? "text-primary border-primary"
-                : "text-gray-400 border-transparent hover:text-gray-600"
-            }`}
-          >
-            Iniciar sesión
-          </button>
-          <button
-            onClick={() => switchTab("register")}
-            className={`flex-1 pb-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
-              tab === "register"
-                ? "text-primary border-primary"
-                : "text-gray-400 border-transparent hover:text-gray-600"
-            }`}
-          >
-            Registrarse
-          </button>
-        </div>
+        {tab !== "forgot" && (
+          <div className="flex px-8 border-b border-gray-100">
+            <button
+              onClick={() => switchTab("login")}
+              className={`flex-1 pb-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                tab === "login"
+                  ? "text-primary border-primary"
+                  : "text-gray-400 border-transparent hover:text-gray-600"
+              }`}
+            >
+              Iniciar sesión
+            </button>
+            <button
+              onClick={() => switchTab("register")}
+              className={`flex-1 pb-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                tab === "register"
+                  ? "text-primary border-primary"
+                  : "text-gray-400 border-transparent hover:text-gray-600"
+              }`}
+            >
+              Registrarse
+            </button>
+          </div>
+        )}
 
         <div className="px-8 py-6">
+          {/* Formulario de recuperar contraseña */}
+          {tab === "forgot" && (
+            <div className="space-y-4">
+              <div className="text-center pb-1">
+                <h3 className="text-base font-semibold text-primary">Restablecer contraseña</h3>
+                <p className="text-sm text-gray-500 mt-1">Te enviaremos un enlace a tu correo.</p>
+              </div>
+              {success ? (
+                <div className="space-y-4">
+                  <p className="text-sm text-success-text bg-success-subtle border border-success-border rounded-lg px-3 py-2 text-center">
+                    {success}
+                  </p>
+                  <button
+                    onClick={() => switchTab("login")}
+                    className="w-full bg-primary text-white py-2.5 rounded-lg hover:bg-primary-dark transition font-medium"
+                  >
+                    Volver al inicio de sesión
+                  </button>
+                </div>
+              ) : (
+                <form onSubmit={handleForgot} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1.5">
+                      Correo electrónico
+                    </label>
+                    <input
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                      className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-colors"
+                      placeholder="correo@ejemplo.com"
+                    />
+                  </div>
+                  {error && (
+                    <p className="text-sm text-danger-text bg-danger-subtle border border-danger-border rounded-lg px-3 py-2">
+                      {error}
+                    </p>
+                  )}
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-primary text-white py-2.5 rounded-lg hover:bg-primary-dark transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading ? "Enviando..." : "Enviar enlace"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => switchTab("login")}
+                    className="w-full text-sm text-gray-400 hover:text-gray-600 transition"
+                  >
+                    Volver al inicio de sesión
+                  </button>
+                </form>
+              )}
+            </div>
+          )}
+
           {/* Formulario de login */}
           {tab === "login" && (
             <form onSubmit={handleLogin} className="space-y-4">
@@ -227,6 +309,13 @@ export default function AuthModal({
                 className="w-full bg-primary text-white py-2.5 rounded-lg hover:bg-primary-dark transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? "Entrando..." : "Entrar"}
+              </button>
+              <button
+                type="button"
+                onClick={() => switchTab("forgot")}
+                className="w-full text-sm text-gray-600 hover:text-gray-900 transition"
+              >
+                ¿Olvidaste tu contraseña?
               </button>
             </form>
           )}

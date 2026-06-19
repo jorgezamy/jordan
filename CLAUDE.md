@@ -44,8 +44,9 @@ Auth state is managed globally via React Context in `src/context/AuthContext.tsx
 **Registration is invite-only:** the register form requires a secret word (`12345`) before creating the account. This is validated client-side only — it is not enforced in Firebase rules.
 
 **Login modal** lives in `src/components/auth/AuthModal.tsx`:
-- Two tabs: "Iniciar sesión" (login) and "Registrarse" (register)
+- Three tabs/views: "Iniciar sesión" (login), "Registrarse" (register), and "forgot" (password reset — no tabs shown)
 - Register tab fields: email, password, confirm password, secret word
+- Forgot view: email input → calls `resetPassword()` from context → success message or error
 - All password fields use a shared `PasswordInput` component with an eye toggle (show/hide), each field has independent visibility state
 - Triggered from the header; closes **only via the X button** (backdrop click intentionally disabled — admins must confirm intent to close)
 
@@ -127,3 +128,5 @@ Tailwind CSS v3. No separate design system — styles are inline Tailwind classe
 - Primary button: `bg-primary hover:bg-primary-dark`
 - Error alert: `bg-danger-subtle border border-danger-border text-danger-text`
 - Success alert: `bg-success-subtle border border-success-border text-success-text`
+
+**Text opacity rule:** Never use transparent/muted text (`text-gray-400`, `text-white/50`, etc.) for interactive elements like buttons or links. Use full-opacity colors (`text-gray-600 hover:text-gray-900`, `text-white`, etc.). Transparency on text is reserved for non-interactive decorative or disabled states only.
