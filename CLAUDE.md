@@ -160,3 +160,5 @@ Tailwind CSS v3. No separate design system — styles are inline Tailwind classe
 - Success alert: `bg-success-subtle border border-success-border text-success-text`
 
 **Text opacity rule:** Never use transparent/muted text (`text-gray-400`, `text-white/50`, etc.) for interactive elements like buttons or links. Use full-opacity colors (`text-gray-600 hover:text-gray-900`, `text-white`, etc.). Transparency on text is reserved for non-interactive decorative or disabled states only.
+
+**Minimum font size rule:** `text-sm` (14px) is the minimum for any readable text — labels, descriptions, dates, links, metadata. `text-xs` (12px) is reserved exclusively for compact UI chips/badges (e.g., the `#N` number badge, status pills) where the surrounding context makes them identifiable without needing to be read in full.

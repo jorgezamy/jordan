@@ -341,7 +341,7 @@ export default function Peticiones() {
             Información de contacto para seguimiento
           </span>
         </div>
-        <p className="text-xs text-primary/70 mb-4 leading-relaxed">
+        <p className="text-sm text-primary/70 mb-4 leading-relaxed">
           Estos datos son <strong>completamente opcionales</strong> y{" "}
           <strong>solo serán visibles para los pastores</strong>. Nos permiten
           dar un seguimiento personalizado a esta petición.
@@ -349,7 +349,7 @@ export default function Peticiones() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-medium text-primary mb-1">
+            <label className="block text-sm font-medium text-primary mb-1">
               Teléfono{" "}
               <span className="text-primary/50 font-normal">(opcional)</span>
             </label>
@@ -364,7 +364,7 @@ export default function Peticiones() {
           </div>
 
           <div>
-            <label className="block text-xs font-medium text-primary mb-1">
+            <label className="block text-sm font-medium text-primary mb-1">
               Correo electrónico{" "}
               <span className="text-primary/50 font-normal">(opcional)</span>
             </label>
@@ -497,7 +497,7 @@ export default function Peticiones() {
                 dangerouslySetInnerHTML={{ __html: p.texto }}
               />
 
-              <div className="text-xs text-gray-500 mt-3">
+              <div className="text-sm text-gray-500 mt-3">
                 {p.estado === "pendiente" && (
                   <span>Creada: {formatFecha(p.fechaCreacion)}</span>
                 )}
@@ -511,7 +511,7 @@ export default function Peticiones() {
 
               {user && (p.telefono || p.correo) && (
                 <div className="mt-3 flex flex-wrap gap-3 rounded-lg bg-primary/5 border border-primary/15 px-3 py-2">
-                  <span className="flex items-center gap-1 text-xs text-primary/60 font-medium shrink-0">
+                  <span className="flex items-center gap-1 text-sm text-primary/60 font-medium shrink-0">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -529,7 +529,7 @@ export default function Peticiones() {
                   {p.telefono && (
                     <a
                       href={`tel:${p.telefono}`}
-                      className="flex items-center gap-1 text-xs text-primary font-medium hover:underline"
+                      className="flex items-center gap-1 text-sm text-primary font-medium hover:underline"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -549,7 +549,7 @@ export default function Peticiones() {
                   {p.correo && (
                     <a
                       href={`mailto:${p.correo}`}
-                      className="flex items-center gap-1 text-xs text-primary font-medium hover:underline"
+                      className="flex items-center gap-1 text-sm text-primary font-medium hover:underline"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
