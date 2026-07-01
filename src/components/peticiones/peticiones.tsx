@@ -7,7 +7,7 @@ import { useAuth } from "../../context/AuthContext";
 
 import {
   collection,
-  addDoc,
+  runTransaction,
   updateDoc,
   doc,
   onSnapshot,
@@ -31,6 +31,7 @@ interface Peticion {
   fechaEliminada?: Timestamp;
   telefono?: string;
   correo?: string;
+  numero?: number;
 }
 
 const ESTADO_ORDEN = {
@@ -65,6 +66,7 @@ export default function Peticiones() {
   const [loading, setLoading] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [mensajeExito, setMensajeExito] = useState("");
+  const [busqueda, setBusqueda] = useState("");
 
   const peticionesQuery = useMemo(
     () =>
@@ -162,13 +164,26 @@ export default function Peticiones() {
     try {
       setGuardando(true);
 
-      await addDoc(collection(db, "peticiones"), {
-        nombre: anonimo ? "Anónimo" : nombre.trim(),
-        texto: editor.getHTML(),
-        estado: "pendiente",
-        fechaCreacion: serverTimestamp(),
-        ...(telefono.trim() ? { telefono: telefono.trim() } : {}),
-        ...(correo.trim() ? { correo: correo.trim() } : {}),
+      const newDocRef = doc(collection(db, "peticiones"));
+      const counterRef = doc(db, "metadata", "counters");
+
+      await runTransaction(db, async (transaction) => {
+        const counterSnap = await transaction.get(counterRef);
+        const current = counterSnap.exists()
+          ? (counterSnap.data().peticionesCount ?? 0)
+          : 0;
+        const next = current + 1;
+
+        transaction.set(counterRef, { peticionesCount: next }, { merge: true });
+        transaction.set(newDocRef, {
+          numero: next,
+          nombre: anonimo ? "Anónimo" : nombre.trim(),
+          texto: editor.getHTML(),
+          estado: "pendiente",
+          fechaCreacion: serverTimestamp(),
+          ...(telefono.trim() ? { telefono: telefono.trim() } : {}),
+          ...(correo.trim() ? { correo: correo.trim() } : {}),
+        });
       });
 
       setMensajeExito("✅ Petición creada exitosamente");
@@ -220,6 +235,19 @@ export default function Peticiones() {
       alert("Ocurrió un error.");
     }
   };
+
+  const peticionesFiltradas = useMemo(() => {
+    const term = busqueda.trim().toLowerCase();
+    if (!term) return peticiones;
+    return peticiones.filter((p) => {
+      const textoPlano = p.texto.replace(/<[^>]+>/g, "").toLowerCase();
+      return (
+        p.nombre.toLowerCase().includes(term) ||
+        textoPlano.includes(term) ||
+        (p.numero !== undefined && String(p.numero).includes(term))
+      );
+    });
+  }, [peticiones, busqueda]);
 
   return (
     <div className="max-w-3xl mx-auto p-6 bg-white shadow-lg rounded-xl">
@@ -296,61 +324,61 @@ export default function Peticiones() {
       {/* ========================= */}
 
       <div className="mb-5 rounded-xl border border-primary/20 bg-primary/5 p-4">
-          <div className="flex items-center gap-2 mb-1">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="currentColor"
-              className="w-4 h-4 text-primary shrink-0"
-            >
-              <path
-                fillRule="evenodd"
-                d="M12 1.5a5.25 5.25 0 0 0-5.25 5.25v3a3 3 0 0 0-3 3v6.75a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3v-6.75a3 3 0 0 0-3-3v-3c0-2.9-2.35-5.25-5.25-5.25Zm3.75 8.25v-3a3.75 3.75 0 1 0-7.5 0v3h7.5Z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <span className="text-sm font-semibold text-primary">
-              Información de contacto para seguimiento
-            </span>
+        <div className="flex items-center gap-2 mb-1">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            className="w-4 h-4 text-primary shrink-0"
+          >
+            <path
+              fillRule="evenodd"
+              d="M12 1.5a5.25 5.25 0 0 0-5.25 5.25v3a3 3 0 0 0-3 3v6.75a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3v-6.75a3 3 0 0 0-3-3v-3c0-2.9-2.35-5.25-5.25-5.25Zm3.75 8.25v-3a3.75 3.75 0 1 0-7.5 0v3h7.5Z"
+              clipRule="evenodd"
+            />
+          </svg>
+          <span className="text-sm font-semibold text-primary">
+            Información de contacto para seguimiento
+          </span>
+        </div>
+        <p className="text-xs text-primary/70 mb-4 leading-relaxed">
+          Estos datos son <strong>completamente opcionales</strong> y{" "}
+          <strong>solo serán visibles para los pastores</strong>. Nos permiten
+          dar un seguimiento personalizado a esta petición.
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-medium text-primary mb-1">
+              Teléfono{" "}
+              <span className="text-primary/50 font-normal">(opcional)</span>
+            </label>
+            <input
+              type="tel"
+              value={telefono}
+              onChange={(e) => setTelefono(e.target.value)}
+              maxLength={20}
+              placeholder="Ej. 55 1234 5678"
+              className="w-full rounded-lg border border-primary/30 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary focus:outline-none"
+            />
           </div>
-          <p className="text-xs text-primary/70 mb-4 leading-relaxed">
-            Estos datos son <strong>completamente opcionales</strong> y{" "}
-            <strong>solo serán visibles para los pastores</strong>. Nos permiten
-            dar un seguimiento personalizado a esta petición.
-          </p>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            <div>
-              <label className="block text-xs font-medium text-primary mb-1">
-                Teléfono{" "}
-                <span className="text-primary/50 font-normal">(opcional)</span>
-              </label>
-              <input
-                type="tel"
-                value={telefono}
-                onChange={(e) => setTelefono(e.target.value)}
-                maxLength={20}
-                placeholder="Ej. 55 1234 5678"
-                className="w-full rounded-lg border border-primary/30 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary focus:outline-none"
-              />
-            </div>
-
-            <div>
-              <label className="block text-xs font-medium text-primary mb-1">
-                Correo electrónico{" "}
-                <span className="text-primary/50 font-normal">(opcional)</span>
-              </label>
-              <input
-                type="email"
-                value={correo}
-                onChange={(e) => setCorreo(e.target.value)}
-                maxLength={80}
-                placeholder="Ej. nombre@correo.com"
-                className="w-full rounded-lg border border-primary/30 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary focus:outline-none"
-              />
-            </div>
+          <div>
+            <label className="block text-xs font-medium text-primary mb-1">
+              Correo electrónico{" "}
+              <span className="text-primary/50 font-normal">(opcional)</span>
+            </label>
+            <input
+              type="email"
+              value={correo}
+              onChange={(e) => setCorreo(e.target.value)}
+              maxLength={80}
+              placeholder="Ej. nombre@correo.com"
+              className="w-full rounded-lg border border-primary/30 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary focus:outline-none"
+            />
           </div>
         </div>
+      </div>
 
       {/* ========================= */}
       {/* BOTÓN */}
@@ -375,32 +403,86 @@ export default function Peticiones() {
       )}
 
       {/* ========================= */}
+      {/* BÚSQUEDA */}
+      {/* ========================= */}
+
+      <div className="mt-10 mb-4">
+        <div className="relative">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/50 pointer-events-none"
+          >
+            <circle cx="11" cy="11" r="8" />
+            <path d="m21 21-4.35-4.35" />
+          </svg>
+          <input
+            type="text"
+            value={busqueda}
+            onChange={(e) => setBusqueda(e.target.value)}
+            placeholder="Buscar por nombre, descripción o número."
+            className="w-full rounded-lg border-2 border-primary/40 bg-gray-50 pl-9 pr-9 py-2 text-sm focus:border-primary focus:ring-2 focus:ring-primary focus:outline-none"
+          />
+          {busqueda && (
+            <button
+              onClick={() => setBusqueda("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 hover:bg-primary/40 text-primary transition"
+              aria-label="Limpiar búsqueda"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
+                <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
+              </svg>
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* ========================= */}
       {/* LISTA */}
       {/* ========================= */}
 
-      <h2 className="text-xl font-semibold text-gray-700 mt-10 mb-4">
-        Lista de Peticiones
-      </h2>
+      <div className="flex items-center gap-2 mb-4">
+        <h2 className="text-xl font-semibold text-gray-700">Lista de Peticiones</h2>
+        {busqueda && (
+          <span className="text-sm font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full whitespace-nowrap">
+            {peticionesFiltradas.length} resultado{peticionesFiltradas.length !== 1 ? "s" : ""}
+          </span>
+        )}
+      </div>
 
       {loading ? (
         <p className="text-gray-500">Cargando peticiones...</p>
       ) : peticiones.length === 0 ? (
         <p className="text-gray-500">No hay peticiones todavía.</p>
+      ) : peticionesFiltradas.length === 0 ? (
+        <p className="text-gray-500">
+          No se encontraron peticiones para{" "}
+          <span className="font-medium text-primary">"{busqueda}"</span>.
+        </p>
       ) : (
         <ul className="space-y-4">
-          {peticiones.map((p) => (
+          {peticionesFiltradas.map((p) => (
             <li key={p.id} className="p-4 rounded-lg border shadow-sm bg-white">
-              <div className="flex justify-between items-center gap-3">
-                <strong className="text-lg text-gray-900">{p.nombre}</strong>
+              <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-3">
+                <div className="flex items-center gap-2 min-w-0">
+                  {p.numero !== undefined && (
+                    <span className="shrink-0 text-xs font-mono font-semibold text-primary/70 bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+                      #{p.numero}
+                    </span>
+                  )}
+                  <strong className="text-lg text-gray-900">{p.nombre}</strong>
+                </div>
 
                 <span
-                  className={`px-3 py-1 text-sm font-semibold rounded-full whitespace-nowrap ${
-                    p.estado === "resuelto"
-                      ? "bg-success text-white"
-                      : p.estado === "pendiente"
-                        ? "bg-yellow-400 text-gray-900"
-                        : "bg-danger text-white"
-                  }`}
+                  className={`self-start sm:self-auto px-3 py-1 text-sm font-semibold rounded-full whitespace-nowrap ${p.estado === "resuelto"
+                    ? "bg-success text-white"
+                    : p.estado === "pendiente"
+                      ? "bg-yellow-400 text-gray-900"
+                      : "bg-danger text-white"
+                    }`}
                 >
                   {p.estado === "resuelto"
                     ? "✅ Resuelto"
@@ -498,11 +580,10 @@ export default function Peticiones() {
                           onClick={() =>
                             actualizarEstado(p.id, confirmando.accion)
                           }
-                          className={`px-4 py-1.5 rounded-md text-sm text-white font-medium transition ${
-                            confirmando.accion === "resuelto"
-                              ? "bg-success hover:bg-success-hover"
-                              : "bg-danger hover:bg-danger-hover"
-                          }`}
+                          className={`px-4 py-1.5 rounded-md text-sm text-white font-medium transition ${confirmando.accion === "resuelto"
+                            ? "bg-success hover:bg-success-hover"
+                            : "bg-danger hover:bg-danger-hover"
+                            }`}
                         >
                           Sí, confirmar
                         </button>

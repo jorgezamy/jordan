@@ -85,6 +85,7 @@ The core feature lives entirely in `src/components/peticiones/peticiones.tsx` as
 The `Peticion` document shape:
 ```ts
 {
+  numero: number,          // consecutive integer assigned at creation via Firestore transaction
   nombre: string,
   texto: string,           // HTML from TipTap
   estado: "pendiente" | "resuelto" | "eliminada",
@@ -97,6 +98,15 @@ The `Peticion` document shape:
 ```
 
 `telefono` and `correo` are filled in the form by anyone (public form), but **only saved to Firestore when non-empty** (conditional spread). They are only displayed in the card list to logged-in users (`user !== null`) — never exposed to public visitors.
+
+**Consecutive numbering:** `numero` is assigned via a Firestore transaction that atomically reads and increments a counter stored in `metadata/counters` (`peticionesCount` field). Only the raw integer is stored — the `#` prefix and pill styling are applied in the frontend. Cards show the number as a small `#N` badge next to the name.
+
+**Search:** A client-side search bar (below the form, above the list) filters `peticionesFiltradas` by nombre, plain-text content (HTML stripped), or numero. The result count appears as a pill next to the "Lista de Peticiones" heading.
+
+**Migration script:** `scripts/migrar-numeros.js` is a one-time script that assigned `numero` to pre-existing documents ordered by `fechaCreacion` asc. Run with:
+```bash
+node --env-file=.env.local scripts/migrar-numeros.js
+```
 
 ### Header (`src/components/header/page.tsx`)
 
