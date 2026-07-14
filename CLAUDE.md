@@ -77,9 +77,13 @@ After logout, the user is automatically signed back in anonymously so Firestore 
 The core feature lives entirely in `src/components/peticiones/peticiones.tsx` as a single `"use client"` component. It:
 
 - Reads/writes to the Firestore `peticiones` collection (last 50, ordered by `fechaCreacion` desc)
-- Uses a realtime `onSnapshot` listener — no manual refresh needed
-- Filters visibility client-side by state: `pendiente` = always visible, `resuelto` = visible for 1 month, `eliminada` = visible for 2 weeks
-- Admin actions (mark resolved / delete) are **only visible to logged-in registered users** (`user !== null`)
+- Uses a realtime `onSnapshot` listener (raw docs kept in `peticionesRaw`) — no manual refresh needed
+- Visibility is computed client-side in a `useMemo` keyed on `[peticionesRaw, user]`, filtering by state: `pendiente` = always visible, `resuelto` = visible for 1 month, `eliminada` = **only visible to logged-in registered users**, and additionally only within 2 weeks of `fechaEliminada`
+- The `eliminada` state is shown in the UI as **"Cancelada"** (status pill, date label, messages) — only the display label changed, the Firestore `estado` value and field names (`fechaEliminada`, etc.) are still `"eliminada"`
+- Admin actions are **only visible to logged-in registered users** (`user !== null`), one set per state:
+  - `pendiente` → mark resolved (✔) or cancel (✕ icon on `bg-danger`)
+  - `resuelto` → "↺ Devolver a pendientes" (sets `estado` back to `pendiente`)
+  - `eliminada` → "↺ Devolver a pendientes" (same restore action) or "🗑 Eliminar permanentemente" (`deleteDoc` — hard delete, not reversible)
 - Before executing an admin action, an inline confirmation UI replaces the action buttons within the card — no `window.confirm()` used
 
 The `Peticion` document shape:
@@ -101,7 +105,12 @@ The `Peticion` document shape:
 
 **Consecutive numbering:** `numero` is assigned via a Firestore transaction that atomically reads and increments a counter stored in `metadata/counters` (`peticionesCount` field). Only the raw integer is stored — the `#` prefix and pill styling are applied in the frontend. Cards show the number as a small `#N` badge next to the name.
 
-**Search:** A client-side search bar (below the form, above the list) filters `peticionesFiltradas` by nombre, plain-text content (HTML stripped), or numero. The result count appears as a pill next to the "Lista de Peticiones" heading.
+**Search, filter and sort:** Below the form, above the list, a "Buscar y filtrar" section (divider + label, no background wrapper — a wrapped card was tried and reverted for squeezing controls to 2 lines on mobile) holds:
+- A search input filtering by nombre, plain-text content (HTML stripped), or numero
+- A segmented pill control (`estadoOpciones`) to filter by estado: Todas / Pendientes / Resueltas / and Canceladas (Canceladas tab only rendered when `user` is logged in, matching the visibility rule above; resets to "Todas" on logout)
+- A segmented pill control to sort by `fechaCreacion`: "Más reciente" / "Más antigua" — both options always rendered so the active one is visually obvious (single toggle buttons were tried and rejected as unclear)
+
+All three combine in the `peticionesFiltradas` memo, which still groups by `ESTADO_ORDEN` first and sorts by date within each group. The result count pill next to the "Lista de Peticiones" heading shows whenever a search term or non-"todos" filter is active. The heading row uses `flex-wrap` with `shrink-0` on the `<h2>` so the count pill wraps to its own line on mobile instead of squeezing the title into two lines.
 
 **Migration script:** `scripts/migrar-numeros.js` is a one-time script that assigned `numero` to pre-existing documents ordered by `fechaCreacion` asc. Run with:
 ```bash

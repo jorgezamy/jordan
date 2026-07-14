@@ -9,6 +9,7 @@ import {
   collection,
   runTransaction,
   updateDoc,
+  deleteDoc,
   doc,
   onSnapshot,
   serverTimestamp,
@@ -56,17 +57,21 @@ export default function Peticiones() {
   const { user } = useAuth();
   const [confirmando, setConfirmando] = useState<{
     id: string;
-    accion: "resuelto" | "eliminada";
+    accion: "resuelto" | "eliminada" | "restaurar" | "eliminar_permanente";
   } | null>(null);
   const [nombre, setNombre] = useState("");
   const [anonimo, setAnonimo] = useState(false);
   const [telefono, setTelefono] = useState("");
   const [correo, setCorreo] = useState("");
-  const [peticiones, setPeticiones] = useState<Peticion[]>([]);
+  const [peticionesRaw, setPeticionesRaw] = useState<Peticion[]>([]);
   const [loading, setLoading] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [mensajeExito, setMensajeExito] = useState("");
   const [busqueda, setBusqueda] = useState("");
+  const [estadoFiltro, setEstadoFiltro] = useState<
+    "todos" | "pendiente" | "resuelto" | "eliminada"
+  >("todos");
+  const [ordenAsc, setOrdenAsc] = useState(false);
 
   const peticionesQuery = useMemo(
     () =>
@@ -103,35 +108,7 @@ export default function Peticiones() {
           ...docSnap.data(),
         })) as Peticion[];
 
-        const ahora = new Date();
-
-        const docsFiltrados = docs.filter((p) => {
-          if (p.estado === "pendiente") {
-            return true;
-          }
-
-          if (p.estado === "resuelto" && p.fechaResuelta) {
-            const fechaResuelta = p.fechaResuelta.toDate();
-            const unMesDespues = new Date(fechaResuelta);
-            unMesDespues.setMonth(unMesDespues.getMonth() + 1);
-            return ahora <= unMesDespues;
-          }
-
-          if (p.estado === "eliminada" && p.fechaEliminada) {
-            const fechaEliminada = p.fechaEliminada.toDate();
-            const dosSemanasDespues = new Date(fechaEliminada);
-            dosSemanasDespues.setDate(dosSemanasDespues.getDate() + 14);
-            return ahora <= dosSemanasDespues;
-          }
-
-          return false;
-        });
-
-        docsFiltrados.sort(
-          (a, b) => ESTADO_ORDEN[a.estado] - ESTADO_ORDEN[b.estado],
-        );
-
-        setPeticiones(docsFiltrados);
+        setPeticionesRaw(docs);
         setLoading(false);
       },
 
@@ -143,6 +120,46 @@ export default function Peticiones() {
 
     return () => unsubscribe();
   }, [peticionesQuery]);
+
+  const peticiones = useMemo(() => {
+    const ahora = new Date();
+
+    const docsFiltrados = peticionesRaw.filter((p) => {
+      if (p.estado === "pendiente") {
+        return true;
+      }
+
+      if (p.estado === "resuelto" && p.fechaResuelta) {
+        const fechaResuelta = p.fechaResuelta.toDate();
+        const unMesDespues = new Date(fechaResuelta);
+        unMesDespues.setMonth(unMesDespues.getMonth() + 1);
+        return ahora <= unMesDespues;
+      }
+
+      if (p.estado === "eliminada") {
+        // Las peticiones eliminadas solo son visibles para usuarios con sesión iniciada.
+        if (!user || !p.fechaEliminada) return false;
+        const fechaEliminada = p.fechaEliminada.toDate();
+        const dosSemanasDespues = new Date(fechaEliminada);
+        dosSemanasDespues.setDate(dosSemanasDespues.getDate() + 14);
+        return ahora <= dosSemanasDespues;
+      }
+
+      return false;
+    });
+
+    docsFiltrados.sort(
+      (a, b) => ESTADO_ORDEN[a.estado] - ESTADO_ORDEN[b.estado],
+    );
+
+    return docsFiltrados;
+  }, [peticionesRaw, user]);
+
+  useEffect(() => {
+    if (!user && estadoFiltro === "eliminada") {
+      setEstadoFiltro("todos");
+    }
+  }, [user, estadoFiltro]);
 
   const guardarPeticion = async () => {
     if (!editor || guardando) return;
@@ -202,31 +219,42 @@ export default function Peticiones() {
     }
   };
 
-  const pedirConfirmacion = (id: string, accion: "resuelto" | "eliminada") => {
+  const pedirConfirmacion = (
+    id: string,
+    accion: "resuelto" | "eliminada" | "restaurar" | "eliminar_permanente",
+  ) => {
     setConfirmando({ id, accion });
   };
 
   const cancelarConfirmacion = () => setConfirmando(null);
 
-  const actualizarEstado = async (
+  const ejecutarAccion = async (
     id: string,
-    estado: "resuelto" | "eliminada",
+    accion: "resuelto" | "eliminada" | "restaurar" | "eliminar_permanente",
   ) => {
     setConfirmando(null);
     try {
       const docRef = doc(db, "peticiones", id);
+      let mensaje = "";
 
-      await updateDoc(docRef, {
-        estado,
-        ...(estado === "resuelto"
-          ? { fechaResuelta: serverTimestamp() }
-          : { fechaEliminada: serverTimestamp() }),
-      });
-
-      const mensaje =
-        estado === "resuelto"
-          ? "✅ Petición marcada como resuelta"
-          : "🗑️ Petición eliminada";
+      if (accion === "eliminar_permanente") {
+        await deleteDoc(docRef);
+        mensaje = "🗑️ Petición eliminada permanentemente";
+      } else if (accion === "restaurar") {
+        await updateDoc(docRef, { estado: "pendiente" });
+        mensaje = "↩️ Petición devuelta a pendientes";
+      } else {
+        await updateDoc(docRef, {
+          estado: accion,
+          ...(accion === "resuelto"
+            ? { fechaResuelta: serverTimestamp() }
+            : { fechaEliminada: serverTimestamp() }),
+        });
+        mensaje =
+          accion === "resuelto"
+            ? "✅ Petición marcada como resuelta"
+            : "🚫 Petición cancelada";
+      }
 
       setMensajeExito(mensaje);
       setTimeout(() => setMensajeExito(""), 3000);
@@ -236,10 +264,22 @@ export default function Peticiones() {
     }
   };
 
+  const estadoOpciones = useMemo(
+    () => [
+      { key: "todos" as const, label: "Todas" },
+      { key: "pendiente" as const, label: "Pendientes" },
+      { key: "resuelto" as const, label: "Resueltas" },
+      ...(user ? [{ key: "eliminada" as const, label: "Canceladas" }] : []),
+    ],
+    [user],
+  );
+
   const peticionesFiltradas = useMemo(() => {
     const term = busqueda.trim().toLowerCase();
-    if (!term) return peticiones;
-    return peticiones.filter((p) => {
+
+    const resultado = peticiones.filter((p) => {
+      if (estadoFiltro !== "todos" && p.estado !== estadoFiltro) return false;
+      if (!term) return true;
       const textoPlano = p.texto.replace(/<[^>]+>/g, "").toLowerCase();
       return (
         p.nombre.toLowerCase().includes(term) ||
@@ -247,7 +287,16 @@ export default function Peticiones() {
         (p.numero !== undefined && String(p.numero).includes(term))
       );
     });
-  }, [peticiones, busqueda]);
+
+    return [...resultado].sort((a, b) => {
+      const ordenEstado = ESTADO_ORDEN[a.estado] - ESTADO_ORDEN[b.estado];
+      if (ordenEstado !== 0) return ordenEstado;
+
+      const fechaA = a.fechaCreacion?.toMillis?.() ?? 0;
+      const fechaB = b.fechaCreacion?.toMillis?.() ?? 0;
+      return ordenAsc ? fechaA - fechaB : fechaB - fechaA;
+    });
+  }, [peticiones, busqueda, estadoFiltro, ordenAsc]);
 
   return (
     <div className="max-w-3xl mx-auto p-6 bg-white shadow-lg rounded-xl">
@@ -403,11 +452,16 @@ export default function Peticiones() {
       )}
 
       {/* ========================= */}
-      {/* BÚSQUEDA */}
+      {/* BÚSQUEDA Y FILTROS */}
       {/* ========================= */}
 
-      <div className="mt-10 mb-4">
-        <div className="relative">
+      <div className="mt-10 mb-6">
+        <hr className="border-t border-primary/15 mb-4" />
+        <h2 className="text-sm font-semibold text-primary/70 uppercase tracking-wide mb-3">
+          Buscar y filtrar
+        </h2>
+
+        <div className="relative mb-3">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
@@ -438,15 +492,56 @@ export default function Peticiones() {
             </button>
           )}
         </div>
+
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex flex-wrap rounded-lg border border-primary/30 bg-gray-50 p-0.5">
+            {estadoOpciones.map((opt) => (
+              <button
+                key={opt.key}
+                onClick={() => setEstadoFiltro(opt.key)}
+                className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${
+                  estadoFiltro === opt.key
+                    ? "bg-primary text-white"
+                    : "text-primary/70 hover:bg-primary/10"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+
+          <div className="flex rounded-lg border border-primary/30 bg-gray-50 p-0.5 sm:ml-auto">
+            <button
+              onClick={() => setOrdenAsc(false)}
+              className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${
+                !ordenAsc
+                  ? "bg-primary text-white"
+                  : "text-primary/70 hover:bg-primary/10"
+              }`}
+            >
+              Más reciente
+            </button>
+            <button
+              onClick={() => setOrdenAsc(true)}
+              className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${
+                ordenAsc
+                  ? "bg-primary text-white"
+                  : "text-primary/70 hover:bg-primary/10"
+              }`}
+            >
+              Más antigua
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* ========================= */}
       {/* LISTA */}
       {/* ========================= */}
 
-      <div className="flex items-center gap-2 mb-4">
-        <h2 className="text-xl font-semibold text-gray-700">Lista de Peticiones</h2>
-        {busqueda && (
+      <div className="flex flex-wrap items-center gap-2 mb-4">
+        <h2 className="text-xl font-semibold text-gray-700 shrink-0">Lista de Peticiones</h2>
+        {(busqueda || estadoFiltro !== "todos") && (
           <span className="text-sm font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full whitespace-nowrap">
             {peticionesFiltradas.length} resultado{peticionesFiltradas.length !== 1 ? "s" : ""}
           </span>
@@ -459,8 +554,14 @@ export default function Peticiones() {
         <p className="text-gray-500">No hay peticiones todavía.</p>
       ) : peticionesFiltradas.length === 0 ? (
         <p className="text-gray-500">
-          No se encontraron peticiones para{" "}
-          <span className="font-medium text-primary">"{busqueda}"</span>.
+          {busqueda ? (
+            <>
+              No se encontraron peticiones para{" "}
+              <span className="font-medium text-primary">"{busqueda}"</span>.
+            </>
+          ) : (
+            "No hay peticiones con este filtro."
+          )}
         </p>
       ) : (
         <ul className="space-y-4">
@@ -488,7 +589,7 @@ export default function Peticiones() {
                     ? "✅ Resuelto"
                     : p.estado === "pendiente"
                       ? "⏳ Pendiente"
-                      : "🗑️ Eliminada"}
+                      : "🚫 Cancelada"}
                 </span>
               </div>
 
@@ -505,7 +606,7 @@ export default function Peticiones() {
                   <span>Resuelta: {formatFecha(p.fechaResuelta)}</span>
                 )}
                 {p.estado === "eliminada" && (
-                  <span>Eliminada: {formatFecha(p.fechaEliminada)}</span>
+                  <span>Cancelada: {formatFecha(p.fechaEliminada)}</span>
                 )}
               </div>
 
@@ -566,21 +667,26 @@ export default function Peticiones() {
                 </div>
               )}
 
-              {user && p.estado === "pendiente" && (
+              {user && (
                 <div className="mt-4">
                   {confirmando?.id === p.id ? (
                     <div className="flex flex-col items-center gap-2">
                       <p className="text-sm text-gray-600 font-medium">
                         {confirmando.accion === "resuelto"
                           ? "¿Marcar esta petición como resuelta?"
-                          : "¿Eliminar esta petición?"}
+                          : confirmando.accion === "eliminada"
+                            ? "¿Cancelar esta petición?"
+                            : confirmando.accion === "restaurar"
+                              ? "¿Devolver esta petición a pendientes?"
+                              : "¿Eliminar esta petición de forma permanente? Esta acción no se puede deshacer."}
                       </p>
                       <div className="flex gap-2">
                         <button
                           onClick={() =>
-                            actualizarEstado(p.id, confirmando.accion)
+                            ejecutarAccion(p.id, confirmando.accion)
                           }
-                          className={`px-4 py-1.5 rounded-md text-sm text-white font-medium transition ${confirmando.accion === "resuelto"
+                          className={`px-4 py-1.5 rounded-md text-sm text-white font-medium transition ${confirmando.accion === "resuelto" ||
+                            confirmando.accion === "restaurar"
                             ? "bg-success hover:bg-success-hover"
                             : "bg-danger hover:bg-danger-hover"
                             }`}
@@ -597,20 +703,63 @@ export default function Peticiones() {
                     </div>
                   ) : (
                     <div className="flex gap-2 justify-center">
-                      <button
-                        onClick={() => pedirConfirmacion(p.id, "resuelto")}
-                        className="bg-success text-white px-3 py-1 rounded-md text-sm hover:bg-success-hover transition"
-                        title="Marcar como resuelta"
-                      >
-                        ✔
-                      </button>
-                      <button
-                        onClick={() => pedirConfirmacion(p.id, "eliminada")}
-                        className="bg-danger text-white px-3 py-1 rounded-md text-sm hover:bg-danger-hover transition"
-                        title="Eliminar petición"
-                      >
-                        🗑
-                      </button>
+                      {p.estado === "pendiente" && (
+                        <>
+                          <button
+                            onClick={() => pedirConfirmacion(p.id, "resuelto")}
+                            className="bg-success text-white px-3 py-1 rounded-md text-sm hover:bg-success-hover transition"
+                            title="Marcar como resuelta"
+                          >
+                            ✔
+                          </button>
+                          <button
+                            onClick={() => pedirConfirmacion(p.id, "eliminada")}
+                            className="flex items-center justify-center bg-danger text-white px-3 py-1 rounded-md text-sm hover:bg-danger-hover transition"
+                            title="Cancelar petición"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth={3.5}
+                              strokeLinecap="round"
+                              className="w-4 h-4"
+                            >
+                              <path d="M6 6l12 12M18 6 6 18" />
+                            </svg>
+                          </button>
+                        </>
+                      )}
+                      {p.estado === "resuelto" && (
+                        <button
+                          onClick={() => pedirConfirmacion(p.id, "restaurar")}
+                          className="bg-primary text-white px-3 py-1 rounded-md text-sm hover:bg-primary-dark transition"
+                          title="Devolver a pendientes"
+                        >
+                          ↺ Devolver a pendientes
+                        </button>
+                      )}
+                      {p.estado === "eliminada" && (
+                        <>
+                          <button
+                            onClick={() => pedirConfirmacion(p.id, "restaurar")}
+                            className="bg-primary text-white px-3 py-1 rounded-md text-sm hover:bg-primary-dark transition"
+                            title="Devolver a pendientes"
+                          >
+                            ↺ Devolver a pendientes
+                          </button>
+                          <button
+                            onClick={() =>
+                              pedirConfirmacion(p.id, "eliminar_permanente")
+                            }
+                            className="bg-danger text-white px-3 py-1 rounded-md text-sm hover:bg-danger-hover transition"
+                            title="Eliminar permanentemente"
+                          >
+                            🗑 Eliminar permanentemente
+                          </button>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>
