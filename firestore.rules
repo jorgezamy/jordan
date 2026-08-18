@@ -1,0 +1,41 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null && request.auth.token.admin == true;
+    }
+
+    function isValidPeticionCreate() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['numero', 'nombre', 'texto', 'estado', 'fechaCreacion', 'telefono', 'correo'])
+        && d.keys().hasAll(['numero', 'nombre', 'texto', 'estado', 'fechaCreacion'])
+        && d.estado == 'pendiente'
+        && d.numero is int && d.numero > 0
+        && d.nombre is string && d.nombre.size() > 0 && d.nombre.size() <= 80
+        && d.texto is string && d.texto.size() > 0 && d.texto.size() <= 8000
+        && d.fechaCreacion == request.time
+        && (!('telefono' in d) || (d.telefono is string && d.telefono.size() <= 40))
+        && (!('correo' in d) || (d.correo is string && d.correo.size() <= 120));
+    }
+
+    match /peticiones/{id} {
+      allow read: if true;
+      allow create: if isValidPeticionCreate();
+      allow update, delete: if isAdmin();
+    }
+
+    match /metadata/counters {
+      allow get: if true;
+      allow update: if isAdmin()
+        || (request.resource.data.keys().hasOnly(['peticionesCount'])
+            && request.resource.data.peticionesCount == resource.data.peticionesCount + 1);
+      allow create, delete: if isAdmin();
+    }
+
+    match /rateLimits/{key} {
+      allow read, write: if false;
+    }
+  }
+}

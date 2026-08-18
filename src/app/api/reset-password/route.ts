@@ -1,17 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { initializeApp, cert, getApps } from "firebase-admin/app";
 import { getAuth } from "firebase-admin/auth";
 import { Resend } from "resend";
-
-if (!getApps().length) {
-  initializeApp({
-    credential: cert({
-      projectId: process.env.FIREBASE_ADMIN_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_ADMIN_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_ADMIN_PRIVATE_KEY?.replace(/\\n/g, "\n"),
-    }),
-  });
-}
+import { getAdminApp } from "../../../lib/firebaseAdmin";
+import { checkRateLimit } from "../../../lib/rateLimit";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -22,8 +13,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Email requerido" }, { status: 400 });
   }
 
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  if (!(await checkRateLimit(`reset-password:${ip}`, { max: 5, windowMs: 60 * 60 * 1000 }))) {
+    return NextResponse.json({ error: "Demasiadas solicitudes" }, { status: 429 });
+  }
+
   try {
-    const resetLink = await getAuth().generatePasswordResetLink(email);
+    const resetLink = await getAuth(getAdminApp()).generatePasswordResetLink(email);
 
     await resend.emails.send({
       from: "onboarding@resend.dev",

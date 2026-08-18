@@ -1,0 +1,15 @@
+[
+  {
+    "relation": [
+      "delegate_permission/common.handle_all_urls",
+      "delegate_permission/common.use_as_origin"
+    ],
+    "target": {
+      "namespace": "android_app",
+      "package_name": "com.centrocristianojordan.app",
+      "sha256_cert_fingerprints": [
+        "REEMPLAZA_ESTO_CON_EL_FINGERPRINT_DEL_UPLOAD_KEYSTORE_DE_BUBBLEWRAP"
+      ]
+    }
+  }
+]

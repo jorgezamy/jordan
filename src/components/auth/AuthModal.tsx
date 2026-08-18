@@ -3,8 +3,6 @@
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 
-const SECRET_WORD = "12345";
-
 interface AuthModalProps {
   onClose: () => void;
   defaultTab?: "login" | "register" | "forgot";
@@ -129,10 +127,6 @@ export default function AuthModal({
     e.preventDefault();
     setError("");
 
-    if (secretWord !== SECRET_WORD) {
-      setError("Palabra secreta incorrecta.");
-      return;
-    }
     if (password !== confirmPassword) {
       setError("Las contraseñas no coinciden.");
       return;
@@ -144,11 +138,10 @@ export default function AuthModal({
 
     setLoading(true);
     try {
-      await register(email, password);
+      await register(email, password, secretWord);
       onClose();
     } catch (err: unknown) {
-      const code = (err as { code?: string }).code ?? "";
-      setError(getFirebaseError(code));
+      setError(err instanceof Error ? err.message : "Ocurrió un error. Intenta de nuevo.");
     } finally {
       setLoading(false);
     }

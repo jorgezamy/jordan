@@ -4,6 +4,7 @@ import { useState, useEffect, useMemo } from "react";
 
 import { db } from "../../../firebaseConfig";
 import { useAuth } from "../../context/AuthContext";
+import NotificationPrompt from "../notifications/NotificationPrompt";
 
 import {
   collection,
@@ -206,6 +207,12 @@ export default function Peticiones() {
       setMensajeExito("✅ Petición creada exitosamente");
       setTimeout(() => setMensajeExito(""), 3000);
 
+      fetch("/api/peticiones/notify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: newDocRef.id }),
+      }).catch((err) => console.error("❌ Error enviando notificación:", err));
+
       setNombre("");
       setAnonimo(false);
       setTelefono("");
@@ -303,6 +310,8 @@ export default function Peticiones() {
       <h1 className="text-2xl font-bold text-gray-800 mb-6">
         📌 Peticiones de Oración
       </h1>
+
+      <NotificationPrompt />
 
       {/* ========================= */}
       {/* TIPO */}
