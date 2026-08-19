@@ -2,6 +2,10 @@
 
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
+import { LockIcon } from "../ui/LockIcon";
+import { TextInput } from "../ui/TextInput";
 
 interface AuthModalProps {
   onClose: () => void;
@@ -50,12 +54,13 @@ function PasswordInput({ value, onChange, placeholder = "••••••", re
   const [visible, setVisible] = useState(false);
   return (
     <div className="relative">
-      <input
+      <TextInput
+        variant="modal"
         type={visible ? "text" : "password"}
         value={value}
         onChange={onChange}
         required={required}
-        className="w-full rounded-lg border border-gray-200 dark:border-white/25 bg-white dark:bg-surface-dark px-3 py-2.5 pr-10 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary focus:dark:border-white focus:ring-2 focus:ring-primary/20 focus:dark:ring-white/20 outline-none transition-colors"
+        className="w-full rounded-lg px-3 py-2.5 pr-10"
         placeholder={placeholder}
       />
       <button
@@ -67,6 +72,14 @@ function PasswordInput({ value, onChange, placeholder = "••••••", re
         <EyeIcon open={visible} />
       </button>
     </div>
+  );
+}
+
+function FieldLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">
+      {children}
+    </label>
   );
 }
 
@@ -156,10 +169,7 @@ export default function AuthModal({
         {/* Encabezado */}
         <div className="px-8 pt-8 pb-5 text-center">
           <div className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-primary/10 dark:bg-white/10 mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-primary dark:text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
-              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
-            </svg>
+            <LockIcon className="w-5 h-5 text-primary dark:text-white" />
           </div>
           <h2 className="text-lg font-semibold text-primary dark:text-white">Área de miembros</h2>
         </div>
@@ -211,43 +221,35 @@ export default function AuthModal({
               </div>
               {success ? (
                 <div className="space-y-4">
-                  <p className="text-sm text-success-text bg-success-subtle border border-success-border rounded-lg px-3 py-2 text-center">
+                  <Alert variant="success" className="px-3 py-2 text-center">
                     {success}
-                  </p>
-                  <button
-                    onClick={() => switchTab("login")}
-                    className="w-full bg-primary text-white py-2.5 rounded-lg hover:bg-primary-dark dark:bg-primary-accent dark:hover:bg-primary-accent-hover transition font-medium"
-                  >
+                  </Alert>
+                  <Button onClick={() => switchTab("login")} className="w-full py-2.5 rounded-lg font-medium">
                     Volver al inicio de sesión
-                  </button>
+                  </Button>
                 </div>
               ) : (
                 <form onSubmit={handleForgot} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-                      Correo electrónico
-                    </label>
-                    <input
+                    <FieldLabel>Correo electrónico</FieldLabel>
+                    <TextInput
+                      variant="modal"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="w-full rounded-lg border border-gray-200 dark:border-white/25 bg-white dark:bg-surface-dark px-3 py-2.5 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary focus:dark:border-white focus:ring-2 focus:ring-primary/20 focus:dark:ring-white/20 outline-none transition-colors"
+                      className="w-full rounded-lg px-3 py-2.5"
                       placeholder="correo@ejemplo.com"
                     />
                   </div>
                   {error && (
-                    <p className="text-sm text-danger-text bg-danger-subtle border border-danger-border rounded-lg px-3 py-2">
+                    <Alert variant="danger" className="px-3 py-2">
                       {error}
-                    </p>
+                    </Alert>
                   )}
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-primary text-white py-2.5 rounded-lg hover:bg-primary-dark dark:bg-primary-accent dark:hover:bg-primary-accent-hover transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
+                  <Button type="submit" disabled={loading} className="w-full py-2.5 rounded-lg font-medium">
                     {loading ? "Enviando..." : "Enviar enlace"}
-                  </button>
+                  </Button>
                   <button
                     type="button"
                     onClick={() => switchTab("login")}
@@ -264,22 +266,19 @@ export default function AuthModal({
           {tab === "login" && (
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-                  Correo electrónico
-                </label>
-                <input
+                <FieldLabel>Correo electrónico</FieldLabel>
+                <TextInput
+                  variant="modal"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full rounded-lg border border-gray-200 dark:border-white/25 bg-white dark:bg-surface-dark px-3 py-2.5 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary focus:dark:border-white focus:ring-2 focus:ring-primary/20 focus:dark:ring-white/20 outline-none transition-colors"
+                  className="w-full rounded-lg px-3 py-2.5"
                   placeholder="correo@ejemplo.com"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-                  Contraseña
-                </label>
+                <FieldLabel>Contraseña</FieldLabel>
                 <PasswordInput
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -287,17 +286,13 @@ export default function AuthModal({
                 />
               </div>
               {error && (
-                <p className="text-sm text-danger-text bg-danger-subtle border border-danger-border rounded-lg px-3 py-2">
+                <Alert variant="danger" className="px-3 py-2">
                   {error}
-                </p>
+                </Alert>
               )}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-primary text-white py-2.5 rounded-lg hover:bg-primary-dark dark:bg-primary-accent dark:hover:bg-primary-accent-hover transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+              <Button type="submit" disabled={loading} className="w-full py-2.5 rounded-lg font-medium">
                 {loading ? "Entrando..." : "Entrar"}
-              </button>
+              </Button>
               <button
                 type="button"
                 onClick={() => switchTab("forgot")}
@@ -312,22 +307,19 @@ export default function AuthModal({
           {tab === "register" && (
             <form onSubmit={handleRegister} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-                  Correo electrónico
-                </label>
-                <input
+                <FieldLabel>Correo electrónico</FieldLabel>
+                <TextInput
+                  variant="modal"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full rounded-lg border border-gray-200 dark:border-white/25 bg-white dark:bg-surface-dark px-3 py-2.5 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary focus:dark:border-white focus:ring-2 focus:ring-primary/20 focus:dark:ring-white/20 outline-none transition-colors"
+                  className="w-full rounded-lg px-3 py-2.5"
                   placeholder="correo@ejemplo.com"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-                  Contraseña
-                </label>
+                <FieldLabel>Contraseña</FieldLabel>
                 <PasswordInput
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
@@ -336,9 +328,7 @@ export default function AuthModal({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-                  Confirmar contraseña
-                </label>
+                <FieldLabel>Confirmar contraseña</FieldLabel>
                 <PasswordInput
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
@@ -346,9 +336,7 @@ export default function AuthModal({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-                  Palabra secreta
-                </label>
+                <FieldLabel>Palabra secreta</FieldLabel>
                 <PasswordInput
                   value={secretWord}
                   onChange={(e) => setSecretWord(e.target.value)}
@@ -360,17 +348,13 @@ export default function AuthModal({
                 </p>
               </div>
               {error && (
-                <p className="text-sm text-danger-text bg-danger-subtle border border-danger-border rounded-lg px-3 py-2">
+                <Alert variant="danger" className="px-3 py-2">
                   {error}
-                </p>
+                </Alert>
               )}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-primary text-white py-2.5 rounded-lg hover:bg-primary-dark dark:bg-primary-accent dark:hover:bg-primary-accent-hover transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-              >
+              <Button type="submit" disabled={loading} className="w-full py-2.5 rounded-lg font-medium">
                 {loading ? "Registrando..." : "Crear cuenta"}
-              </button>
+              </Button>
             </form>
           )}
         </div>

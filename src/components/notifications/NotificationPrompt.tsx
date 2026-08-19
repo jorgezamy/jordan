@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useFcm } from "../../hooks/useFcm";
+import { Button } from "../ui/Button";
 
 const DISMISS_KEY = "notificaciones-descartadas";
 
@@ -28,14 +29,14 @@ export default function NotificationPrompt() {
         Activa las notificaciones para enterarte cuando se suba una petición de oración nueva.
       </p>
       <div className="flex items-center gap-2 shrink-0">
-        <button
+        <Button
           type="button"
           onClick={subscribe}
           disabled={status === "subscribing"}
-          className="bg-primary text-white text-sm px-4 py-2 rounded-lg hover:bg-primary-dark dark:bg-primary-accent dark:hover:bg-primary-accent-hover transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          className="text-sm px-4 py-2 rounded-lg font-medium"
         >
           {status === "subscribing" ? "Activando..." : "Activar notificaciones"}
-        </button>
+        </Button>
         <button
           type="button"
           onClick={handleDismiss}

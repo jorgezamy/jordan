@@ -1,37 +1,58 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Centro Cristiano Jordán
 
-## Getting Started
+Sitio web de Centro Cristiano Jordán, construido con [Next.js](https://nextjs.org) (App Router) + TypeScript. Actualmente en estado "próximamente" con una funcionalidad activa: peticiones de oración.
 
-First, run the development server:
+Para el detalle de arquitectura (Firebase, autenticación, estructura de datos, convenciones de UI, etc.), consulta **[CLAUDE.md](./CLAUDE.md)** — es la referencia técnica completa del proyecto y debe mantenerse al día con cada cambio relevante.
+
+## Stack
+
+- Next.js 16 (App Router) + TypeScript
+- Tailwind CSS v3, con tokens de color semánticos centralizados en `tailwind.config.ts`
+- Firebase (Firestore + Auth) para datos y sesión
+- Resend + Firebase Admin para envío de correos de recuperación de contraseña
+- TipTap como editor de texto enriquecido
+
+## Empezando
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Abre [http://localhost:3000](http://localhost:3000). El servidor de desarrollo también es accesible desde la red local (ver `allowedDevOrigins` en `next.config.ts`).
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Variables de entorno
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Crea un `.env.local` en la raíz (no se versiona) con:
 
-## Learn More
+- `NEXT_PUBLIC_FIREBASE_*` — credenciales del cliente de Firebase
+- `RESEND_API_KEY` — para el envío de correos de recuperación de contraseña
+- `FIREBASE_ADMIN_PROJECT_ID`, `FIREBASE_ADMIN_CLIENT_EMAIL`, `FIREBASE_ADMIN_PRIVATE_KEY` — credenciales de Firebase Admin
 
-To learn more about Next.js, take a look at the following resources:
+Ver el detalle completo en [CLAUDE.md → Resend + Firebase Admin](./CLAUDE.md#resend--firebase-admin-password-reset).
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Scripts
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```bash
+npm run dev      # Servidor de desarrollo
+npm run build    # Build de producción
+npm run lint     # Revisión con ESLint
+npm run start    # Servidor de producción
+```
 
-## Deploy on Vercel
+No hay suite de tests configurada.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Buenas prácticas del proyecto
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-"# jordan" 
+Todo cambio o funcionalidad nueva debe seguir estas reglas (detalladas en [CLAUDE.md → Development guidelines](./CLAUDE.md#development-guidelines)):
+
+- **Reutilizar componentes.** Antes de escribir un botón, input, alerta o toggle nuevo, revisa `src/components/ui/` (`Button`, `Alert`, `TextInput`, `SegmentedControl`, `LockIcon`).
+- **Colores desde tokens.** Nunca usar valores hex sueltos ni paletas por defecto de Tailwind — siempre los tokens semánticos definidos en `tailwind.config.ts`.
+- **Seguridad primero.** Ninguna validación del lado del cliente reemplaza autorización real del lado del servidor / reglas de Firestore. No exponer datos sensibles (`telefono`, `correo`, peticiones canceladas) a usuarios no autenticados.
+- Verificar con `npx tsc --noEmit` (y `npm run build` en cambios grandes) antes de dar por terminado un cambio.
+
+## Aprender más
+
+- [Documentación de Next.js](https://nextjs.org/docs)
+- [Documentación de Firebase](https://firebase.google.com/docs)
+- [Documentación de Tailwind CSS](https://tailwindcss.com/docs)

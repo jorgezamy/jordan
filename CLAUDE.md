@@ -13,6 +13,15 @@ npm run start    # Start production server
 
 No test suite is configured.
 
+## Development guidelines
+
+Apply these on **every** new feature or change, not only when explicitly asked:
+
+- **Reuse before creating.** Check `src/components/ui/` (see [Component conventions](#component-conventions)) for an existing primitive — `Button`, `Alert`, `TextInput`, `SegmentedControl`, `LockIcon` — before writing new button/input/alert/pill-toggle markup. If a UI pattern will appear more than once, extract it into `src/components/ui/` instead of duplicating it.
+- **Colors always come from tokens.** Never hardcode a hex value (`bg-[#...]`) or use Tailwind's built-in palettes (`indigo-*`, `red-*`, `green-*`, etc.). Use the semantic tokens in `tailwind.config.ts` (see [Styling](#styling)); add a new token there if a genuinely new color is needed, so every future palette change happens in one file.
+- **Security first.** Validate and authorize on the server, not just the client — client-only checks (like the register secret word) are UX gates, not security boundaries, and should not be relied on for anything sensitive. Keep Firestore rules in sync with what the UI assumes is protected. Never expose admin-only fields (`telefono`, `correo`, the `eliminada`/"Cancelada" state) to unauthenticated users. Keep secrets in `.env.local`; server-only vars must never use the `NEXT_PUBLIC_` prefix.
+- Before calling a change done, run `npx tsc --noEmit` (and `npm run build` for anything non-trivial).
+
 ## Architecture
 
 This is a Next.js 16 (App Router) + TypeScript project for **Centro Cristiano Jordán**, a Christian church. The site is in a "coming soon" state with one active feature: prayer requests (peticiones de oración).
@@ -124,7 +133,7 @@ Responsive header designed for a non-tech-savvy audience:
 - **"Peticiones" pill button** — always visible on all screen sizes (white pill, high contrast). It's the primary CTA and must never be hidden behind a menu.
 - **Auth is admin-only** — regular visitors never need to log in. Auth controls are de-emphasized accordingly:
   - Desktop (not logged in): white text + white border button (`border-white/70`), no background fill, hover adds `bg-white/10`
-  - Desktop (logged in): same avatar circle as mobile — click opens an absolute-positioned dropdown popover (`bg-[#002535] rounded-xl shadow-2xl`)
+  - Desktop (logged in): same avatar circle as mobile — click opens an absolute-positioned dropdown popover (`bg-primary-darker rounded-xl shadow-2xl`)
   - Mobile (not logged in): lock icon (`🔒` SVG) — recognizable but unobtrusive (`text-white/80 hover:text-white`)
   - Mobile (logged in): avatar circle with user's email initial, click opens a full-width banner dropdown below the header
 - **`UserMenuContent`** — internal component defined at the top of `header/page.tsx` that renders the shared dropdown content (email + logout button). Both desktop popover and mobile banner use it, so styling changes only need to happen in one place. Email is `text-white` (no transparency). Logout button matches the "Iniciar sesión" style (`border-white/70`, `hover:bg-white/10`).
@@ -138,6 +147,18 @@ Responsive header designed for a non-tech-savvy audience:
 - Exception: new components like `AuthModal` use `ComponentName.tsx` directly inside `src/components/auth/`
 - `reactStrictMode` is disabled in `next.config.ts` (intentional, related to TipTap SSR)
 
+**Shared UI primitives** live in `src/components/ui/` (`ComponentName.tsx`, imported directly — not re-exported through `index.ts`). Reuse these instead of re-writing button/input/alert/toggle markup:
+
+| Component | Purpose | Notes |
+|---|---|---|
+| `Button` | All colored buttons | `variant`: `primary` (default) / `secondary` / `success` / `danger`. Only supplies color + transition + disabled styling — pass padding/radius/width via `className` |
+| `Alert` | Success/error message boxes | `variant`: `success` / `danger`. Only supplies color + border + rounded + text size — pass padding/alignment via `className` |
+| `TextInput` | Text/email/password inputs | `variant`: `modal` (neutral gray border, used in `AuthModal`) / `form` (default, thicker primary-colored border, used in Peticiones). Pass width/radius/padding via `className` |
+| `SegmentedControl<T>` | Pill toggle groups | Generic over `options`/`value`/`onChange`; pass container layout via `className` and per-option sizing via `optionClassName` |
+| `LockIcon` | Shared lock SVG | Used by the header's mobile auth trigger and `AuthModal`'s header badge; `strokeWidth` prop |
+
+When adding a new button/input/alert/toggle, extend or compose one of these rather than hand-rolling the Tailwind classes again.
+
 ### Styling
 
 Tailwind CSS v3. No separate design system — styles are inline Tailwind classes.
@@ -148,6 +169,7 @@ Tailwind CSS v3. No separate design system — styles are inline Tailwind classe
 |---|---|---|
 | `primary` | `#003241` | Header bg, borders, text, rings |
 | `primary-dark` | `#004d63` | Hover state for primary buttons (`hover:bg-primary-dark`) |
+| `primary-darker` | `#002535` | Header user-menu dropdown background (`bg-primary-darker`) |
 | `danger` | `#ef4444` | Delete/cancel buttons (`bg-danger`) |
 | `danger-hover` | `#dc2626` | Hover on delete buttons (`hover:bg-danger-hover`) |
 | `danger-subtle` | `#fef2f2` | Error alert background (`bg-danger-subtle`) |

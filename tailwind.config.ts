@@ -17,6 +17,7 @@ export default {
         primary: {
           DEFAULT: "#003241",
           dark: "#004d63",
+          darker: "#002535",
           accent: "#0ea5e9",
           "accent-hover": "#38bdf8",
         },

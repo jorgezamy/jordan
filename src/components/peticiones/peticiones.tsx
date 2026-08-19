@@ -5,6 +5,10 @@ import { useState, useEffect, useMemo } from "react";
 import { db } from "../../../firebaseConfig";
 import { useAuth } from "../../context/AuthContext";
 import NotificationPrompt from "../notifications/NotificationPrompt";
+import { Alert } from "../ui/Alert";
+import { Button } from "../ui/Button";
+import { SegmentedControl } from "../ui/SegmentedControl";
+import { TextInput } from "../ui/TextInput";
 
 import {
   collection,
@@ -41,6 +45,11 @@ const ESTADO_ORDEN = {
   resuelto: 2,
   eliminada: 3,
 };
+
+const ORDEN_OPCIONES = [
+  { key: "desc" as const, label: "Más reciente" },
+  { key: "asc" as const, label: "Más antigua" },
+];
 
 function formatFecha(timestamp?: Timestamp) {
   if (!timestamp) return "";
@@ -356,14 +365,14 @@ export default function Peticiones() {
           Nombre
         </label>
 
-        <input
+        <TextInput
           type="text"
           value={nombre}
           disabled={anonimo}
           maxLength={80}
           onChange={(e) => setNombre(e.target.value)}
           placeholder={anonimo ? "Anónimo" : "Escribe aquí el nombre..."}
-          className="w-full rounded-lg border-2 border-primary/40 dark:border-white/40 bg-gray-50 dark:bg-white/5 px-3 py-2 shadow-sm focus:border-primary focus:dark:border-white focus:ring-2 focus:ring-primary focus:dark:ring-white disabled:bg-gray-200 disabled:dark:bg-white/10"
+          className="w-full rounded-lg px-3 py-2"
         />
       </div>
 
@@ -392,13 +401,13 @@ export default function Peticiones() {
               Teléfono{" "}
               <span className="text-gray-400 dark:text-gray-500 font-normal">(opcional)</span>
             </label>
-            <input
+            <TextInput
               type="tel"
               value={telefono}
               onChange={(e) => setTelefono(e.target.value)}
               maxLength={20}
               placeholder="Ej. 55 1234 5678"
-              className="w-full rounded-lg border-2 border-primary/40 dark:border-white/40 bg-gray-50 dark:bg-white/5 px-3 py-2 shadow-sm focus:border-primary focus:dark:border-white focus:ring-2 focus:ring-primary focus:dark:ring-white"
+              className="w-full rounded-lg px-3 py-2"
             />
           </div>
 
@@ -407,13 +416,13 @@ export default function Peticiones() {
               Correo electrónico{" "}
               <span className="text-gray-400 dark:text-gray-500 font-normal">(opcional)</span>
             </label>
-            <input
+            <TextInput
               type="email"
               value={correo}
               onChange={(e) => setCorreo(e.target.value)}
               maxLength={80}
               placeholder="Ej. nombre@correo.com"
-              className="w-full rounded-lg border-2 border-primary/40 dark:border-white/40 bg-gray-50 dark:bg-white/5 px-3 py-2 shadow-sm focus:border-primary focus:dark:border-white focus:ring-2 focus:ring-primary focus:dark:ring-white"
+              className="w-full rounded-lg px-3 py-2"
             />
           </div>
         </div>
@@ -439,22 +448,22 @@ export default function Peticiones() {
       {/* BOTÓN */}
       {/* ========================= */}
 
-      <button
+      <Button
         onClick={guardarPeticion}
         disabled={guardando}
-        className="w-full bg-primary text-white py-2 rounded-lg hover:bg-primary-dark dark:bg-primary-accent dark:hover:bg-primary-accent-hover transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full py-2 rounded-lg font-medium"
       >
         {guardando ? "AGREGANDO..." : "AGREGAR PETICIÓN"}
-      </button>
+      </Button>
 
       {/* ========================= */}
       {/* MENSAJE */}
       {/* ========================= */}
 
       {mensajeExito && (
-        <div className="mt-4 bg-success-subtle border border-success-border text-success-text px-4 py-3 rounded-lg text-sm text-center animate-pulse">
+        <Alert variant="success" className="mt-4 px-4 py-3 text-center animate-pulse">
           {mensajeExito}
-        </div>
+        </Alert>
       )}
 
       {/* ========================= */}
@@ -479,12 +488,12 @@ export default function Peticiones() {
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.35-4.35" />
           </svg>
-          <input
+          <TextInput
             type="text"
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
             placeholder="Buscar por nombre, descripción o número."
-            className="w-full rounded-full border-2 border-primary/40 dark:border-white/40 bg-gray-50 dark:bg-white/5 pl-9 pr-9 py-2 text-sm focus:border-primary focus:dark:border-white focus:ring-2 focus:ring-primary focus:dark:ring-white focus:outline-none"
+            className="w-full rounded-full pl-9 pr-9 py-2 text-sm"
           />
           {busqueda && (
             <button
@@ -500,46 +509,23 @@ export default function Peticiones() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex w-full sm:w-auto rounded-lg border border-primary/30 dark:border-white/30 bg-gray-50 dark:bg-white/5 p-0.5">
-            {estadoOpciones.map((opt) => (
-              <button
-                key={opt.key}
-                onClick={() => setEstadoFiltro(opt.key)}
-                className={`flex-1 sm:flex-none text-center py-2 sm:py-1.5 sm:px-3 sm:text-sm font-medium rounded-md transition ${
-                  user ? "px-1 text-xs" : "px-2 text-sm"
-                } ${
-                  estadoFiltro === opt.key
-                    ? "bg-primary text-white dark:bg-primary-accent"
-                    : "text-primary/70 dark:text-white/70 hover:bg-primary/10 hover:dark:bg-white/10"
-                }`}
-              >
-                {opt.label}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            options={estadoOpciones}
+            value={estadoFiltro}
+            onChange={setEstadoFiltro}
+            className="flex w-full sm:w-auto"
+            optionClassName={`flex-1 sm:flex-none py-2 sm:py-1.5 sm:px-3 sm:text-sm ${
+              user ? "px-1 text-xs" : "px-2 text-sm"
+            }`}
+          />
 
-          <div className="grid grid-cols-2 mx-auto sm:flex sm:mx-0 sm:ml-auto rounded-lg border border-primary/30 dark:border-white/30 bg-gray-50 dark:bg-white/5 p-0.5">
-            <button
-              onClick={() => setOrdenAsc(false)}
-              className={`text-center px-4 py-2 sm:px-3 sm:py-1.5 text-sm font-medium rounded-md transition ${
-                !ordenAsc
-                  ? "bg-primary text-white dark:bg-primary-accent"
-                  : "text-primary/70 dark:text-white/70 hover:bg-primary/10 hover:dark:bg-white/10"
-              }`}
-            >
-              Más reciente
-            </button>
-            <button
-              onClick={() => setOrdenAsc(true)}
-              className={`text-center px-4 py-2 sm:px-3 sm:py-1.5 text-sm font-medium rounded-md transition ${
-                ordenAsc
-                  ? "bg-primary text-white dark:bg-primary-accent"
-                  : "text-primary/70 dark:text-white/70 hover:bg-primary/10 hover:dark:bg-white/10"
-              }`}
-            >
-              Más antigua
-            </button>
-          </div>
+          <SegmentedControl
+            options={ORDEN_OPCIONES}
+            value={ordenAsc ? "asc" : "desc"}
+            onChange={(key) => setOrdenAsc(key === "asc")}
+            className="grid grid-cols-2 mx-auto sm:flex sm:mx-0 sm:ml-auto"
+            optionClassName="px-4 py-2 sm:px-3 sm:py-1.5 text-sm"
+          />
         </div>
       </div>
 
@@ -691,40 +677,45 @@ export default function Peticiones() {
                               : "¿Eliminar esta petición de forma permanente? Esta acción no se puede deshacer."}
                       </p>
                       <div className="flex gap-2">
-                        <button
+                        <Button
                           onClick={() =>
                             ejecutarAccion(p.id, confirmando.accion)
                           }
-                          className={`px-4 py-1.5 rounded-md text-sm text-white font-medium transition ${confirmando.accion === "resuelto" ||
-                            confirmando.accion === "restaurar"
-                            ? "bg-success hover:bg-success-hover"
-                            : "bg-danger hover:bg-danger-hover"
-                            }`}
+                          variant={
+                            confirmando.accion === "resuelto" ||
+                              confirmando.accion === "restaurar"
+                              ? "success"
+                              : "danger"
+                          }
+                          className="px-4 py-1.5 rounded-md text-sm font-medium"
                         >
                           Sí, confirmar
-                        </button>
-                        <button
+                        </Button>
+                        <Button
                           onClick={cancelarConfirmacion}
-                          className="px-4 py-1.5 rounded-md text-sm bg-gray-100 dark:bg-white/10 dark:border dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:dark:bg-white/20 transition"
+                          variant="secondary"
+                          className="px-4 py-1.5 rounded-md text-sm"
                         >
                           Cancelar
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   ) : (
                     <div className="flex gap-2 justify-center">
                       {p.estado === "pendiente" && (
                         <>
-                          <button
+                          <Button
                             onClick={() => pedirConfirmacion(p.id, "resuelto")}
-                            className="bg-success text-white px-3 py-1 rounded-md text-sm hover:bg-success-hover transition"
+                            variant="success"
+                            className="px-3 py-1 rounded-md text-sm"
                             title="Marcar como resuelta"
                           >
                             ✔
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             onClick={() => pedirConfirmacion(p.id, "eliminada")}
-                            className="flex items-center justify-center bg-danger text-white px-3 py-1 rounded-md text-sm hover:bg-danger-hover transition"
+                            variant="danger"
+                            className="flex items-center justify-center px-3 py-1 rounded-md text-sm"
                             title="Cancelar petición"
                           >
                             <svg
@@ -738,36 +729,37 @@ export default function Peticiones() {
                             >
                               <path d="M6 6l12 12M18 6 6 18" />
                             </svg>
-                          </button>
+                          </Button>
                         </>
                       )}
                       {p.estado === "resuelto" && (
-                        <button
+                        <Button
                           onClick={() => pedirConfirmacion(p.id, "restaurar")}
-                          className="bg-primary text-white px-3 py-1 rounded-md text-sm hover:bg-primary-dark dark:bg-primary-accent dark:hover:bg-primary-accent-hover transition"
+                          className="px-3 py-1 rounded-md text-sm"
                           title="Devolver a pendientes"
                         >
                           ↺ Devolver a pendientes
-                        </button>
+                        </Button>
                       )}
                       {p.estado === "eliminada" && (
                         <>
-                          <button
+                          <Button
                             onClick={() => pedirConfirmacion(p.id, "restaurar")}
-                            className="bg-primary text-white px-3 py-1 rounded-md text-sm hover:bg-primary-dark dark:bg-primary-accent dark:hover:bg-primary-accent-hover transition"
+                            className="px-3 py-1 rounded-md text-sm"
                             title="Devolver a pendientes"
                           >
                             ↺ Devolver a pendientes
-                          </button>
-                          <button
+                          </Button>
+                          <Button
                             onClick={() =>
                               pedirConfirmacion(p.id, "eliminar_permanente")
                             }
-                            className="bg-danger text-white px-3 py-1 rounded-md text-sm hover:bg-danger-hover transition"
+                            variant="danger"
+                            className="px-3 py-1 rounded-md text-sm"
                             title="Eliminar permanentemente"
                           >
                             🗑 Eliminar permanentemente
-                          </button>
+                          </Button>
                         </>
                       )}
                     </div>
