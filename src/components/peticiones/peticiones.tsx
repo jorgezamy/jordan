@@ -1,318 +1,59 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { EditorContent } from "@tiptap/react";
 
-import { db } from "../../../firebaseConfig";
 import { useAuth } from "../../context/AuthContext";
+import { useMensajeTemporal } from "../../hooks/useMensajeTemporal";
 import NotificationPrompt from "../notifications/NotificationPrompt";
 import { Alert } from "../ui/Alert";
 import { Button } from "../ui/Button";
 import { SegmentedControl } from "../ui/SegmentedControl";
 import { TextInput } from "../ui/TextInput";
 
-import {
-  collection,
-  runTransaction,
-  updateDoc,
-  deleteDoc,
-  doc,
-  onSnapshot,
-  serverTimestamp,
-  Timestamp,
-  query,
-  orderBy,
-  limit,
-} from "firebase/firestore";
-
-import { useEditor, EditorContent } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-
-interface Peticion {
-  id: string;
-  nombre: string;
-  texto: string;
-  estado: "pendiente" | "resuelto" | "eliminada";
-  fechaCreacion: Timestamp;
-  fechaResuelta?: Timestamp;
-  fechaEliminada?: Timestamp;
-  telefono?: string;
-  correo?: string;
-  numero?: number;
-}
-
-const ESTADO_ORDEN = {
-  pendiente: 1,
-  resuelto: 2,
-  eliminada: 3,
-};
-
-const ORDEN_OPCIONES = [
-  { key: "desc" as const, label: "Más reciente" },
-  { key: "asc" as const, label: "Más antigua" },
-];
-
-function formatFecha(timestamp?: Timestamp) {
-  if (!timestamp) return "";
-
-  return new Intl.DateTimeFormat("es-MX", {
-    day: "numeric",
-    month: "long",
-    year: "numeric",
-    hour: "numeric",
-    minute: "2-digit",
-  }).format(timestamp.toDate());
-}
+import { ORDEN_OPCIONES } from "./constants";
+import { formatFecha } from "./utils";
+import { useNuevaPeticion } from "./useNuevaPeticion";
+import { usePeticionesData } from "./usePeticionesData";
+import { usePeticionesFiltro } from "./usePeticionesFiltro";
 
 export default function Peticiones() {
   const { user } = useAuth();
-  const [confirmando, setConfirmando] = useState<{
-    id: string;
-    accion: "resuelto" | "eliminada" | "restaurar" | "eliminar_permanente";
-  } | null>(null);
-  const [nombre, setNombre] = useState("");
-  const [anonimo, setAnonimo] = useState(false);
-  const [telefono, setTelefono] = useState("");
-  const [correo, setCorreo] = useState("");
-  const [peticionesRaw, setPeticionesRaw] = useState<Peticion[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [guardando, setGuardando] = useState(false);
-  const [mensajeExito, setMensajeExito] = useState("");
-  const [busqueda, setBusqueda] = useState("");
-  const [estadoFiltro, setEstadoFiltro] = useState<
-    "todos" | "pendiente" | "resuelto" | "eliminada"
-  >("todos");
-  const [ordenAsc, setOrdenAsc] = useState(false);
+  const { mensaje: mensajeExito, mostrarMensaje } = useMensajeTemporal();
 
-  const peticionesQuery = useMemo(
-    () =>
-      query(
-        collection(db, "peticiones"),
-        orderBy("fechaCreacion", "desc"),
-        limit(50),
-      ),
-    [],
-  );
+  const {
+    nombre,
+    anonimo,
+    telefono,
+    correo,
+    guardando,
+    editor,
+    setNombre,
+    setTelefono,
+    setCorreo,
+    elegirEsMi,
+    elegirAnonimo,
+    guardarPeticion,
+  } = useNuevaPeticion(mostrarMensaje);
 
-  const editor = useEditor({
-    extensions: [StarterKit],
+  const {
+    peticiones,
+    loading,
+    confirmando,
+    pedirConfirmacion,
+    cancelarConfirmacion,
+    ejecutarAccion,
+  } = usePeticionesData(user, mostrarMensaje);
 
-    immediatelyRender: false,
-
-    content: "",
-
-    editorProps: {
-      attributes: {
-        class:
-          "min-h-[100px] outline-none p-2 text-gray-700 dark:text-gray-300 prose prose-sm max-w-none",
-      },
-    },
-  });
-
-  useEffect(() => {
-    const unsubscribe = onSnapshot(
-      peticionesQuery,
-
-      (snapshot) => {
-        const docs = snapshot.docs.map((docSnap) => ({
-          id: docSnap.id,
-          ...docSnap.data(),
-        })) as Peticion[];
-
-        setPeticionesRaw(docs);
-        setLoading(false);
-      },
-
-      (error) => {
-        console.error("❌ Firebase Error:", error);
-        setLoading(false);
-      },
-    );
-
-    return () => unsubscribe();
-  }, [peticionesQuery]);
-
-  const peticiones = useMemo(() => {
-    const ahora = new Date();
-
-    const docsFiltrados = peticionesRaw.filter((p) => {
-      if (p.estado === "pendiente") {
-        return true;
-      }
-
-      if (p.estado === "resuelto" && p.fechaResuelta) {
-        const fechaResuelta = p.fechaResuelta.toDate();
-        const unMesDespues = new Date(fechaResuelta);
-        unMesDespues.setMonth(unMesDespues.getMonth() + 1);
-        return ahora <= unMesDespues;
-      }
-
-      if (p.estado === "eliminada") {
-        // Las peticiones eliminadas solo son visibles para usuarios con sesión iniciada.
-        if (!user || !p.fechaEliminada) return false;
-        const fechaEliminada = p.fechaEliminada.toDate();
-        const dosSemanasDespues = new Date(fechaEliminada);
-        dosSemanasDespues.setDate(dosSemanasDespues.getDate() + 14);
-        return ahora <= dosSemanasDespues;
-      }
-
-      return false;
-    });
-
-    docsFiltrados.sort(
-      (a, b) => ESTADO_ORDEN[a.estado] - ESTADO_ORDEN[b.estado],
-    );
-
-    return docsFiltrados;
-  }, [peticionesRaw, user]);
-
-  useEffect(() => {
-    if (!user && estadoFiltro === "eliminada") {
-      setEstadoFiltro("todos");
-    }
-  }, [user, estadoFiltro]);
-
-  const guardarPeticion = async () => {
-    if (!editor || guardando) return;
-
-    const textoPlano = editor.getText().trim();
-
-    if (!anonimo && !nombre.trim()) {
-      return alert("Debes escribir el nombre.");
-    }
-
-    if (!textoPlano) {
-      return alert("Debes escribir una petición.");
-    }
-
-    if (textoPlano.length > 1000) {
-      return alert("Máximo 1000 caracteres.");
-    }
-
-    try {
-      setGuardando(true);
-
-      const newDocRef = doc(collection(db, "peticiones"));
-      const counterRef = doc(db, "metadata", "counters");
-
-      await runTransaction(db, async (transaction) => {
-        const counterSnap = await transaction.get(counterRef);
-        const current = counterSnap.exists()
-          ? (counterSnap.data().peticionesCount ?? 0)
-          : 0;
-        const next = current + 1;
-
-        transaction.set(counterRef, { peticionesCount: next }, { merge: true });
-        transaction.set(newDocRef, {
-          numero: next,
-          nombre: anonimo ? "Anónimo" : nombre.trim(),
-          texto: editor.getHTML(),
-          estado: "pendiente",
-          fechaCreacion: serverTimestamp(),
-          ...(telefono.trim() ? { telefono: telefono.trim() } : {}),
-          ...(correo.trim() ? { correo: correo.trim() } : {}),
-        });
-      });
-
-      setMensajeExito("✅ Petición creada exitosamente");
-      setTimeout(() => setMensajeExito(""), 3000);
-
-      fetch("/api/peticiones/notify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: newDocRef.id }),
-      }).catch((err) => console.error("❌ Error enviando notificación:", err));
-
-      setNombre("");
-      setAnonimo(false);
-      setTelefono("");
-      setCorreo("");
-      editor.commands.clearContent();
-    } catch (error) {
-      console.error("❌ Error guardando:", error);
-      alert("Ocurrió un error al guardar.");
-    } finally {
-      setGuardando(false);
-    }
-  };
-
-  const pedirConfirmacion = (
-    id: string,
-    accion: "resuelto" | "eliminada" | "restaurar" | "eliminar_permanente",
-  ) => {
-    setConfirmando({ id, accion });
-  };
-
-  const cancelarConfirmacion = () => setConfirmando(null);
-
-  const ejecutarAccion = async (
-    id: string,
-    accion: "resuelto" | "eliminada" | "restaurar" | "eliminar_permanente",
-  ) => {
-    setConfirmando(null);
-    try {
-      const docRef = doc(db, "peticiones", id);
-      let mensaje = "";
-
-      if (accion === "eliminar_permanente") {
-        await deleteDoc(docRef);
-        mensaje = "🗑️ Petición eliminada permanentemente";
-      } else if (accion === "restaurar") {
-        await updateDoc(docRef, { estado: "pendiente" });
-        mensaje = "↩️ Petición devuelta a pendientes";
-      } else {
-        await updateDoc(docRef, {
-          estado: accion,
-          ...(accion === "resuelto"
-            ? { fechaResuelta: serverTimestamp() }
-            : { fechaEliminada: serverTimestamp() }),
-        });
-        mensaje =
-          accion === "resuelto"
-            ? "✅ Petición marcada como resuelta"
-            : "🚫 Petición cancelada";
-      }
-
-      setMensajeExito(mensaje);
-      setTimeout(() => setMensajeExito(""), 3000);
-    } catch (error) {
-      console.error("❌ Error actualizando:", error);
-      alert("Ocurrió un error.");
-    }
-  };
-
-  const estadoOpciones = useMemo(
-    () => [
-      { key: "todos" as const, label: "Todas" },
-      { key: "pendiente" as const, label: "Pendientes" },
-      { key: "resuelto" as const, label: "Resueltas" },
-      ...(user ? [{ key: "eliminada" as const, label: "Canceladas" }] : []),
-    ],
-    [user],
-  );
-
-  const peticionesFiltradas = useMemo(() => {
-    const term = busqueda.trim().toLowerCase();
-
-    const resultado = peticiones.filter((p) => {
-      if (estadoFiltro !== "todos" && p.estado !== estadoFiltro) return false;
-      if (!term) return true;
-      const textoPlano = p.texto.replace(/<[^>]+>/g, "").toLowerCase();
-      return (
-        p.nombre.toLowerCase().includes(term) ||
-        textoPlano.includes(term) ||
-        (p.numero !== undefined && String(p.numero).includes(term))
-      );
-    });
-
-    return [...resultado].sort((a, b) => {
-      const ordenEstado = ESTADO_ORDEN[a.estado] - ESTADO_ORDEN[b.estado];
-      if (ordenEstado !== 0) return ordenEstado;
-
-      const fechaA = a.fechaCreacion?.toMillis?.() ?? 0;
-      const fechaB = b.fechaCreacion?.toMillis?.() ?? 0;
-      return ordenAsc ? fechaA - fechaB : fechaB - fechaA;
-    });
-  }, [peticiones, busqueda, estadoFiltro, ordenAsc]);
+  const {
+    busqueda,
+    setBusqueda,
+    estadoFiltro,
+    setEstadoFiltro,
+    ordenAsc,
+    setOrdenAsc,
+    estadoOpciones,
+    peticionesFiltradas,
+  } = usePeticionesFiltro(peticiones, user);
 
   return (
     <div className="max-w-3xl mx-auto p-4 sm:p-6 bg-white dark:bg-surface-dark shadow-lg rounded-xl">
@@ -332,26 +73,12 @@ export default function Peticiones() {
 
       <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
         <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="radio"
-            checked={!anonimo}
-            onChange={() => {
-              setAnonimo(false);
-              setNombre("");
-            }}
-          />
+          <input type="radio" checked={!anonimo} onChange={elegirEsMi} />
           Es para mi / alguien más
         </label>
 
         <label className="flex items-center gap-2 cursor-pointer">
-          <input
-            type="radio"
-            checked={anonimo}
-            onChange={() => {
-              setAnonimo(true);
-              setNombre("Anónimo");
-            }}
-          />
+          <input type="radio" checked={anonimo} onChange={elegirAnonimo} />
           Anónimo
         </label>
       </div>

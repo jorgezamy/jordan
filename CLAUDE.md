@@ -20,6 +20,7 @@ Apply these on **every** new feature or change, not only when explicitly asked:
 - **Reuse before creating.** Check `src/components/ui/` (see [Component conventions](#component-conventions)) for an existing primitive — `Button`, `Alert`, `TextInput`, `SegmentedControl`, `LockIcon` — before writing new button/input/alert/pill-toggle markup. If a UI pattern will appear more than once, extract it into `src/components/ui/` instead of duplicating it.
 - **Colors always come from tokens.** Never hardcode a hex value (`bg-[#...]`) or use Tailwind's built-in palettes (`indigo-*`, `red-*`, `green-*`, etc.). Use the semantic tokens in `tailwind.config.ts` (see [Styling](#styling)); add a new token there if a genuinely new color is needed, so every future palette change happens in one file.
 - **Security first.** Validate and authorize on the server, not just the client — client-only checks (like the register secret word) are UX gates, not security boundaries, and should not be relied on for anything sensitive. Keep Firestore rules in sync with what the UI assumes is protected. Never expose admin-only fields (`telefono`, `correo`, the `eliminada`/"Cancelada" state) to unauthenticated users. Keep secrets in `.env.local`; server-only vars must never use the `NEXT_PUBLIC_` prefix.
+- **Separate logic from presentation.** A component file should stay close to pure JSX. Pull out: type/interface definitions → `types.ts`, fixed values → `constants.ts`, pure helper functions → `utils.ts`, and stateful/data logic (Firestore reads/writes, form state, derived data) → a `useXxx.ts` hook. See the `peticiones/` and `auth/` folders under [Architecture](#architecture) for the pattern to follow — a feature component should mostly just call its hook(s) and render.
 - Before calling a change done, run `npx tsc --noEmit` (and `npm run build` for anything non-trivial).
 
 ## Architecture
@@ -48,6 +49,7 @@ Password reset emails are sent via **Resend** from the API route `src/app/api/re
 - `resetPassword()` in `AuthContext` POSTs to `/api/reset-password` — it no longer calls Firebase client SDK directly
 - The API route always returns `{ ok: true }` even when the email doesn't exist (prevents email enumeration)
 - The success message in `AuthModal` is intentionally vague: "Si ese correo está registrado, recibirás un enlace en breve."
+- The HTML email itself is a pure template function, `buildResetPasswordEmail(resetLink)` in `src/lib/emails/resetPasswordEmail.ts` — the route only calls it and sends the result, it doesn't build markup inline
 
 **Required `.env.local` variables (server-side, no `NEXT_PUBLIC_` prefix):**
 ```
@@ -72,18 +74,33 @@ Auth state is managed globally via React Context in `src/context/AuthContext.tsx
 
 **Registration is invite-only:** the register form requires a secret word (`12345`) before creating the account. This is validated client-side only — it is not enforced in Firebase rules.
 
-**Login modal** lives in `src/components/auth/AuthModal.tsx`:
+**Login modal** — `src/components/auth/AuthModal.tsx` is presentation-only; all state and submit handlers live in `useAuthModal.ts` (same folder), which the component calls and destructures:
 - Three tabs/views: "Iniciar sesión" (login), "Registrarse" (register), and "forgot" (password reset — no tabs shown)
 - Register tab fields: email, password, confirm password, secret word
 - Forgot view: email input → calls `resetPassword()` from context → success message or error
-- All password fields use a shared `PasswordInput` component with an eye toggle (show/hide), each field has independent visibility state
+- Firebase error codes are mapped to Spanish copy by `getFirebaseError()` in `authErrors.ts`
+- All password fields use the shared `ui/PasswordInput` component (built on `ui/TextInput` + `ui/EyeIcon`) with an eye toggle (show/hide), each field has independent visibility state
 - Triggered from the header; closes **only via the X button** (backdrop click intentionally disabled — admins must confirm intent to close)
 
 After logout, the user is automatically signed back in anonymously so Firestore access continues.
 
 ### Peticiones (Prayer Requests) feature
 
-The core feature lives entirely in `src/components/peticiones/peticiones.tsx` as a single `"use client"` component. It:
+The feature lives in `src/components/peticiones/`, split by concern rather than as one file:
+
+| File | Responsibility |
+|---|---|
+| `peticiones.tsx` | Presentation only — calls the three hooks below and renders JSX |
+| `types.ts` | `Peticion`, `EstadoPeticion`, `EstadoFiltro`, `AccionPeticion`, `Confirmacion` |
+| `constants.ts` | `ESTADO_ORDEN`, `ORDEN_OPCIONES` |
+| `utils.ts` | `formatFecha`, `stripHtml` |
+| `useNuevaPeticion.ts` | Create-petition form state (nombre/anonimo/telefono/correo, TipTap `editor`) + `guardarPeticion()` (Firestore transaction) |
+| `usePeticionesData.ts` | Realtime Firestore subscription, visibility filtering by `user`, and moderation actions (`pedirConfirmacion`/`ejecutarAccion`) |
+| `usePeticionesFiltro.ts` | Search/estado-filter/sort UI state and the derived `peticionesFiltradas` list |
+
+Both `useNuevaPeticion` and `usePeticionesData` report success text through a `mostrarMensaje` callback — the component owns a single `useMensajeTemporal()` (`src/hooks/useMensajeTemporal.ts`, reusable anywhere a transient success/status message is needed) and passes `mostrarMensaje` into both hooks, so creation and moderation share one message slot exactly like before the split.
+
+Behavior:
 
 - Reads/writes to the Firestore `peticiones` collection (last 50, ordered by `fechaCreacion` desc)
 - Uses a realtime `onSnapshot` listener (raw docs kept in `peticionesRaw`) — no manual refresh needed
@@ -136,7 +153,8 @@ Responsive header designed for a non-tech-savvy audience:
   - Desktop (logged in): same avatar circle as mobile — click opens an absolute-positioned dropdown popover (`bg-primary-darker rounded-xl shadow-2xl`)
   - Mobile (not logged in): lock icon (`🔒` SVG) — recognizable but unobtrusive (`text-white/80 hover:text-white`)
   - Mobile (logged in): avatar circle with user's email initial, click opens a full-width banner dropdown below the header
-- **`UserMenuContent`** — internal component defined at the top of `header/page.tsx` that renders the shared dropdown content (email + logout button). Both desktop popover and mobile banner use it, so styling changes only need to happen in one place. Email is `text-white` (no transparency). Logout button matches the "Iniciar sesión" style (`border-white/70`, `hover:bg-white/10`).
+- **`UserMenuContent`** (`header/UserMenuContent.tsx`) renders the shared dropdown content (email + logout button); both desktop popover and mobile banner use it, so styling changes only need to happen in one place. Email is `text-white` (no transparency). Logout button matches the "Iniciar sesión" style (`border-white/70`, `hover:bg-white/10`).
+- **`UserAvatarButton`** (`header/UserAvatarButton.tsx`) is the circular initial-avatar trigger, reused for both the desktop and mobile logged-in states.
 - Hamburger menu is **only used for auth on mobile** — "Peticiones" is never inside it
 - `allowedDevOrigins` in `next.config.ts` includes `192.168.1.28` and `192.168.1.29` for LAN testing
 
@@ -156,6 +174,9 @@ Responsive header designed for a non-tech-savvy audience:
 | `TextInput` | Text/email/password inputs | `variant`: `modal` (neutral gray border, used in `AuthModal`) / `form` (default, thicker primary-colored border, used in Peticiones). Pass width/radius/padding via `className` |
 | `SegmentedControl<T>` | Pill toggle groups | Generic over `options`/`value`/`onChange`; pass container layout via `className` and per-option sizing via `optionClassName` |
 | `LockIcon` | Shared lock SVG | Used by the header's mobile auth trigger and `AuthModal`'s header badge; `strokeWidth` prop |
+| `EyeIcon` | Show/hide-password SVG | `open` prop toggles between the two states |
+| `PasswordInput` | Password field with visibility toggle | Wraps `TextInput` (`variant="modal"`) + `EyeIcon`; owns its own visibility state |
+| `FieldLabel` | Form field label | The `text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5` label style used across `AuthModal` |
 
 When adding a new button/input/alert/toggle, extend or compose one of these rather than hand-rolling the Tailwind classes again.
 

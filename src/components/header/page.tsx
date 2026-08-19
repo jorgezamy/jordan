@@ -7,18 +7,8 @@ import { useAuth } from "../../context/AuthContext";
 import AuthModal from "../auth/AuthModal";
 import { ThemeToggle } from "../theme/ThemeToggle";
 import { LockIcon } from "../ui/LockIcon";
-
-const UserMenuContent = ({ email, onLogout }: { email: string; onLogout: () => void }) => (
-  <>
-    <span className="text-white text-xs break-all leading-relaxed">{email}</span>
-    <button
-      onClick={onLogout}
-      className="text-white text-xs font-medium border border-white/70 rounded-md px-3 py-1.5 hover:bg-white/10 transition"
-    >
-      Cerrar sesión
-    </button>
-  </>
-);
+import { UserAvatarButton } from "./UserAvatarButton";
+import { UserMenuContent } from "./UserMenuContent";
 
 export const HeaderPage = () => {
   const { user, logout } = useAuth();
@@ -60,13 +50,7 @@ export const HeaderPage = () => {
             {/* Auth desktop */}
             {user ? (
               <div className="hidden sm:block relative">
-                <button
-                  onClick={() => setMenuOpen((v) => !v)}
-                  className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white text-xs font-bold flex items-center justify-center transition"
-                  aria-label="Menú de usuario"
-                >
-                  {initial}
-                </button>
+                <UserAvatarButton initial={initial} onClick={() => setMenuOpen((v) => !v)} />
                 {menuOpen && (
                   <div className="absolute right-0 top-full mt-2 bg-primary-darker border border-white/10 rounded-xl shadow-2xl p-4 flex flex-col gap-3 min-w-[200px] z-50">
                     <UserMenuContent email={user.email!} onLogout={handleLogout} />
@@ -85,13 +69,7 @@ export const HeaderPage = () => {
             {/* Auth móvil */}
             <div className="sm:hidden">
               {user ? (
-                <button
-                  onClick={() => setMenuOpen((v) => !v)}
-                  className="w-8 h-8 rounded-full bg-white/20 hover:bg-white/30 text-white text-xs font-bold flex items-center justify-center transition"
-                  aria-label="Menú de usuario"
-                >
-                  {initial}
-                </button>
+                <UserAvatarButton initial={initial} onClick={() => setMenuOpen((v) => !v)} />
               ) : (
                 <button
                   onClick={() => setShowModal(true)}

@@ -1,164 +1,40 @@
 "use client";
 
-import { useState } from "react";
-import { useAuth } from "../../context/AuthContext";
 import { Alert } from "../ui/Alert";
 import { Button } from "../ui/Button";
+import { FieldLabel } from "../ui/FieldLabel";
 import { LockIcon } from "../ui/LockIcon";
+import { PasswordInput } from "../ui/PasswordInput";
 import { TextInput } from "../ui/TextInput";
+import { AuthTab, useAuthModal } from "./useAuthModal";
 
 interface AuthModalProps {
   onClose: () => void;
-  defaultTab?: "login" | "register" | "forgot";
-}
-
-function getFirebaseError(code: string): string {
-  switch (code) {
-    case "auth/email-already-in-use":
-      return "Este correo ya está registrado.";
-    case "auth/invalid-email":
-      return "Correo electrónico inválido.";
-    case "auth/weak-password":
-      return "La contraseña debe tener al menos 6 caracteres.";
-    case "auth/user-not-found":
-    case "auth/wrong-password":
-    case "auth/invalid-credential":
-      return "Correo o contraseña incorrectos.";
-    default:
-      return "Ocurrió un error. Intenta de nuevo.";
-  }
-}
-
-function EyeIcon({ open }: { open: boolean }) {
-  return open ? (
-    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
-      <circle cx="12" cy="12" r="3" />
-    </svg>
-  ) : (
-    <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
-      <line x1="1" y1="1" x2="23" y2="23" />
-    </svg>
-  );
-}
-
-interface PasswordInputProps {
-  value: string;
-  onChange: (e: React.ChangeEvent<HTMLInputElement>) => void;
-  placeholder?: string;
-  required?: boolean;
-}
-
-function PasswordInput({ value, onChange, placeholder = "••••••", required }: PasswordInputProps) {
-  const [visible, setVisible] = useState(false);
-  return (
-    <div className="relative">
-      <TextInput
-        variant="modal"
-        type={visible ? "text" : "password"}
-        value={value}
-        onChange={onChange}
-        required={required}
-        className="w-full rounded-lg px-3 py-2.5 pr-10"
-        placeholder={placeholder}
-      />
-      <button
-        type="button"
-        onClick={() => setVisible((v) => !v)}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 hover:dark:text-gray-400 transition"
-        aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}
-      >
-        <EyeIcon open={visible} />
-      </button>
-    </div>
-  );
-}
-
-function FieldLabel({ children }: { children: React.ReactNode }) {
-  return (
-    <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">
-      {children}
-    </label>
-  );
+  defaultTab?: AuthTab;
 }
 
 export default function AuthModal({
   onClose,
   defaultTab = "login",
 }: AuthModalProps) {
-  const { login, register, resetPassword } = useAuth();
-  const [tab, setTab] = useState<"login" | "register" | "forgot">(defaultTab);
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [secretWord, setSecretWord] = useState("");
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
-  const [loading, setLoading] = useState(false);
-
-  const switchTab = (t: "login" | "register" | "forgot") => {
-    setTab(t);
-    setError("");
-    setSuccess("");
-    setPassword("");
-    setConfirmPassword("");
-    setSecretWord("");
-  };
-
-  const handleForgot = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setSuccess("");
-    setLoading(true);
-    try {
-      await resetPassword(email);
-      setSuccess("Si ese correo está registrado, recibirás un enlace en breve.");
-    } catch {
-      setError("Ocurrió un error. Intenta de nuevo.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-    setLoading(true);
-    try {
-      await login(email, password);
-      onClose();
-    } catch (err: unknown) {
-      const code = (err as { code?: string }).code ?? "";
-      setError(getFirebaseError(code));
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError("");
-
-    if (password !== confirmPassword) {
-      setError("Las contraseñas no coinciden.");
-      return;
-    }
-    if (password.length < 6) {
-      setError("La contraseña debe tener al menos 6 caracteres.");
-      return;
-    }
-
-    setLoading(true);
-    try {
-      await register(email, password, secretWord);
-      onClose();
-    } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Ocurrió un error. Intenta de nuevo.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const {
+    tab,
+    email,
+    setEmail,
+    password,
+    setPassword,
+    confirmPassword,
+    setConfirmPassword,
+    secretWord,
+    setSecretWord,
+    error,
+    success,
+    loading,
+    switchTab,
+    handleLogin,
+    handleRegister,
+    handleForgot,
+  } = useAuthModal(onClose, defaultTab);
 
   return (
     <div
