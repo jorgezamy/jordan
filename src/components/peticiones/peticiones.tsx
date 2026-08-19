@@ -321,7 +321,7 @@ export default function Peticiones() {
       {/* TIPO */}
       {/* ========================= */}
 
-      <div className="flex gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
+      <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="radio"
@@ -500,12 +500,14 @@ export default function Peticiones() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex flex-wrap rounded-lg border border-primary/30 dark:border-white/30 bg-gray-50 dark:bg-white/5 p-0.5">
+          <div className="flex w-full sm:w-auto rounded-lg border border-primary/30 dark:border-white/30 bg-gray-50 dark:bg-white/5 p-0.5">
             {estadoOpciones.map((opt) => (
               <button
                 key={opt.key}
                 onClick={() => setEstadoFiltro(opt.key)}
-                className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${
+                className={`flex-1 sm:flex-none text-center py-2 sm:py-1.5 sm:px-3 sm:text-sm font-medium rounded-md transition ${
+                  user ? "px-1 text-xs" : "px-2 text-sm"
+                } ${
                   estadoFiltro === opt.key
                     ? "bg-primary text-white dark:bg-primary-accent"
                     : "text-primary/70 dark:text-white/70 hover:bg-primary/10 hover:dark:bg-white/10"
@@ -516,10 +518,10 @@ export default function Peticiones() {
             ))}
           </div>
 
-          <div className="flex rounded-lg border border-primary/30 dark:border-white/30 bg-gray-50 dark:bg-white/5 p-0.5 sm:ml-auto">
+          <div className="grid grid-cols-2 mx-auto sm:flex sm:mx-0 sm:ml-auto rounded-lg border border-primary/30 dark:border-white/30 bg-gray-50 dark:bg-white/5 p-0.5">
             <button
               onClick={() => setOrdenAsc(false)}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${
+              className={`text-center px-4 py-2 sm:px-3 sm:py-1.5 text-sm font-medium rounded-md transition ${
                 !ordenAsc
                   ? "bg-primary text-white dark:bg-primary-accent"
                   : "text-primary/70 dark:text-white/70 hover:bg-primary/10 hover:dark:bg-white/10"
@@ -529,7 +531,7 @@ export default function Peticiones() {
             </button>
             <button
               onClick={() => setOrdenAsc(true)}
-              className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${
+              className={`text-center px-4 py-2 sm:px-3 sm:py-1.5 text-sm font-medium rounded-md transition ${
                 ordenAsc
                   ? "bg-primary text-white dark:bg-primary-accent"
                   : "text-primary/70 dark:text-white/70 hover:bg-primary/10 hover:dark:bg-white/10"
