@@ -55,13 +55,13 @@ function PasswordInput({ value, onChange, placeholder = "••••••", re
         value={value}
         onChange={onChange}
         required={required}
-        className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 pr-10 text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-colors"
+        className="w-full rounded-lg border border-gray-200 dark:border-white/25 bg-white dark:bg-surface-dark px-3 py-2.5 pr-10 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary focus:dark:border-white focus:ring-2 focus:ring-primary/20 focus:dark:ring-white/20 outline-none transition-colors"
         placeholder={placeholder}
       />
       <button
         type="button"
         onClick={() => setVisible((v) => !v)}
-        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition"
+        className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 hover:dark:text-gray-400 transition"
         aria-label={visible ? "Ocultar contraseña" : "Mostrar contraseña"}
       >
         <EyeIcon open={visible} />
@@ -151,22 +151,22 @@ export default function AuthModal({
     <div
       className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50 p-4"
     >
-      <div className="relative bg-white rounded-2xl shadow-2xl w-full max-w-sm">
+      <div className="relative bg-white dark:bg-surface-dark rounded-2xl shadow-2xl w-full max-w-sm">
 
         {/* Encabezado */}
         <div className="px-8 pt-8 pb-5 text-center">
-          <div className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-primary/10 mb-4">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <div className="inline-flex items-center justify-center w-11 h-11 rounded-full bg-primary/10 dark:bg-white/10 mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5 text-primary dark:text-white" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
               <path d="M7 11V7a5 5 0 0 1 10 0v4" />
             </svg>
           </div>
-          <h2 className="text-lg font-semibold text-primary">Área de miembros</h2>
+          <h2 className="text-lg font-semibold text-primary dark:text-white">Área de miembros</h2>
         </div>
 
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900 transition"
+          className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 dark:bg-white/10 dark:border dark:border-white/10 text-gray-600 dark:text-gray-400 hover:bg-gray-200 hover:dark:bg-white/20 hover:text-gray-900 hover:dark:text-white transition"
           aria-label="Cerrar"
         >
           <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
@@ -177,13 +177,13 @@ export default function AuthModal({
 
         {/* Tabs */}
         {tab !== "forgot" && (
-          <div className="flex px-8 border-b border-gray-100">
+          <div className="flex px-8 border-b border-gray-100 dark:border-white/5">
             <button
               onClick={() => switchTab("login")}
               className={`flex-1 pb-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
                 tab === "login"
-                  ? "text-primary border-primary"
-                  : "text-gray-400 border-transparent hover:text-gray-600"
+                  ? "text-primary dark:text-white border-primary dark:border-white"
+                  : "text-gray-400 dark:text-gray-500 border-transparent hover:text-gray-600 hover:dark:text-gray-400"
               }`}
             >
               Iniciar sesión
@@ -192,8 +192,8 @@ export default function AuthModal({
               onClick={() => switchTab("register")}
               className={`flex-1 pb-3 text-sm font-medium transition-colors border-b-2 -mb-px ${
                 tab === "register"
-                  ? "text-primary border-primary"
-                  : "text-gray-400 border-transparent hover:text-gray-600"
+                  ? "text-primary dark:text-white border-primary dark:border-white"
+                  : "text-gray-400 dark:text-gray-500 border-transparent hover:text-gray-600 hover:dark:text-gray-400"
               }`}
             >
               Registrarse
@@ -206,8 +206,8 @@ export default function AuthModal({
           {tab === "forgot" && (
             <div className="space-y-4">
               <div className="text-center pb-1">
-                <h3 className="text-base font-semibold text-primary">Restablecer contraseña</h3>
-                <p className="text-sm text-gray-500 mt-1">Te enviaremos un enlace a tu correo.</p>
+                <h3 className="text-base font-semibold text-primary dark:text-white">Restablecer contraseña</h3>
+                <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">Te enviaremos un enlace a tu correo.</p>
               </div>
               {success ? (
                 <div className="space-y-4">
@@ -216,7 +216,7 @@ export default function AuthModal({
                   </p>
                   <button
                     onClick={() => switchTab("login")}
-                    className="w-full bg-primary text-white py-2.5 rounded-lg hover:bg-primary-dark transition font-medium"
+                    className="w-full bg-primary text-white py-2.5 rounded-lg hover:bg-primary-dark dark:bg-primary-accent dark:hover:bg-primary-accent-hover transition font-medium"
                   >
                     Volver al inicio de sesión
                   </button>
@@ -224,7 +224,7 @@ export default function AuthModal({
               ) : (
                 <form onSubmit={handleForgot} className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1.5">
+                    <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">
                       Correo electrónico
                     </label>
                     <input
@@ -232,7 +232,7 @@ export default function AuthModal({
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-colors"
+                      className="w-full rounded-lg border border-gray-200 dark:border-white/25 bg-white dark:bg-surface-dark px-3 py-2.5 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary focus:dark:border-white focus:ring-2 focus:ring-primary/20 focus:dark:ring-white/20 outline-none transition-colors"
                       placeholder="correo@ejemplo.com"
                     />
                   </div>
@@ -244,14 +244,14 @@ export default function AuthModal({
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full bg-primary text-white py-2.5 rounded-lg hover:bg-primary-dark transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="w-full bg-primary text-white py-2.5 rounded-lg hover:bg-primary-dark dark:bg-primary-accent dark:hover:bg-primary-accent-hover transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     {loading ? "Enviando..." : "Enviar enlace"}
                   </button>
                   <button
                     type="button"
                     onClick={() => switchTab("login")}
-                    className="w-full text-sm text-gray-400 hover:text-gray-600 transition"
+                    className="w-full text-sm text-gray-400 dark:text-gray-500 hover:text-gray-600 hover:dark:text-gray-400 transition"
                   >
                     Volver al inicio de sesión
                   </button>
@@ -264,7 +264,7 @@ export default function AuthModal({
           {tab === "login" && (
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1.5">
+                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">
                   Correo electrónico
                 </label>
                 <input
@@ -272,12 +272,12 @@ export default function AuthModal({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-colors"
+                  className="w-full rounded-lg border border-gray-200 dark:border-white/25 bg-white dark:bg-surface-dark px-3 py-2.5 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary focus:dark:border-white focus:ring-2 focus:ring-primary/20 focus:dark:ring-white/20 outline-none transition-colors"
                   placeholder="correo@ejemplo.com"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1.5">
+                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">
                   Contraseña
                 </label>
                 <PasswordInput
@@ -294,14 +294,14 @@ export default function AuthModal({
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-primary text-white py-2.5 rounded-lg hover:bg-primary-dark transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-primary text-white py-2.5 rounded-lg hover:bg-primary-dark dark:bg-primary-accent dark:hover:bg-primary-accent-hover transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? "Entrando..." : "Entrar"}
               </button>
               <button
                 type="button"
                 onClick={() => switchTab("forgot")}
-                className="w-full text-sm text-gray-600 hover:text-gray-900 transition"
+                className="w-full text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 hover:dark:text-white transition"
               >
                 ¿Olvidaste tu contraseña?
               </button>
@@ -312,7 +312,7 @@ export default function AuthModal({
           {tab === "register" && (
             <form onSubmit={handleRegister} className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1.5">
+                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">
                   Correo electrónico
                 </label>
                 <input
@@ -320,12 +320,12 @@ export default function AuthModal({
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2.5 text-gray-800 placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-colors"
+                  className="w-full rounded-lg border border-gray-200 dark:border-white/25 bg-white dark:bg-surface-dark px-3 py-2.5 text-gray-800 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:border-primary focus:dark:border-white focus:ring-2 focus:ring-primary/20 focus:dark:ring-white/20 outline-none transition-colors"
                   placeholder="correo@ejemplo.com"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1.5">
+                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">
                   Contraseña
                 </label>
                 <PasswordInput
@@ -336,7 +336,7 @@ export default function AuthModal({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1.5">
+                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">
                   Confirmar contraseña
                 </label>
                 <PasswordInput
@@ -346,7 +346,7 @@ export default function AuthModal({
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-600 mb-1.5">
+                <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5">
                   Palabra secreta
                 </label>
                 <PasswordInput
@@ -355,7 +355,7 @@ export default function AuthModal({
                   placeholder="Ingresa la palabra secreta"
                   required
                 />
-                <p className="text-xs text-gray-500 mt-1.5">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1.5">
                   Solo miembros con la palabra secreta pueden registrarse.
                 </p>
               </div>
@@ -367,7 +367,7 @@ export default function AuthModal({
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full bg-primary text-white py-2.5 rounded-lg hover:bg-primary-dark transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-primary text-white py-2.5 rounded-lg hover:bg-primary-dark dark:bg-primary-accent dark:hover:bg-primary-accent-hover transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {loading ? "Registrando..." : "Crear cuenta"}
               </button>

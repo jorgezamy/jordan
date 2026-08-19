@@ -1,6 +1,7 @@
 import type { Config } from "tailwindcss";
 
 export default {
+  darkMode: "class",
   content: [
     "./src/**/*.{js,ts,jsx,tsx}",
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
@@ -12,9 +13,12 @@ export default {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        "surface-dark": "#0b2b36",
         primary: {
           DEFAULT: "#003241",
           dark: "#004d63",
+          accent: "#0ea5e9",
+          "accent-hover": "#38bdf8",
         },
         danger: {
           DEFAULT: "#ef4444",

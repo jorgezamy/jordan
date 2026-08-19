@@ -4,19 +4,19 @@ export default function Home() {
   return (
     <div className="grid grid-rows-[1fr_auto_1fr] items-center justify-items-center h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
       <div className="text-center">
-        <h1 className="text-4xl sm:text-6xl font-bold text-gray-800 mb-4">
+        <h1 className="text-4xl sm:text-6xl font-bold text-gray-800 dark:text-gray-100 mb-4">
           ¡Próximamente!
         </h1>
-        <p className="text-lg sm:text-2xl text-gray-600 mb-6">
+        <p className="text-lg sm:text-2xl text-gray-600 dark:text-gray-400 mb-6">
           Estamos trabajando para el reino de los cielos, ¡vuelve pronto!
         </p>
         <div className="flex justify-center">
           <div className="w-32 h-1 bg-gradient-to-r from-teal-400 via-teal-500 to-teal-600 rounded-full"></div>
         </div>
-        <div className="mt-6 text-sm text-gray-500">
+        <div className="mt-6 text-sm text-gray-500 dark:text-gray-400">
           <p>¡Síguenos en nuestras redes sociales para actualizaciones!</p>
         </div>
-        <div className="mt-8 flex justify-center space-x-8 text-3xl text-gray-700">
+        <div className="mt-8 flex justify-center space-x-8 text-3xl text-gray-700 dark:text-gray-300">
           <a
             href="https://www.tiktok.com/@ccristianojordan"
             target="_blank"
@@ -53,7 +53,7 @@ export default function Home() {
       </div>
 
       <div className="w-full max-w-md">
-        <div className="relative overflow-hidden rounded-3xl border border-teal-100 bg-white/80 backdrop-blur-sm shadow-[0_10px_40px_rgba(20,184,166,0.15)] p-6">
+        <div className="relative overflow-hidden rounded-3xl border border-teal-100 bg-white/80 dark:bg-surface-dark/80 backdrop-blur-sm shadow-[0_10px_40px_rgba(20,184,166,0.15)] p-6">
           <div className="absolute -top-10 -right-10 w-32 h-32 bg-teal-100 rounded-full blur-3xl opacity-60"></div>
 
           <div className="relative z-10 text-center">
@@ -61,11 +61,11 @@ export default function Home() {
               <FaWhatsapp />
             </div>
 
-            <h2 className="text-xl font-semibold text-gray-800">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-100">
               Mientras tanto...
             </h2>
 
-            <p className="mt-2 text-gray-600 leading-relaxed">
+            <p className="mt-2 text-gray-600 dark:text-gray-400 leading-relaxed">
               No te pierdas las reflexiones, mensajes y contenido exclusivo.
               Únete a nuestro canal oficial de WhatsApp.
             </p>

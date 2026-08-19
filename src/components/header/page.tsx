@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import AuthModal from "../auth/AuthModal";
+import { ThemeToggle } from "../theme/ThemeToggle";
 
 const UserMenuContent = ({ email, onLogout }: { email: string; onLogout: () => void }) => (
   <>
@@ -52,6 +53,8 @@ export const HeaderPage = () => {
             >
               Peticiones
             </Link>
+
+            <ThemeToggle />
 
             {/* Auth desktop */}
             {user ? (

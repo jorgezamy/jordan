@@ -94,7 +94,7 @@ export default function Peticiones() {
     editorProps: {
       attributes: {
         class:
-          "min-h-[100px] outline-none p-2 text-gray-700 prose prose-sm max-w-none",
+          "min-h-[100px] outline-none p-2 text-gray-700 dark:text-gray-300 prose prose-sm max-w-none",
       },
     },
   });
@@ -306,18 +306,22 @@ export default function Peticiones() {
   }, [peticiones, busqueda, estadoFiltro, ordenAsc]);
 
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-white shadow-lg rounded-xl">
-      <h1 className="text-2xl font-bold text-gray-800 mb-6">
+    <div className="max-w-3xl mx-auto p-6 bg-white dark:bg-surface-dark shadow-lg rounded-xl">
+      <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">
         📌 Peticiones de Oración
       </h1>
 
       <NotificationPrompt />
 
+      <h2 className="text-sm font-semibold text-primary/70 dark:text-white/70 uppercase tracking-wide mb-3">
+        Nueva petición
+      </h2>
+
       {/* ========================= */}
       {/* TIPO */}
       {/* ========================= */}
 
-      <div className="flex gap-4 text-sm text-gray-600 mb-4">
+      <div className="flex gap-4 text-sm text-gray-600 dark:text-gray-400 mb-4">
         <label className="flex items-center gap-2 cursor-pointer">
           <input
             type="radio"
@@ -348,7 +352,7 @@ export default function Peticiones() {
       {/* ========================= */}
 
       <div className="mb-5">
-        <label className="block text-sm font-medium text-gray-700 mb-1">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
           Nombre
         </label>
 
@@ -359,7 +363,7 @@ export default function Peticiones() {
           maxLength={80}
           onChange={(e) => setNombre(e.target.value)}
           placeholder={anonimo ? "Anónimo" : "Escribe aquí el nombre..."}
-          className="w-full rounded-lg border-2 border-primary/40 bg-gray-50 px-3 py-2 shadow-sm focus:border-primary focus:ring-2 focus:ring-primary disabled:bg-gray-200"
+          className="w-full rounded-lg border-2 border-primary/40 dark:border-white/40 bg-gray-50 dark:bg-white/5 px-3 py-2 shadow-sm focus:border-primary focus:dark:border-white focus:ring-2 focus:ring-primary focus:dark:ring-white disabled:bg-gray-200 disabled:dark:bg-white/10"
         />
       </div>
 
@@ -368,11 +372,11 @@ export default function Peticiones() {
       {/* ========================= */}
 
       <div className="mb-4">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
           Escribe aquí la necesidad
         </label>
 
-        <div className="border-2 border-primary/40 rounded-lg p-3 bg-gray-50">
+        <div className="border-2 border-primary/40 dark:border-white/40 rounded-lg p-3 bg-gray-50 dark:bg-white/5">
           <EditorContent editor={editor} />
         </div>
       </div>
@@ -381,35 +385,12 @@ export default function Peticiones() {
       {/* CONTACTO OPCIONAL */}
       {/* ========================= */}
 
-      <div className="mb-5 rounded-xl border border-primary/20 bg-primary/5 p-4">
-        <div className="flex items-center gap-2 mb-1">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 24 24"
-            fill="currentColor"
-            className="w-4 h-4 text-primary shrink-0"
-          >
-            <path
-              fillRule="evenodd"
-              d="M12 1.5a5.25 5.25 0 0 0-5.25 5.25v3a3 3 0 0 0-3 3v6.75a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3v-6.75a3 3 0 0 0-3-3v-3c0-2.9-2.35-5.25-5.25-5.25Zm3.75 8.25v-3a3.75 3.75 0 1 0-7.5 0v3h7.5Z"
-              clipRule="evenodd"
-            />
-          </svg>
-          <span className="text-sm font-semibold text-primary">
-            Información de contacto para seguimiento
-          </span>
-        </div>
-        <p className="text-sm text-primary/70 mb-4 leading-relaxed">
-          Estos datos son <strong>completamente opcionales</strong> y{" "}
-          <strong>solo serán visibles para los pastores</strong>. Nos permiten
-          dar un seguimiento personalizado a esta petición.
-        </p>
-
+      <div className="mb-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Teléfono{" "}
-              <span className="text-primary/50 font-normal">(opcional)</span>
+              <span className="text-gray-400 dark:text-gray-500 font-normal">(opcional)</span>
             </label>
             <input
               type="tel"
@@ -417,14 +398,14 @@ export default function Peticiones() {
               onChange={(e) => setTelefono(e.target.value)}
               maxLength={20}
               placeholder="Ej. 55 1234 5678"
-              className="w-full rounded-lg border border-primary/30 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary focus:outline-none"
+              className="w-full rounded-lg border-2 border-primary/40 dark:border-white/40 bg-gray-50 dark:bg-white/5 px-3 py-2 shadow-sm focus:border-primary focus:dark:border-white focus:ring-2 focus:ring-primary focus:dark:ring-white"
             />
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-primary mb-1">
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               Correo electrónico{" "}
-              <span className="text-primary/50 font-normal">(opcional)</span>
+              <span className="text-gray-400 dark:text-gray-500 font-normal">(opcional)</span>
             </label>
             <input
               type="email"
@@ -432,10 +413,26 @@ export default function Peticiones() {
               onChange={(e) => setCorreo(e.target.value)}
               maxLength={80}
               placeholder="Ej. nombre@correo.com"
-              className="w-full rounded-lg border border-primary/30 bg-white px-3 py-2 text-sm text-gray-700 shadow-sm placeholder-gray-400 focus:border-primary focus:ring-2 focus:ring-primary focus:outline-none"
+              className="w-full rounded-lg border-2 border-primary/40 dark:border-white/40 bg-gray-50 dark:bg-white/5 px-3 py-2 shadow-sm focus:border-primary focus:dark:border-white focus:ring-2 focus:ring-primary focus:dark:ring-white"
             />
           </div>
         </div>
+
+        <p className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mt-2">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="currentColor"
+            className="w-3 h-3 shrink-0"
+          >
+            <path
+              fillRule="evenodd"
+              d="M12 1.5a5.25 5.25 0 0 0-5.25 5.25v3a3 3 0 0 0-3 3v6.75a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3v-6.75a3 3 0 0 0-3-3v-3c0-2.9-2.35-5.25-5.25-5.25Zm3.75 8.25v-3a3.75 3.75 0 1 0-7.5 0v3h7.5Z"
+              clipRule="evenodd"
+            />
+          </svg>
+          Opcional — solo lo ve el equipo pastoral, para darte seguimiento personal.
+        </p>
       </div>
 
       {/* ========================= */}
@@ -445,7 +442,7 @@ export default function Peticiones() {
       <button
         onClick={guardarPeticion}
         disabled={guardando}
-        className="w-full bg-primary text-white py-2 rounded-lg hover:bg-primary-dark transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+        className="w-full bg-primary text-white py-2 rounded-lg hover:bg-primary-dark dark:bg-primary-accent dark:hover:bg-primary-accent-hover transition font-medium disabled:opacity-50 disabled:cursor-not-allowed"
       >
         {guardando ? "AGREGANDO..." : "AGREGAR PETICIÓN"}
       </button>
@@ -465,8 +462,8 @@ export default function Peticiones() {
       {/* ========================= */}
 
       <div className="mt-10 mb-6">
-        <hr className="border-t border-primary/15 mb-4" />
-        <h2 className="text-sm font-semibold text-primary/70 uppercase tracking-wide mb-3">
+        <hr className="border-t border-primary/15 dark:border-white/15 mb-4" />
+        <h2 className="text-sm font-semibold text-primary/70 dark:text-white/70 uppercase tracking-wide mb-3">
           Buscar y filtrar
         </h2>
 
@@ -477,7 +474,7 @@ export default function Peticiones() {
             fill="none"
             stroke="currentColor"
             strokeWidth={2}
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/50 pointer-events-none"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-primary/50 dark:text-white/50 pointer-events-none"
           >
             <circle cx="11" cy="11" r="8" />
             <path d="m21 21-4.35-4.35" />
@@ -487,12 +484,12 @@ export default function Peticiones() {
             value={busqueda}
             onChange={(e) => setBusqueda(e.target.value)}
             placeholder="Buscar por nombre, descripción o número."
-            className="w-full rounded-lg border-2 border-primary/40 bg-gray-50 pl-9 pr-9 py-2 text-sm focus:border-primary focus:ring-2 focus:ring-primary focus:outline-none"
+            className="w-full rounded-full border-2 border-primary/40 dark:border-white/40 bg-gray-50 dark:bg-white/5 pl-9 pr-9 py-2 text-sm focus:border-primary focus:dark:border-white focus:ring-2 focus:ring-primary focus:dark:ring-white focus:outline-none"
           />
           {busqueda && (
             <button
               onClick={() => setBusqueda("")}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 hover:bg-primary/40 text-primary transition"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 dark:bg-white/20 hover:bg-primary/40 hover:dark:bg-white/40 text-primary dark:text-white transition"
               aria-label="Limpiar búsqueda"
             >
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
@@ -503,15 +500,15 @@ export default function Peticiones() {
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <div className="flex flex-wrap rounded-lg border border-primary/30 bg-gray-50 p-0.5">
+          <div className="flex flex-wrap rounded-lg border border-primary/30 dark:border-white/30 bg-gray-50 dark:bg-white/5 p-0.5">
             {estadoOpciones.map((opt) => (
               <button
                 key={opt.key}
                 onClick={() => setEstadoFiltro(opt.key)}
                 className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${
                   estadoFiltro === opt.key
-                    ? "bg-primary text-white"
-                    : "text-primary/70 hover:bg-primary/10"
+                    ? "bg-primary text-white dark:bg-primary-accent"
+                    : "text-primary/70 dark:text-white/70 hover:bg-primary/10 hover:dark:bg-white/10"
                 }`}
               >
                 {opt.label}
@@ -519,13 +516,13 @@ export default function Peticiones() {
             ))}
           </div>
 
-          <div className="flex rounded-lg border border-primary/30 bg-gray-50 p-0.5 sm:ml-auto">
+          <div className="flex rounded-lg border border-primary/30 dark:border-white/30 bg-gray-50 dark:bg-white/5 p-0.5 sm:ml-auto">
             <button
               onClick={() => setOrdenAsc(false)}
               className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${
                 !ordenAsc
-                  ? "bg-primary text-white"
-                  : "text-primary/70 hover:bg-primary/10"
+                  ? "bg-primary text-white dark:bg-primary-accent"
+                  : "text-primary/70 dark:text-white/70 hover:bg-primary/10 hover:dark:bg-white/10"
               }`}
             >
               Más reciente
@@ -534,8 +531,8 @@ export default function Peticiones() {
               onClick={() => setOrdenAsc(true)}
               className={`px-3 py-1.5 text-sm font-medium rounded-md transition ${
                 ordenAsc
-                  ? "bg-primary text-white"
-                  : "text-primary/70 hover:bg-primary/10"
+                  ? "bg-primary text-white dark:bg-primary-accent"
+                  : "text-primary/70 dark:text-white/70 hover:bg-primary/10 hover:dark:bg-white/10"
               }`}
             >
               Más antigua
@@ -544,29 +541,31 @@ export default function Peticiones() {
         </div>
       </div>
 
+      <hr className="border-t border-primary/15 dark:border-white/15 mb-6" />
+
       {/* ========================= */}
       {/* LISTA */}
       {/* ========================= */}
 
       <div className="flex flex-wrap items-center gap-2 mb-4">
-        <h2 className="text-xl font-semibold text-gray-700 shrink-0">Lista de Peticiones</h2>
+        <h2 className="text-xl font-semibold text-gray-700 dark:text-gray-300 shrink-0">Lista de Peticiones</h2>
         {(busqueda || estadoFiltro !== "todos") && (
-          <span className="text-sm font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-full whitespace-nowrap">
+          <span className="text-sm font-semibold text-primary dark:text-white bg-primary/10 dark:bg-white/10 px-2 py-0.5 rounded-full whitespace-nowrap">
             {peticionesFiltradas.length} resultado{peticionesFiltradas.length !== 1 ? "s" : ""}
           </span>
         )}
       </div>
 
       {loading ? (
-        <p className="text-gray-500">Cargando peticiones...</p>
+        <p className="text-gray-500 dark:text-gray-400">Cargando peticiones...</p>
       ) : peticiones.length === 0 ? (
-        <p className="text-gray-500">No hay peticiones todavía.</p>
+        <p className="text-gray-500 dark:text-gray-400">No hay peticiones todavía.</p>
       ) : peticionesFiltradas.length === 0 ? (
-        <p className="text-gray-500">
+        <p className="text-gray-500 dark:text-gray-400">
           {busqueda ? (
             <>
               No se encontraron peticiones para{" "}
-              <span className="font-medium text-primary">"{busqueda}"</span>.
+              <span className="font-medium text-primary dark:text-white">"{busqueda}"</span>.
             </>
           ) : (
             "No hay peticiones con este filtro."
@@ -575,15 +574,15 @@ export default function Peticiones() {
       ) : (
         <ul className="space-y-4">
           {peticionesFiltradas.map((p) => (
-            <li key={p.id} className="p-4 rounded-lg border shadow-sm bg-white">
+            <li key={p.id} className="p-4 rounded-lg border border-gray-200 dark:border-white/10 shadow-sm bg-white dark:bg-surface-dark">
               <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-3">
                 <div className="flex items-center gap-2 min-w-0">
                   {p.numero !== undefined && (
-                    <span className="shrink-0 text-xs font-mono font-semibold text-primary/70 bg-primary/10 px-2 py-0.5 rounded-full border border-primary/20">
+                    <span className="shrink-0 text-xs font-mono font-semibold text-primary/70 dark:text-white/70 bg-primary/10 dark:bg-white/10 px-2 py-0.5 rounded-full border border-primary/20 dark:border-white/20">
                       #{p.numero}
                     </span>
                   )}
-                  <strong className="text-lg text-gray-900">{p.nombre}</strong>
+                  <strong className="text-lg text-gray-900 dark:text-white">{p.nombre}</strong>
                 </div>
 
                 <span
@@ -603,11 +602,11 @@ export default function Peticiones() {
               </div>
 
               <div
-                className="text-gray-700 text-sm mt-3 prose prose-sm max-w-none"
+                className="text-gray-700 dark:text-gray-300 text-sm mt-3 prose prose-sm max-w-none"
                 dangerouslySetInnerHTML={{ __html: p.texto }}
               />
 
-              <div className="text-sm text-gray-500 mt-3">
+              <div className="text-sm text-gray-500 dark:text-gray-400 mt-3">
                 {p.estado === "pendiente" && (
                   <span>Creada: {formatFecha(p.fechaCreacion)}</span>
                 )}
@@ -620,8 +619,8 @@ export default function Peticiones() {
               </div>
 
               {user && (p.telefono || p.correo) && (
-                <div className="mt-3 flex flex-wrap gap-3 rounded-lg bg-primary/5 border border-primary/15 px-3 py-2">
-                  <span className="flex items-center gap-1 text-sm text-primary/60 font-medium shrink-0">
+                <div className="mt-3 flex flex-wrap gap-3 rounded-lg bg-primary/5 dark:bg-white/5 border border-primary/15 dark:border-white/15 px-3 py-2">
+                  <span className="flex items-center gap-1 text-sm text-primary/60 dark:text-white/60 font-medium shrink-0">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -639,7 +638,7 @@ export default function Peticiones() {
                   {p.telefono && (
                     <a
                       href={`tel:${p.telefono}`}
-                      className="flex items-center gap-1 text-sm text-primary font-medium hover:underline"
+                      className="flex items-center gap-1 text-sm text-primary dark:text-white font-medium hover:underline"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -659,7 +658,7 @@ export default function Peticiones() {
                   {p.correo && (
                     <a
                       href={`mailto:${p.correo}`}
-                      className="flex items-center gap-1 text-sm text-primary font-medium hover:underline"
+                      className="flex items-center gap-1 text-sm text-primary dark:text-white font-medium hover:underline"
                     >
                       <svg
                         xmlns="http://www.w3.org/2000/svg"
@@ -680,7 +679,7 @@ export default function Peticiones() {
                 <div className="mt-4">
                   {confirmando?.id === p.id ? (
                     <div className="flex flex-col items-center gap-2">
-                      <p className="text-sm text-gray-600 font-medium">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 font-medium">
                         {confirmando.accion === "resuelto"
                           ? "¿Marcar esta petición como resuelta?"
                           : confirmando.accion === "eliminada"
@@ -704,7 +703,7 @@ export default function Peticiones() {
                         </button>
                         <button
                           onClick={cancelarConfirmacion}
-                          className="px-4 py-1.5 rounded-md text-sm bg-gray-100 text-gray-700 hover:bg-gray-200 transition"
+                          className="px-4 py-1.5 rounded-md text-sm bg-gray-100 dark:bg-white/10 dark:border dark:border-white/10 text-gray-700 dark:text-gray-300 hover:bg-gray-200 hover:dark:bg-white/20 transition"
                         >
                           Cancelar
                         </button>
@@ -743,7 +742,7 @@ export default function Peticiones() {
                       {p.estado === "resuelto" && (
                         <button
                           onClick={() => pedirConfirmacion(p.id, "restaurar")}
-                          className="bg-primary text-white px-3 py-1 rounded-md text-sm hover:bg-primary-dark transition"
+                          className="bg-primary text-white px-3 py-1 rounded-md text-sm hover:bg-primary-dark dark:bg-primary-accent dark:hover:bg-primary-accent-hover transition"
                           title="Devolver a pendientes"
                         >
                           ↺ Devolver a pendientes
@@ -753,7 +752,7 @@ export default function Peticiones() {
                         <>
                           <button
                             onClick={() => pedirConfirmacion(p.id, "restaurar")}
-                            className="bg-primary text-white px-3 py-1 rounded-md text-sm hover:bg-primary-dark transition"
+                            className="bg-primary text-white px-3 py-1 rounded-md text-sm hover:bg-primary-dark dark:bg-primary-accent dark:hover:bg-primary-accent-hover transition"
                             title="Devolver a pendientes"
                           >
                             ↺ Devolver a pendientes
