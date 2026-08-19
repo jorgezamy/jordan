@@ -86,11 +86,12 @@ After logout, the user is automatically signed back in anonymously so Firestore 
 
 ### Peticiones (Prayer Requests) feature
 
-The feature lives in `src/components/peticiones/`, split by concern rather than as one file:
+The feature lives in `src/components/peticiones/`, split by concern rather than as one file. `peticiones.tsx` itself is a ~35-line orchestrator: it calls the three hooks and composes the three section components, nothing else.
+
+**Hooks (logic/state):**
 
 | File | Responsibility |
 |---|---|
-| `peticiones.tsx` | Presentation only — calls the three hooks below and renders JSX |
 | `types.ts` | `Peticion`, `EstadoPeticion`, `EstadoFiltro`, `AccionPeticion`, `Confirmacion` |
 | `constants.ts` | `ESTADO_ORDEN`, `ORDEN_OPCIONES` |
 | `utils.ts` | `formatFecha`, `stripHtml` |
@@ -98,7 +99,18 @@ The feature lives in `src/components/peticiones/`, split by concern rather than 
 | `usePeticionesData.ts` | Realtime Firestore subscription, visibility filtering by `user`, and moderation actions (`pedirConfirmacion`/`ejecutarAccion`) |
 | `usePeticionesFiltro.ts` | Search/estado-filter/sort UI state and the derived `peticionesFiltradas` list |
 
-Both `useNuevaPeticion` and `usePeticionesData` report success text through a `mostrarMensaje` callback — the component owns a single `useMensajeTemporal()` (`src/hooks/useMensajeTemporal.ts`, reusable anywhere a transient success/status message is needed) and passes `mostrarMensaje` into both hooks, so creation and moderation share one message slot exactly like before the split.
+Both `useNuevaPeticion` and `usePeticionesData` report success text through a `mostrarMensaje` callback — `peticiones.tsx` owns a single `useMensajeTemporal()` (`src/hooks/useMensajeTemporal.ts`, reusable anywhere a transient success/status message is needed) and passes `mostrarMensaje` into both hooks, so creation and moderation share one message slot exactly like before the split.
+
+**Components (presentation):**
+
+| File | Renders | Props |
+|---|---|---|
+| `NuevaPeticionForm.tsx` | The whole "Nueva petición" section (tipo, nombre, editor, contacto, botón, mensaje de éxito) | `form: ReturnType<typeof useNuevaPeticion>`, `mensajeExito: string` |
+| `FiltrosPeticiones.tsx` | The "Buscar y filtrar" section (search input + the two `SegmentedControl`s) | `filtro: ReturnType<typeof usePeticionesFiltro>`, `user` |
+| `ListaPeticiones.tsx` | Heading/count pill, loading/empty/no-results states, and maps to `PeticionCard` | `data: ReturnType<typeof usePeticionesData>`, `filtro`, `user` |
+| `PeticionCard.tsx` | One `<li>`: badge/estado, texto, fecha, contacto (admin-only), moderation buttons + inline confirm | `p: Peticion`, `user`, `confirmando`, `pedirConfirmacion`, `cancelarConfirmacion`, `ejecutarAccion` |
+
+Section components take the **whole hook return value** as a single prop (`form`, `filtro`, `data` — typed via `ReturnType<typeof useXxx>` so the prop type always tracks the hook) rather than each individual field, to avoid long prop-drilling signatures; `PeticionCard` takes individual props since it's a plain list item, not a hook consumer. Follow this same shape (hook(s) in `peticiones.tsx`/`useXxx.ts`, one component per visual section, list items as their own component) for any other feature component that grows past a couple hundred lines or mixes multiple visual sections.
 
 Behavior:
 
