@@ -176,6 +176,7 @@ Responsive header designed for a non-tech-savvy audience:
 - The pattern for component files is `page.tsx` inside a named folder (e.g., `header/page.tsx`), not a flat `Header.tsx`
 - Exception: new components like `AuthModal` use `ComponentName.tsx` directly inside `src/components/auth/`
 - `reactStrictMode` is disabled in `next.config.ts` (intentional, related to TipTap SSR)
+- **Feature folders stay flat** (see `peticiones/`: components, hooks, `types.ts`, `constants.ts`, `utils.ts` all directly inside the folder, no subfolders) as long as the folder is easy to scan at a glance. Don't preemptively add `components/`/`hooks/` subfolders — only introduce that split once a single feature folder grows considerably beyond its current size (rule of thumb: comfortably more than ~10-12 files) and flat listing genuinely gets hard to read. When that split does happen, keep `types.ts`, `constants.ts`, and `utils.ts` at the feature folder's root (they're shared by both components and hooks) and only move components into `components/` and hooks into `hooks/`.
 
 **Shared UI primitives** live in `src/components/ui/` (`ComponentName.tsx`, imported directly — not re-exported through `index.ts`). Reuse these instead of re-writing button/input/alert/toggle markup:
 
