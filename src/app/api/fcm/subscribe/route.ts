@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getMessaging } from "firebase-admin/messaging";
 import { getAdminApp } from "../../../../lib/firebaseAdmin";
+import { NOTIFY_TOPIC } from "../../../../lib/fcm";
 import { checkRateLimit } from "../../../../lib/rateLimit";
-
-const NOTIFY_TOPIC = "nuevas-peticiones";
 
 export async function POST(req: NextRequest) {
   const { token } = await req.json();

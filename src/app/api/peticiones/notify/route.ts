@@ -2,9 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import { getMessaging } from "firebase-admin/messaging";
 import { getAdminApp } from "../../../../lib/firebaseAdmin";
+import { NOTIFY_TOPIC } from "../../../../lib/fcm";
 import { checkRateLimit } from "../../../../lib/rateLimit";
 
-const NOTIFY_TOPIC = "nuevas-peticiones";
 const MAX_AGE_MS = 30_000;
 
 export async function POST(req: NextRequest) {

@@ -1,9 +1,19 @@
 import type { Metadata } from "next";
+import { ReactNode } from "react";
 
 export const metadata: Metadata = {
   title: "Política de privacidad — Centro Cristiano Jordán",
   description: "Cómo el Centro Cristiano Jordán recopila, usa y protege tu información.",
 };
+
+function PolicySection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="space-y-3">
+      <h2 className="text-lg font-semibold text-primary dark:text-white">{title}</h2>
+      {children}
+    </section>
+  );
+}
 
 export default function PoliticaPrivacidadPage() {
   return (
@@ -24,10 +34,7 @@ export default function PoliticaPrivacidadPage() {
           Al usar el sitio web o la aplicación aceptas las prácticas descritas aquí.
         </p>
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-primary dark:text-white">
-            Información que recopilamos
-          </h2>
+        <PolicySection title="Información que recopilamos">
           <ul className="list-disc pl-5 space-y-2 text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
             <li>
               <span className="font-medium text-gray-800 dark:text-gray-100">Peticiones de oración:</span>{" "}
@@ -56,12 +63,9 @@ export default function PoliticaPrivacidadPage() {
               desde la configuración de tu navegador o de tu dispositivo.
             </li>
           </ul>
-        </section>
+        </PolicySection>
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-primary dark:text-white">
-            Cómo usamos tu información
-          </h2>
+        <PolicySection title="Cómo usamos tu información">
           <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
             Usamos esta información únicamente para operar la función de peticiones
             de oración: mostrar las peticiones en el sitio, permitir que el equipo
@@ -69,12 +73,9 @@ export default function PoliticaPrivacidadPage() {
             las notificaciones. No usamos tus datos con fines publicitarios ni los
             vendemos ni compartimos con terceros para ese propósito.
           </p>
-        </section>
+        </PolicySection>
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-primary dark:text-white">
-            Con quién compartimos información
-          </h2>
+        <PolicySection title="Con quién compartimos información">
           <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
             Usamos los siguientes proveedores para operar el sitio, quienes procesan
             datos en nuestro nombre bajo sus propias políticas de privacidad:
@@ -91,12 +92,9 @@ export default function PoliticaPrivacidadPage() {
               administrador.
             </li>
           </ul>
-        </section>
+        </PolicySection>
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-primary dark:text-white">
-            Cuánto tiempo conservamos tu información
-          </h2>
+        <PolicySection title="Cuánto tiempo conservamos tu información">
           <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
             Las peticiones pendientes permanecen visibles hasta que se marcan como
             resueltas o se cancelan. Las peticiones resueltas se muestran
@@ -105,24 +103,18 @@ export default function PoliticaPrivacidadPage() {
             mostrarse en el sitio, aunque el equipo pastoral puede eliminarlas de
             forma permanente en cualquier momento.
           </p>
-        </section>
+        </PolicySection>
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-primary dark:text-white">
-            Tus derechos
-          </h2>
+        <PolicySection title="Tus derechos">
           <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
             Puedes solicitarnos en cualquier momento que corrijamos o eliminemos tu
             petición de oración o tu cuenta de administrador. Escríbenos por
             WhatsApp o a través de nuestras redes sociales y atenderemos tu
             solicitud lo antes posible.
           </p>
-        </section>
+        </PolicySection>
 
-        <section className="space-y-3">
-          <h2 className="text-lg font-semibold text-primary dark:text-white">
-            Contacto
-          </h2>
+        <PolicySection title="Contacto">
           <p className="text-sm text-gray-700 dark:text-gray-300 leading-relaxed">
             ¿Tienes preguntas sobre esta política o sobre tus datos?{" "}
             <a
@@ -135,7 +127,7 @@ export default function PoliticaPrivacidadPage() {
             </a>
             .
           </p>
-        </section>
+        </PolicySection>
       </div>
     </main>
   );

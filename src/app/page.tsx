@@ -1,5 +1,28 @@
 import { FaFacebookF, FaInstagram, FaTiktok, FaWhatsapp } from "react-icons/fa";
 
+const SOCIAL_LINKS = [
+  {
+    href: "https://www.tiktok.com/@ccristianojordan",
+    icon: FaTiktok,
+    className: "hover:text-teal-500",
+  },
+  {
+    href: "https://www.instagram.com/ccristianojordan/",
+    icon: FaInstagram,
+    className: "hover:text-teal-500",
+  },
+  {
+    href: "https://www.facebook.com/ccristianojordan",
+    icon: FaFacebookF,
+    className: "hover:text-teal-500",
+  },
+  {
+    href: "https://wa.me/524425813349?text=¡Hola,%20buen%20día!%20😊",
+    icon: FaWhatsapp,
+    className: "hover:text-teal-500 transition-colors duration-300",
+  },
+];
+
 export default function Home() {
   return (
     <div className="grid grid-rows-[1fr_auto_1fr] items-center justify-items-center h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
@@ -17,38 +40,17 @@ export default function Home() {
           <p>¡Síguenos en nuestras redes sociales para actualizaciones!</p>
         </div>
         <div className="mt-8 flex justify-center space-x-8 text-3xl text-gray-700 dark:text-gray-300">
-          <a
-            href="https://www.tiktok.com/@ccristianojordan"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-teal-500"
-          >
-            <FaTiktok />
-          </a>
-          <a
-            href="https://www.instagram.com/ccristianojordan/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-teal-500"
-          >
-            <FaInstagram />
-          </a>
-          <a
-            href="https://www.facebook.com/ccristianojordan"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-teal-500"
-          >
-            <FaFacebookF />
-          </a>
-          <a
-            href="https://wa.me/524425813349?text=¡Hola,%20buen%20día!%20😊"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="hover:text-teal-500 transition-colors duration-300"
-          >
-            <FaWhatsapp />
-          </a>
+          {SOCIAL_LINKS.map(({ href, icon: Icon, className }) => (
+            <a
+              key={href}
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={className}
+            >
+              <Icon />
+            </a>
+          ))}
         </div>
       </div>
 
