@@ -3,7 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AuthProvider } from "../context/AuthContext";
 import { ThemeProvider } from "../context/ThemeContext";
-import { HeaderPage } from "../components";
+import { HeaderPage, FooterPage } from "../components";
 
 const themeInitScript = `
 (function () {
@@ -50,12 +50,13 @@ export default function RootLayout({
         <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       </head>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-background text-foreground min-h-screen flex flex-col`}
       >
         <ThemeProvider>
           <AuthProvider>
             <HeaderPage />
-            {children}
+            <div className="flex-1 flex flex-col">{children}</div>
+            <FooterPage />
           </AuthProvider>
         </ThemeProvider>
       </body>

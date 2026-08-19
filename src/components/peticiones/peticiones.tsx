@@ -306,7 +306,7 @@ export default function Peticiones() {
   }, [peticiones, busqueda, estadoFiltro, ordenAsc]);
 
   return (
-    <div className="max-w-3xl mx-auto p-6 bg-white dark:bg-surface-dark shadow-lg rounded-xl">
+    <div className="max-w-3xl mx-auto p-4 sm:p-6 bg-white dark:bg-surface-dark shadow-lg rounded-xl">
       <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">
         📌 Peticiones de Oración
       </h1>
@@ -418,7 +418,7 @@ export default function Peticiones() {
           </div>
         </div>
 
-        <p className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mt-2">
+        <p className="flex items-center gap-1.5 text-xs text-gray-800 dark:text-yellow-400 mt-2">
           <svg
             xmlns="http://www.w3.org/2000/svg"
             viewBox="0 0 24 24"
