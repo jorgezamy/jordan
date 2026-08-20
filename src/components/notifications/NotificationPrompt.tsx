@@ -2,12 +2,13 @@
 
 import { useEffect, useState } from "react";
 import { useFcm } from "../../hooks/useFcm";
+import { TOPICS } from "../../lib/fcm";
 import { Button } from "../ui/Button";
 
 const DISMISS_KEY = "notificaciones-descartadas";
 
 export default function NotificationPrompt() {
-  const { status, subscribe } = useFcm();
+  const { status, subscribe } = useFcm(TOPICS.peticiones);
   const [dismissed, setDismissed] = useState(true);
 
   useEffect(() => {

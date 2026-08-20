@@ -1,14 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getMessaging } from "firebase-admin/messaging";
 import { getAdminApp } from "../../../../lib/firebaseAdmin";
-import { NOTIFY_TOPIC } from "../../../../lib/fcm";
+import { esTopicValido } from "../../../../lib/fcm";
 import { checkRateLimit } from "../../../../lib/rateLimit";
 
 export async function POST(req: NextRequest) {
-  const { token } = await req.json();
+  const { token, topic } = await req.json();
 
   if (!token || typeof token !== "string" || token.length > 4096) {
     return NextResponse.json({ error: "token inválido" }, { status: 400 });
+  }
+  if (!esTopicValido(topic)) {
+    return NextResponse.json({ error: "topic inválido" }, { status: 400 });
   }
 
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
@@ -17,7 +20,7 @@ export async function POST(req: NextRequest) {
   }
 
   try {
-    await getMessaging(getAdminApp()).subscribeToTopic([token], NOTIFY_TOPIC);
+    await getMessaging(getAdminApp()).subscribeToTopic([token], topic);
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error("[fcm/subscribe]", error);

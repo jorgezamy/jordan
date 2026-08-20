@@ -4,12 +4,13 @@ import "./globals.css";
 import { AuthProvider } from "../context/AuthContext";
 import { ThemeProvider } from "../context/ThemeContext";
 import { HeaderPage, FooterPage } from "../components";
+import { NovedadesModal } from "../components/novedades/NovedadesModal";
 
 const themeInitScript = `
 (function () {
   try {
     var stored = localStorage.getItem("theme");
-    var dark = stored ? stored === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var dark = stored === "dark" || (stored !== "light" && window.matchMedia("(prefers-color-scheme: dark)").matches);
     document.documentElement.classList.toggle("dark", dark);
   } catch (e) {}
 })();
@@ -55,8 +56,9 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <HeaderPage />
-            <div className="flex-1 flex flex-col">{children}</div>
+            <div className="flex flex-col">{children}</div>
             <FooterPage />
+            <NovedadesModal />
           </AuthProvider>
         </ThemeProvider>
       </body>

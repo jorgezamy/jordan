@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import { getMessaging } from "firebase-admin/messaging";
 import { getAdminApp } from "../../../../lib/firebaseAdmin";
-import { NOTIFY_TOPIC } from "../../../../lib/fcm";
+import { TOPICS } from "../../../../lib/fcm";
 import { checkRateLimit } from "../../../../lib/rateLimit";
 
 const MAX_AGE_MS = 30_000;
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
     }
 
     await getMessaging(getAdminApp()).send({
-      topic: NOTIFY_TOPIC,
+      topic: TOPICS.peticiones,
       notification: {
         title: "Nueva petición de oración",
         body: data.nombre ? `${data.nombre} envió una petición nueva.` : "Se envió una petición nueva.",

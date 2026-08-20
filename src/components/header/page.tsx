@@ -4,8 +4,9 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useFcmForeground } from "../../hooks/useFcmForeground";
 import AuthModal from "../auth/AuthModal";
-import { ThemeToggle } from "../theme/ThemeToggle";
+import { GearIcon } from "../ui/GearIcon";
 import { LockIcon } from "../ui/LockIcon";
 import { UserAvatarButton } from "./UserAvatarButton";
 import { UserMenuContent } from "./UserMenuContent";
@@ -14,9 +15,11 @@ export const HeaderPage = () => {
   const { user, logout } = useAuth();
   const [showModal, setShowModal] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  useFcmForeground();
 
   const initial = user?.email?.[0]?.toUpperCase();
   const handleLogout = () => { logout(); setMenuOpen(false); };
+  const handleNavigate = () => setMenuOpen(false);
 
   return (
     <>
@@ -40,20 +43,27 @@ export const HeaderPage = () => {
             {/* Peticiones — siempre visible, es el CTA principal */}
             <Link
               href="/peticiones"
-              className="bg-white text-primary font-bold text-sm rounded-full px-5 py-2 shadow hover:bg-white/90 active:scale-95 transition-all"
+              className="bg-accent text-white font-bold text-sm rounded-full px-5 py-2 shadow hover:bg-accent-hover active:scale-95 transition-all"
             >
               Peticiones
             </Link>
 
-            <ThemeToggle />
+            <Link
+              href="/configuracion"
+              className="w-8 h-8 flex items-center justify-center rounded-full text-white/80 hover:text-white hover:bg-white/10 transition"
+              aria-label="Configuración"
+              title="Configuración"
+            >
+              <GearIcon strokeWidth={2.2} />
+            </Link>
 
             {/* Auth desktop */}
             {user ? (
               <div className="hidden sm:block relative">
                 <UserAvatarButton initial={initial} onClick={() => setMenuOpen((v) => !v)} />
                 {menuOpen && (
-                  <div className="absolute right-0 top-full mt-2 bg-primary-darker border border-white/10 rounded-xl shadow-2xl p-4 flex flex-col gap-3 min-w-[200px] z-50">
-                    <UserMenuContent email={user.email!} onLogout={handleLogout} />
+                  <div className="absolute right-0 top-full mt-2 bg-primary-darker border border-white/10 rounded-xl shadow-2xl p-3 pt-4 min-w-[220px] z-50">
+                    <UserMenuContent email={user.email!} onLogout={handleLogout} onNavigate={handleNavigate} />
                   </div>
                 )}
               </div>
@@ -85,8 +95,8 @@ export const HeaderPage = () => {
 
         {/* Dropdown móvil */}
         {menuOpen && user && (
-          <div className="sm:hidden bg-primary-darker border-t border-white/10 px-5 py-4 flex flex-col gap-3">
-            <UserMenuContent email={user.email!} onLogout={handleLogout} />
+          <div className="sm:hidden bg-primary-darker border-t border-white/10 px-3 py-4">
+            <UserMenuContent email={user.email!} onLogout={handleLogout} onNavigate={handleNavigate} />
           </div>
         )}
       </header>

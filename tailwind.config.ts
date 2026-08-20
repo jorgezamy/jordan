@@ -35,6 +35,11 @@ export default {
           border: "#4ade80",
           text: "#15803d",
         },
+        accent: {
+          DEFAULT: "#14b8a6",
+          hover: "#0d9488",
+          subtle: "#ccfbf1",
+        },
       },
     },
   },

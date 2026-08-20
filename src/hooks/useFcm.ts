@@ -2,10 +2,28 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { app } from "../../firebaseConfig";
+import { Topic } from "../lib/fcm";
 
 type FcmStatus = "unsupported" | "idle" | "subscribing" | "subscribed" | "error";
 
-export function useFcm() {
+const STORAGE_KEY = "fcm-topics-suscritos";
+
+function leerTopicsSuscritos(): string[] {
+  try {
+    return JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "[]");
+  } catch {
+    return [];
+  }
+}
+
+function guardarTopicSuscrito(topic: Topic, suscrito: boolean) {
+  const actuales = new Set(leerTopicsSuscritos());
+  if (suscrito) actuales.add(topic);
+  else actuales.delete(topic);
+  window.localStorage.setItem(STORAGE_KEY, JSON.stringify([...actuales]));
+}
+
+export function useFcm(topic: Topic) {
   const [status, setStatus] = useState<FcmStatus>("idle");
 
   useEffect(() => {
@@ -13,28 +31,10 @@ export function useFcm() {
       setStatus("unsupported");
       return;
     }
-    if (Notification.permission === "granted") {
+    if (Notification.permission === "granted" && leerTopicsSuscritos().includes(topic)) {
       setStatus("subscribed");
     }
-  }, []);
-
-  useEffect(() => {
-    if (status !== "subscribed") return;
-
-    let unsubscribe: (() => void) | undefined;
-
-    import("firebase/messaging").then(({ getMessaging, onMessage }) => {
-      const messaging = getMessaging(app);
-      unsubscribe = onMessage(messaging, (payload) => {
-        const { title, body } = payload.notification ?? {};
-        if (title && Notification.permission === "granted") {
-          new Notification(title, { body, icon: "/icons/icon-192.png" });
-        }
-      });
-    });
-
-    return () => unsubscribe?.();
-  }, [status]);
+  }, [topic]);
 
   const subscribe = useCallback(async () => {
     if (typeof window === "undefined" || !("Notification" in window)) {
@@ -72,7 +72,7 @@ export function useFcm() {
       const res = await fetch("/api/fcm/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token }),
+        body: JSON.stringify({ token, topic }),
       });
 
       if (!res.ok) {
@@ -80,6 +80,7 @@ export function useFcm() {
         return false;
       }
 
+      guardarTopicSuscrito(topic, true);
       setStatus("subscribed");
       return true;
     } catch (error) {
@@ -87,7 +88,36 @@ export function useFcm() {
       setStatus("error");
       return false;
     }
-  }, []);
+  }, [topic]);
 
-  return { status, subscribe };
+  const unsubscribe = useCallback(async () => {
+    try {
+      const registration = await navigator.serviceWorker.getRegistration("/firebase-messaging-sw.js");
+      if (registration) {
+        const { getMessaging, getToken } = await import("firebase/messaging");
+        const messaging = getMessaging(app);
+        const token = await getToken(messaging, {
+          vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+          serviceWorkerRegistration: registration,
+        });
+
+        if (token) {
+          await fetch("/api/fcm/unsubscribe", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ token, topic }),
+          });
+        }
+      }
+
+      guardarTopicSuscrito(topic, false);
+      setStatus("idle");
+      return true;
+    } catch (error) {
+      console.error("❌ Error al cancelar la suscripción:", error);
+      return false;
+    }
+  }, [topic]);
+
+  return { status, subscribe, unsubscribe };
 }

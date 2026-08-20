@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { ReactNode } from "react";
+import { BackHomeLink } from "../../components/ui/BackHomeLink";
 
 export const metadata: Metadata = {
   title: "Política de privacidad — Centro Cristiano Jordán",
@@ -18,6 +19,7 @@ function PolicySection({ title, children }: { title: string; children: ReactNode
 export default function PoliticaPrivacidadPage() {
   return (
     <main className="max-w-3xl mx-auto p-4 sm:p-6 my-10">
+      <BackHomeLink />
       <div className="bg-white dark:bg-surface-dark shadow-lg rounded-xl p-5 sm:p-8 space-y-8">
         <div>
           <h1 className="text-2xl font-bold text-primary dark:text-white mb-2">

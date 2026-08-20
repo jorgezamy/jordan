@@ -26,6 +26,43 @@ service cloud.firestore {
       allow update, delete: if isAdmin();
     }
 
+    function isValidAvisoCreate() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['titulo', 'descripcion', 'importante', 'fecha', 'fechaFin', 'bannerUrl', 'fechaCreacion'])
+        && d.keys().hasAll(['titulo', 'descripcion', 'importante', 'fechaCreacion'])
+        && d.titulo is string && d.titulo.size() > 0 && d.titulo.size() <= 80
+        && d.descripcion is string && d.descripcion.size() <= 300
+        && (d.descripcion.size() > 0 || ('bannerUrl' in d && d.bannerUrl.size() > 0))
+        && d.importante is bool
+        && d.fechaCreacion == request.time
+        && (!('fecha' in d) || d.fecha is timestamp)
+        && (!('fechaFin' in d) || (d.fechaFin is timestamp && 'fecha' in d))
+        && (!('bannerUrl' in d) || (d.bannerUrl is string && d.bannerUrl.size() > 0
+            && d.bannerUrl.size() <= 500 && d.bannerUrl.matches('^https?://.*')));
+    }
+
+    match /avisos/{id} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidAvisoCreate();
+      allow update, delete: if isAdmin();
+    }
+
+    function isValidCitaCreate() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['texto', 'referencia', 'version', 'fechaCreacion'])
+        && d.keys().hasAll(['texto', 'referencia', 'version', 'fechaCreacion'])
+        && d.texto is string && d.texto.size() > 0 && d.texto.size() <= 2000
+        && d.referencia is string && d.referencia.size() > 0 && d.referencia.size() <= 80
+        && d.version in ['RVR1960', 'NVI', 'LBLA', 'NTV', 'DHH', 'RVC']
+        && d.fechaCreacion == request.time;
+    }
+
+    match /citas/{id} {
+      allow read: if true;
+      allow create: if isAdmin() && isValidCitaCreate();
+      allow update, delete: if isAdmin();
+    }
+
     match /metadata/counters {
       allow get: if true;
       allow update: if isAdmin()

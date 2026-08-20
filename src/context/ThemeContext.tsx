@@ -8,43 +8,56 @@ import {
   ReactNode,
 } from "react";
 
-type Theme = "light" | "dark";
+type Theme = "light" | "dark" | "system";
+type ThemeAplicado = "light" | "dark";
 
 const STORAGE_KEY = "theme";
 
 interface ThemeContextType {
   theme: Theme;
-  toggleTheme: () => void;
+  themeAplicado: ThemeAplicado;
+  setTheme: (theme: Theme) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType | null>(null);
 
 function getInitialTheme(): Theme {
   const stored = window.localStorage.getItem(STORAGE_KEY);
-  if (stored === "light" || stored === "dark") return stored;
-  return window.matchMedia("(prefers-color-scheme: dark)").matches
-    ? "dark"
-    : "light";
+  if (stored === "light" || stored === "dark" || stored === "system") return stored;
+  return "system";
+}
+
+function prefiereOscuro() {
+  return window.matchMedia("(prefers-color-scheme: dark)").matches;
 }
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>("light");
+  const [theme, setTheme] = useState<Theme>("system");
+  const [themeAplicado, setThemeAplicado] = useState<ThemeAplicado>("light");
 
   useEffect(() => {
     setTheme(getInitialTheme());
   }, []);
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", theme === "dark");
+    const aplicar = () => {
+      const oscuro = theme === "system" ? prefiereOscuro() : theme === "dark";
+      setThemeAplicado(oscuro ? "dark" : "light");
+      document.documentElement.classList.toggle("dark", oscuro);
+    };
+
+    aplicar();
     window.localStorage.setItem(STORAGE_KEY, theme);
+
+    if (theme !== "system") return;
+
+    const mql = window.matchMedia("(prefers-color-scheme: dark)");
+    mql.addEventListener("change", aplicar);
+    return () => mql.removeEventListener("change", aplicar);
   }, [theme]);
 
-  const toggleTheme = () => {
-    setTheme((t) => (t === "dark" ? "light" : "dark"));
-  };
-
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme }}>
+    <ThemeContext.Provider value={{ theme, themeAplicado, setTheme }}>
       {children}
     </ThemeContext.Provider>
   );
