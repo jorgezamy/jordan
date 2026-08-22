@@ -16,6 +16,13 @@ const STORAGE_KEY = "fcm-topics-suscritos";
 // solo dispara entre pestañas distintas, no dentro de la misma app.
 const TOPICS_CHANGED_EVENT = "fcm-topics-cambiaron";
 
+// Temas que alguna instancia (en cualquier parte de la app) está
+// suscribiendo/desuscribiendo ahora mismo — vive en memoria del módulo,
+// compartido por todas las instancias de useFcm dentro de la misma
+// pestaña, para que puedan mostrarse como "cargando" entre sí en vez de
+// solo "apagado" mientras el trabajo real todavía no termina.
+const topicsEnCurso = new Set<string>();
+
 function leerTopicsSuscritos(): string[] {
   try {
     return JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "[]");
@@ -32,6 +39,12 @@ function guardarTopicSuscrito(topic: Topic, suscrito: boolean) {
   window.dispatchEvent(new Event(TOPICS_CHANGED_EVENT));
 }
 
+function marcarEnCurso(topic: Topic, enCurso: boolean) {
+  if (enCurso) topicsEnCurso.add(topic);
+  else topicsEnCurso.delete(topic);
+  window.dispatchEvent(new Event(TOPICS_CHANGED_EVENT));
+}
+
 export function useFcm(topic: Topic) {
   const [status, setStatus] = useState<FcmStatus>("idle");
 
@@ -42,12 +55,16 @@ export function useFcm(topic: Topic) {
     }
 
     const sincronizar = () => {
+      if (topicsEnCurso.has(topic)) {
+        setStatus("subscribing");
+        return;
+      }
+
       const suscrito = Notification.permission === "granted" && leerTopicsSuscritos().includes(topic);
 
       setStatus((actual) => {
-        if (actual === "subscribing") return actual;
         if (suscrito) return "subscribed";
-        return actual === "subscribed" ? "idle" : actual;
+        return actual === "subscribed" || actual === "subscribing" ? "idle" : actual;
       });
     };
 
@@ -63,6 +80,7 @@ export function useFcm(topic: Topic) {
     }
 
     setStatus("subscribing");
+    marcarEnCurso(topic, true);
     try {
       const { getMessaging, getToken, isSupported } = await import("firebase/messaging");
 
@@ -107,10 +125,14 @@ export function useFcm(topic: Topic) {
       console.error("❌ Error al suscribirse a notificaciones:", error);
       setStatus("error");
       return false;
+    } finally {
+      marcarEnCurso(topic, false);
     }
   }, [topic]);
 
   const unsubscribe = useCallback(async () => {
+    setStatus("subscribing");
+    marcarEnCurso(topic, true);
     try {
       const registration = await navigator.serviceWorker.getRegistration("/firebase-messaging-sw.js");
       if (registration) {
@@ -136,6 +158,8 @@ export function useFcm(topic: Topic) {
     } catch (error) {
       console.error("❌ Error al cancelar la suscripción:", error);
       return false;
+    } finally {
+      marcarEnCurso(topic, false);
     }
   }, [topic]);
 
