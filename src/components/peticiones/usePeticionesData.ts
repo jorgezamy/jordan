@@ -122,6 +122,14 @@ export function usePeticionesData(
           accion === "resuelto"
             ? "✅ Petición marcada como resuelta"
             : "🚫 Petición cancelada";
+
+        if (accion === "resuelto") {
+          fetch("/api/peticiones/notify-resuelta", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id }),
+          }).catch((err) => console.error("❌ Error enviando notificación:", err));
+        }
       }
 
       mostrarMensaje(mensaje);
