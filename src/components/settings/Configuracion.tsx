@@ -8,8 +8,17 @@ import { useNotificationSettings } from "./useNotificationSettings";
 
 export default function Configuracion() {
   const { theme, setTheme } = useTheme();
-  const { sonido, setSonido, vibracion, setVibracion, secciones, alternarSeccion } =
-    useNotificationSettings();
+  const {
+    sonido,
+    setSonido,
+    vibracion,
+    setVibracion,
+    secciones,
+    alternarSeccion,
+    todoActivo,
+    todoDeshabilitado,
+    alternarTodo,
+  } = useNotificationSettings();
 
   return (
     <div className="max-w-2xl mx-auto p-4 sm:p-6">
@@ -34,6 +43,15 @@ export default function Configuracion() {
         <h2 className="text-sm font-semibold text-primary/70 dark:text-white/70 uppercase tracking-wide mb-3">
           Notificaciones
         </h2>
+        <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-white/10">
+          <span className="text-sm font-semibold text-gray-900 dark:text-white">Activar todo</span>
+          <Switch
+            checked={todoActivo}
+            disabled={todoDeshabilitado}
+            onChange={alternarTodo}
+            label="Activar todas las notificaciones"
+          />
+        </div>
         <div className="flex flex-col divide-y divide-gray-100 dark:divide-white/10">
           {secciones.map((s) => (
             <div

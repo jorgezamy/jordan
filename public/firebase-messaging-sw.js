@@ -18,6 +18,7 @@ messaging.onBackgroundMessage((payload) => {
   self.registration.showNotification(title ?? "Centro Cristiano Jordán", {
     body,
     icon: "/icons/icon-192.png",
+    badge: "/icons/badge-192.png",
     data: payload.data,
   });
 });

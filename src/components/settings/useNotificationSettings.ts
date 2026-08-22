@@ -47,5 +47,31 @@ export function useNotificationSettings() {
     }
   };
 
-  return { sonido, setSonido, vibracion, setVibracion, secciones, alternarSeccion };
+  const fcms = [peticiones, avisos, citas];
+  const todoActivo = fcms.every((fcm) => fcm.status === "subscribed");
+  const todoDeshabilitado = fcms.some((fcm) => fcm.status === "subscribing" || fcm.status === "unsupported");
+
+  const alternarTodo = async () => {
+    if (todoActivo) {
+      for (const fcm of fcms) {
+        if (fcm.status === "subscribed") await fcm.unsubscribe();
+      }
+    } else {
+      for (const fcm of fcms) {
+        if (fcm.status !== "subscribed") await fcm.subscribe();
+      }
+    }
+  };
+
+  return {
+    sonido,
+    setSonido,
+    vibracion,
+    setVibracion,
+    secciones,
+    alternarSeccion,
+    todoActivo,
+    todoDeshabilitado,
+    alternarTodo,
+  };
 }

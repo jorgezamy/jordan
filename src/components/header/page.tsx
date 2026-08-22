@@ -4,6 +4,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { useAutoSolicitarNotificaciones } from "../../hooks/useAutoSolicitarNotificaciones";
 import { useFcmForeground } from "../../hooks/useFcmForeground";
 import AuthModal from "../auth/AuthModal";
 import { GearIcon } from "../ui/GearIcon";
@@ -16,6 +17,7 @@ export const HeaderPage = () => {
   const [showModal, setShowModal] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   useFcmForeground();
+  useAutoSolicitarNotificaciones();
 
   const initial = user?.email?.[0]?.toUpperCase();
   const handleLogout = () => { logout(); setMenuOpen(false); };
