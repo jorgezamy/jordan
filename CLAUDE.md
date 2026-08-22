@@ -15,6 +15,10 @@ No test suite is configured.
 
 `npm run lint` (`next lint`) is broken on Next.js 16 in this repo (removed from the CLI) — use `npx eslint src --max-warnings=0` instead.
 
+## Deployment
+
+Production: **https://www.centrocristianojordan.com** — auto-deploys on every push to `main` (Vercel connected to the GitHub repo). There's no separate staging environment or manual deploy step for the app itself; pushing to `main` *is* the release. (Firestore rules are the one thing that deploy separately — see [Firestore collections & rules](#firestore-collections--rules).)
+
 ## Development guidelines
 
 Apply these on **every** new feature or change, not only when explicitly asked:

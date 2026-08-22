@@ -4,6 +4,8 @@ Sitio web de Centro Cristiano Jordán, construido con [Next.js](https://nextjs.o
 
 Para el detalle de arquitectura (Firebase, autenticación, estructura de datos, convenciones de UI, etc.), consulta **[CLAUDE.md](./CLAUDE.md)** — es la referencia técnica completa del proyecto y debe mantenerse al día con cada cambio relevante.
 
+**Producción:** [www.centrocristianojordan.com](https://www.centrocristianojordan.com) — despliega automáticamente con cada push a `main` (Vercel conectado al repo). No hay ambiente de staging ni paso manual de deploy para la app; solo las reglas de Firestore se despliegan aparte (ver abajo).
+
 ## Stack
 
 - Next.js 16 (App Router) + TypeScript
