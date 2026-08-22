@@ -45,7 +45,7 @@ export async function POST(req: NextRequest) {
         body: data.version ? `${data.referencia} (${data.version})` : data.referencia,
       },
       data: { citaId: id, link: "/" },
-      webpush: { fcmOptions: { link: "/" } },
+      webpush: { headers: { Urgency: "high" }, fcmOptions: { link: "/" } },
     });
 
     await ref.update({ notificado: true });

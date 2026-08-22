@@ -48,7 +48,7 @@ export async function POST(req: NextRequest) {
         body: data.nombre ? `${data.nombre} envió una petición nueva.` : "Se envió una petición nueva.",
       },
       data: { peticionId: id, link: "/peticiones" },
-      webpush: { fcmOptions: { link: "/peticiones" } },
+      webpush: { headers: { Urgency: "high" }, fcmOptions: { link: "/peticiones" } },
     });
 
     await ref.update({ notificado: true });
