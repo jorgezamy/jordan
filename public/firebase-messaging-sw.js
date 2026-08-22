@@ -17,9 +17,10 @@ messaging.onBackgroundMessage((payload) => {
   const { title, body } = payload.notification ?? {};
   self.registration.showNotification(title ?? "Centro Cristiano Jordán", {
     body,
-    // Sin "icon" a propósito: Android ya muestra "badge" (pequeño, izquierda)
-    // como ícono de la notificación. Agregar "icon" añade un segundo ícono
-    // grande a la derecha que le resta espacio horizontal al texto.
+    // Quitar "icon" no libera espacio: Chrome/Android genera un avatar
+    // placeholder (círculo con letra) cuando falta, así que se deja el
+    // logo real en vez de eso.
+    icon: "/icons/icon-192.png",
     badge: "/icons/badge-192.png",
     data: payload.data,
   });
