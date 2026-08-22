@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getMessaging } from "firebase-admin/messaging";
 import { getAdminApp } from "../../../../lib/firebaseAdmin";
-import { TOPICS } from "../../../../lib/fcm";
+import { TOPICS, NOTIFICATION_ICON_URL, NOTIFICATION_BADGE_URL } from "../../../../lib/fcm";
 
 export async function GET(req: NextRequest) {
   const authHeader = req.headers.get("authorization");
@@ -18,7 +18,11 @@ export async function GET(req: NextRequest) {
         body: "Eres Tester",
       },
       data: { link: "/" },
-      webpush: { headers: { Urgency: "high" }, fcmOptions: { link: "/" } },
+      webpush: {
+        headers: { Urgency: "high" },
+        notification: { icon: NOTIFICATION_ICON_URL, badge: NOTIFICATION_BADGE_URL },
+        fcmOptions: { link: "/" },
+      },
     });
 
     return NextResponse.json({ ok: true });

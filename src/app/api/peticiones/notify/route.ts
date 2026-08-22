@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import { getMessaging } from "firebase-admin/messaging";
 import { getAdminApp } from "../../../../lib/firebaseAdmin";
-import { TOPICS } from "../../../../lib/fcm";
+import { TOPICS, NOTIFICATION_ICON_URL, NOTIFICATION_BADGE_URL } from "../../../../lib/fcm";
 import { checkRateLimit } from "../../../../lib/rateLimit";
 
 const MAX_AGE_MS = 30_000;
@@ -48,7 +48,11 @@ export async function POST(req: NextRequest) {
         body: data.nombre ? `${data.nombre} envió una petición nueva.` : "Se envió una petición nueva.",
       },
       data: { peticionId: id, link: "/peticiones" },
-      webpush: { headers: { Urgency: "high" }, fcmOptions: { link: "/peticiones" } },
+      webpush: {
+        headers: { Urgency: "high" },
+        notification: { icon: NOTIFICATION_ICON_URL, badge: NOTIFICATION_BADGE_URL },
+        fcmOptions: { link: "/peticiones" },
+      },
     });
 
     await ref.update({ notificado: true });

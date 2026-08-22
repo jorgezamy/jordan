@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAuth } from "firebase-admin/auth";
 import { getMessaging } from "firebase-admin/messaging";
 import { getAdminApp } from "../../../../lib/firebaseAdmin";
-import { TOPICS } from "../../../../lib/fcm";
+import { TOPICS, NOTIFICATION_ICON_URL, NOTIFICATION_BADGE_URL } from "../../../../lib/fcm";
 import { checkRateLimit } from "../../../../lib/rateLimit";
 
 const MENSAJE_MAX_LEN = 500;
@@ -48,7 +48,11 @@ export async function POST(req: NextRequest) {
           topic,
           notification: { title: "Notificación", body: mensaje.trim() },
           data: { link: "/" },
-          webpush: { headers: { Urgency: "high" }, fcmOptions: { link: "/" } },
+          webpush: {
+            headers: { Urgency: "high" },
+            notification: { icon: NOTIFICATION_ICON_URL, badge: NOTIFICATION_BADGE_URL },
+            fcmOptions: { link: "/" },
+          },
         }),
       ),
     );
