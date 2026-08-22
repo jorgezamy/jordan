@@ -8,6 +8,14 @@ type FcmStatus = "unsupported" | "idle" | "subscribing" | "subscribed" | "error"
 
 const STORAGE_KEY = "fcm-topics-suscritos";
 
+// Cada useFcm(topic) solo lee localStorage al montar — sin esto, si otra
+// instancia (ej. la suscripción automática al abrir la app, montada en el
+// header) termina de activar un tema DESPUÉS de que Configuración ya
+// montó, esa pantalla se queda mostrando el switch apagado aunque en el
+// fondo sí quedó activo. localStorage's "storage" event no sirve porque
+// solo dispara entre pestañas distintas, no dentro de la misma app.
+const TOPICS_CHANGED_EVENT = "fcm-topics-cambiaron";
+
 function leerTopicsSuscritos(): string[] {
   try {
     return JSON.parse(window.localStorage.getItem(STORAGE_KEY) ?? "[]");
@@ -21,6 +29,7 @@ function guardarTopicSuscrito(topic: Topic, suscrito: boolean) {
   if (suscrito) actuales.add(topic);
   else actuales.delete(topic);
   window.localStorage.setItem(STORAGE_KEY, JSON.stringify([...actuales]));
+  window.dispatchEvent(new Event(TOPICS_CHANGED_EVENT));
 }
 
 export function useFcm(topic: Topic) {
@@ -31,9 +40,20 @@ export function useFcm(topic: Topic) {
       setStatus("unsupported");
       return;
     }
-    if (Notification.permission === "granted" && leerTopicsSuscritos().includes(topic)) {
-      setStatus("subscribed");
-    }
+
+    const sincronizar = () => {
+      const suscrito = Notification.permission === "granted" && leerTopicsSuscritos().includes(topic);
+
+      setStatus((actual) => {
+        if (actual === "subscribing") return actual;
+        if (suscrito) return "subscribed";
+        return actual === "subscribed" ? "idle" : actual;
+      });
+    };
+
+    sincronizar();
+    window.addEventListener(TOPICS_CHANGED_EVENT, sincronizar);
+    return () => window.removeEventListener(TOPICS_CHANGED_EVENT, sincronizar);
   }, [topic]);
 
   const subscribe = useCallback(async () => {
