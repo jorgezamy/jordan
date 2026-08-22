@@ -23,7 +23,7 @@ Production: **https://www.centrocristianojordan.com** — auto-deploys on every 
 
 Apply these on **every** new feature or change, not only when explicitly asked:
 
-- **Reuse before creating.** Check `src/components/ui/` (see [Component conventions](#component-conventions)) for an existing primitive — `Button`, `Alert`, `TextInput`, `SegmentedControl`, `Switch`, `LockIcon`, `GearIcon`, `ArrowLeftIcon`, `BackHomeLink`, `BellIcon`, `BookIcon`, `LogoutIcon`, `CloseIcon` — before writing new button/input/alert/pill-toggle/icon markup. If a UI pattern will appear more than once, extract it into `src/components/ui/` instead of duplicating it.
+- **Reuse before creating.** Check `src/components/ui/` (see [Component conventions](#component-conventions)) for an existing primitive — `Button`, `Alert`, `TextInput`, `SegmentedControl`, `Switch`, `LockIcon`, `GearIcon`, `ArrowLeftIcon`, `BackHomeLink`, `BellIcon`, `BookIcon`, `LogoutIcon`, `CloseIcon`, `SendIcon` — before writing new button/input/alert/pill-toggle/icon markup. If a UI pattern will appear more than once, extract it into `src/components/ui/` instead of duplicating it.
 - **Colors always come from tokens.** Never hardcode a hex value (`bg-[#...]`) or use Tailwind's built-in palettes (`indigo-*`, `red-*`, `green-*`, etc.). Use the semantic tokens in `tailwind.config.ts` (see [Styling](#styling)); add a new token there if a genuinely new color is needed, so every future palette change happens in one file.
 - **No emojis in newer features.** Avisos, Citas Bíblicas, Configuración, Novedades, and the header/user-menu use plain text + SVG icons instead of emoji, for a more modern look (an explicit user request). `peticiones/` still uses its original emoji status badges (✅/⏳/🚫/↺/🗑) — that's pre-existing and intentionally left alone, not a pattern to extend elsewhere.
 - **Security first.** Validate and authorize on the server, not just the client — client-only checks (like the register secret word) are UX gates, not security boundaries, and should not be relied on for anything sensitive. Keep Firestore rules in sync with what the UI assumes is protected (see [Firestore collections & rules](#firestore-collections--rules)). Never expose admin-only fields (`telefono`, `correo`, the `eliminada`/"Cancelada" state) to unauthenticated users. Keep secrets in `.env.local`; server-only vars must never use the `NEXT_PUBLIC_` prefix.
@@ -80,6 +80,8 @@ FIREBASE_ADMIN_CLIENT_EMAIL=firebase-adminsdk-xxxxx@jordan-85626.iam.gserviceacc
 FIREBASE_ADMIN_PRIVATE_KEY="-----BEGIN PRIVATE KEY-----\n...\n-----END PRIVATE KEY-----\n"
 ```
 The same Admin credentials are also used by every `/api/*/notify` route (FCM push) and by `firestore:rules` deploys via `firebase-tools` (separately authenticated via `firebase login`).
+
+`CRON_SECRET` (any random string) is a separate required var, added directly in Vercel's Project Settings rather than `.env.local` — see [Scheduled notifications (cron)](#scheduled-notifications-cron).
 
 Firebase Admin credentials come from Firebase Console → Configuración del proyecto → Cuentas de servicio → Generar nueva clave privada.
 
@@ -277,6 +279,26 @@ TOPICS = {
 - **`public/icons/badge-192.png`** is a *monochrome* version of the app icon (white silhouette, transparent background), passed as `badge` in `firebase-messaging-sw.js`'s `showNotification()` call. Android requires this separately from the full-color `icon` for the collapsed/status-bar notification — without it, that spot renders as a blank white square (a real reported bug, not a rendering glitch). Regenerate it the same way if the logo ever changes: `convert icon-512.png -fuzz 15% -transparent "#003241" -fill white -colorize 100 badge-192.png` (make the navy background transparent, then flatten whatever's left — the gold glyph — to solid white).
 - **Cross-instance live sync.** Multiple independent `useFcm(topic)` instances for the *same* topic routinely coexist — e.g. the auto-subscribe hook below (mounted in the header, which persists across client-side navigation) and `useNotificationSettings` on `/configuracion`, at the same time. Each instance only read `localStorage` on mount, so without extra plumbing, one instance finishing a subscribe/unsubscribe left every *other* instance showing stale state until a manual reload — a real reported bug ("Configuración showed everything off even though it had worked in the background"). Fixed with a same-tab custom event, `fcm-topics-cambiaron` (dispatched by `guardarTopicSuscrito` and `marcarEnCurso`, both in `useFcm.ts`), that every instance listens for and re-syncs from. The native `storage` event does **not** work for this — it only fires across separate tabs/windows, never within the same page. A module-level `Set<string>` (`topicsEnCurso`) also tracks which topics are mid-operation *right now*, so an instance that hasn't started its own subscribe/unsubscribe can still show a live `"subscribing"` (loading spinner) status if some *other* instance is working on that same topic.
 
+### Alertas (manual push notifications) feature
+
+Lives in `src/components/alertas/` + the page `src/app/alertas/page.tsx`. Reachable from the header user menu ("Enviar notificación", `ui/SendIcon.tsx`) and gated on `user` exactly like `GestionCitas`/`GestionAvisos` (client-side `Alert` "Esta sección es solo para administradores" if logged out). It's the one place an admin can send a free-text push notification without publishing an aviso/cita/petición first.
+
+- `constants.ts` — `MENSAJE_MAX_LEN` (500), mirrored server-side in the API route
+- `useAlertas.ts` — owns the textarea state and `enviar()`, which POSTs to `/api/alertas/notify`
+- `GestionAlertas.tsx` / `AlertaForm.tsx` — orchestrator + presentation, same split as every other feature
+
+**This is the app's only client → API-route call that's authenticated with a real Firebase ID token.** Every other API route (the `notify` routes, `fcm/subscribe`, `register`, `reset-password`) is unauthenticated at the HTTP layer and instead relies on Firestore Security Rules (for writes) or an implicit "was this Firestore doc just created" idempotency check. There's no Firestore document backing a one-off broadcast message, so `/api/alertas/notify` has no rules-based backstop — `useAlertas.enviar()` calls `await user.getIdToken()` and sends it as `Authorization: Bearer <token>`; the route verifies it with `getAuth(getAdminApp()).verifyIdToken()` and checks `decoded.admin === true` before doing anything, then rate-limits via `checkRateLimit` keyed by `alertas:${decoded.uid}` (10/min). If you add another admin-triggered action that isn't a Firestore write, follow this pattern rather than inventing a new one.
+
+Unlike the per-feature notify routes, this one sends to **all three topics at once** (`Object.values(TOPICS)`, looped with `Promise.all`) rather than one — the whole point is maximum reach for an ad-hoc message, not routing by content type. Same `webpush: { headers: { Urgency: "high" }, fcmOptions: { link } }` convention as every other push.
+
+### Scheduled notifications (cron)
+
+`vercel.json` at the repo root defines two Vercel Cron entries hitting `src/app/api/cron/notificacion-diaria/route.ts` at `0 18 * * *` and `0 22 * * *` (UTC) — 12:00 and 16:00 in `America/Mexico_City`, which has been fixed at UTC-6 year-round since Mexico abolished DST in 2022 (re-check this offset if that ever changes). Each run sends a fixed test message ("Es hora de revisar la aplicación — Eres Tester") to the `avisos` topic, so it reaches everyone already subscribed to avisos notifications, not a dedicated audience.
+
+The route only accepts `GET` requests carrying `Authorization: Bearer $CRON_SECRET` — Vercel automatically attaches that header when it invokes a cron path, as long as a `CRON_SECRET` env var is set on the project. **This must be added to Vercel's env vars (Project Settings → Environment Variables) for the cron to work in production** — it's not read from `.env.local` at build time the way `NEXT_PUBLIC_*`/Admin vars are, since Vercel injects it at request time; add it locally too if you want to hit the route manually while developing (`curl -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/notificacion-diaria`).
+
+Unlike the `/api/*/notify` routes, this one has no `notificado`/recency idempotency check — nothing about it is triggered by a fresh Firestore write, so there's nothing to check against. If you repurpose this route for something other than a fixed test message, consider whether double-firing (retried cron invocation) matters for that use case.
+
 ### Configuración page (`/configuracion`)
 
 A dedicated page (not a modal/popover — a popover version was built and replaced per explicit user preference for a full page), reachable via the gear icon in the header (`ui/GearIcon.tsx`). Visible to **every** visitor, not admin-gated — theme and notification preferences are for everyone, unlike Avisos/Citas management.
@@ -318,7 +340,7 @@ Responsive header designed for a non-tech-savvy audience:
   - Desktop (logged in): avatar circle — click opens an absolute-positioned dropdown popover (`bg-primary-darker rounded-xl shadow-2xl`)
   - Mobile (not logged in): `ui/LockIcon.tsx` — recognizable but unobtrusive (`text-white/80 hover:text-white`)
   - Mobile (logged in): avatar circle with user's email initial, click opens a full-width banner dropdown below the header
-- **`UserMenuContent`** (`header/UserMenuContent.tsx`) renders the shared dropdown content; both desktop popover and mobile banner use it. Structured as a proper account menu rather than stacked bordered buttons: an avatar-circle + email "profile" row, a divider, icon-led nav rows (`ui/BellIcon.tsx` "Gestionar avisos", `ui/BookIcon.tsx` "Gestionar citas"), another divider, then "Cerrar sesión" (`ui/LogoutIcon.tsx`). No emoji anywhere in this menu (see the no-emoji guideline above).
+- **`UserMenuContent`** (`header/UserMenuContent.tsx`) renders the shared dropdown content; both desktop popover and mobile banner use it. Structured as a proper account menu rather than stacked bordered buttons: an avatar-circle + email "profile" row, a divider, icon-led nav rows (`ui/BellIcon.tsx` "Gestionar avisos", `ui/BookIcon.tsx` "Gestionar citas", `ui/SendIcon.tsx` "Enviar notificación" → [Alertas](#alertas-manual-push-notifications-feature)), another divider, then "Cerrar sesión" (`ui/LogoutIcon.tsx`). No emoji anywhere in this menu (see the no-emoji guideline above).
 - **`UserAvatarButton`** (`header/UserAvatarButton.tsx`) is the circular initial-avatar trigger, reused for both the desktop and mobile logged-in states.
 - `useFcmForeground()` is called once here — see [Push notifications](#push-notifications-fcm) for why it must not be duplicated per-page.
 - Hamburger menu is **only used for auth on mobile** — "Peticiones" is never inside it
@@ -326,7 +348,7 @@ Responsive header designed for a non-tech-savvy audience:
 
 ### Back-to-home navigation
 
-`ui/BackHomeLink.tsx` (+ `ui/ArrowLeftIcon.tsx`) is a small reusable "← Inicio" link. It's used at the top of every page that isn't the homepage: `/peticiones`, `/avisos`, `/citas`, `/configuracion`, `/politica-privacidad`. Add it the same way to any new top-level page — don't hand-roll another back link.
+`ui/BackHomeLink.tsx` (+ `ui/ArrowLeftIcon.tsx`) is a small reusable "← Inicio" link. It's used at the top of every page that isn't the homepage: `/peticiones`, `/avisos`, `/citas`, `/alertas`, `/configuracion`, `/politica-privacidad`. Add it the same way to any new top-level page — don't hand-roll another back link.
 
 ### Home page (`src/app/page.tsx`)
 
@@ -363,6 +385,7 @@ No longer a static "coming soon" page. Renders `<CitaBiblicaCard />` and `<Aviso
 | `BookIcon` | Open-book SVG | Used for "Gestionar citas" in the user menu |
 | `LogoutIcon` | Door + arrow SVG | Used for "Cerrar sesión" in the user menu |
 | `CloseIcon` | X SVG | Used by `NovedadesModal`'s close button |
+| `SendIcon` | Paper-plane SVG | Used for "Enviar notificación" in the user menu, links to [Alertas](#alertas-manual-push-notifications-feature) |
 
 All icon components share the same signature: `{ className = "w-4 h-4", strokeWidth = 2 }`, plain inline SVG (no icon library dependency for these).
 
