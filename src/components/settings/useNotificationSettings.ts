@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useFcm } from "../../hooks/useFcm";
 import {
   PREF_SONIDO_KEY,
@@ -49,17 +49,29 @@ export function useNotificationSettings() {
 
   const fcms = [peticiones, avisos, citas];
   const todoActivo = fcms.every((fcm) => fcm.status === "subscribed");
-  const todoDeshabilitado = fcms.some((fcm) => fcm.status === "subscribing" || fcm.status === "unsupported");
+  const todoNoDisponible = fcms.some((fcm) => fcm.status === "unsupported");
+
+  const [cargandoTodo, setCargandoTodo] = useState(false);
+  const enCursoRef = useRef(false);
 
   const alternarTodo = async () => {
-    if (todoActivo) {
-      for (const fcm of fcms) {
-        if (fcm.status === "subscribed") await fcm.unsubscribe();
+    if (enCursoRef.current) return;
+
+    enCursoRef.current = true;
+    setCargandoTodo(true);
+    try {
+      if (todoActivo) {
+        for (const fcm of fcms) {
+          if (fcm.status === "subscribed") await fcm.unsubscribe();
+        }
+      } else {
+        for (const fcm of fcms) {
+          if (fcm.status !== "subscribed") await fcm.subscribe();
+        }
       }
-    } else {
-      for (const fcm of fcms) {
-        if (fcm.status !== "subscribed") await fcm.subscribe();
-      }
+    } finally {
+      enCursoRef.current = false;
+      setCargandoTodo(false);
     }
   };
 
@@ -71,7 +83,8 @@ export function useNotificationSettings() {
     secciones,
     alternarSeccion,
     todoActivo,
-    todoDeshabilitado,
+    todoDeshabilitado: todoNoDisponible,
+    cargandoTodo,
     alternarTodo,
   };
 }

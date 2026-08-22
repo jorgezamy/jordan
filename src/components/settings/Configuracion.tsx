@@ -17,6 +17,7 @@ export default function Configuracion() {
     alternarSeccion,
     todoActivo,
     todoDeshabilitado,
+    cargandoTodo,
     alternarTodo,
   } = useNotificationSettings();
 
@@ -43,25 +44,24 @@ export default function Configuracion() {
         <h2 className="text-sm font-semibold text-primary/70 dark:text-white/70 uppercase tracking-wide mb-3">
           Notificaciones
         </h2>
-        <div className="flex items-center justify-between py-3 border-b border-gray-100 dark:border-white/10">
-          <span className="text-sm font-semibold text-gray-900 dark:text-white">Activar todo</span>
-          <Switch
-            checked={todoActivo}
-            disabled={todoDeshabilitado}
-            onChange={alternarTodo}
-            label="Activar todas las notificaciones"
-          />
-        </div>
         <div className="flex flex-col divide-y divide-gray-100 dark:divide-white/10">
+          <div className="flex items-center justify-between py-3 first:pt-0">
+            <span className="text-sm font-semibold text-gray-900 dark:text-white">Activar todo</span>
+            <Switch
+              checked={todoActivo}
+              disabled={todoDeshabilitado}
+              loading={cargandoTodo}
+              onChange={alternarTodo}
+              label="Activar todas las notificaciones"
+            />
+          </div>
           {secciones.map((s) => (
-            <div
-              key={s.topic}
-              className="flex items-center justify-between py-3 first:pt-0 last:pb-0"
-            >
+            <div key={s.topic} className="flex items-center justify-between py-3 last:pb-0">
               <span className="text-sm text-gray-700 dark:text-gray-300">{s.label}</span>
               <Switch
                 checked={s.fcm.status === "subscribed"}
-                disabled={s.fcm.status === "subscribing" || s.fcm.status === "unsupported"}
+                disabled={s.fcm.status === "unsupported" || cargandoTodo}
+                loading={s.fcm.status === "subscribing"}
                 onChange={() => alternarSeccion(s.fcm)}
                 label={`Notificaciones de ${s.label}`}
               />
