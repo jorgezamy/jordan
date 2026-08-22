@@ -27,6 +27,17 @@ export function useAutoSolicitarNotificaciones() {
     yaIntentado.current = true;
 
     (async () => {
+      // Se pide el permiso una sola vez, por separado, y se espera a que
+      // quede resuelto antes de suscribir nada. Si en vez de esto se deja
+      // que la primera llamada a subscribe() sea la que internamente pida
+      // el permiso, en algunos Android hay una carrera de tiempos entre
+      // que el usuario toca "Habilitar" y que esa misma llamada ve el
+      // resultado — la primera sección (peticiones) se queda sin activar
+      // mientras las siguientes sí, porque para ellas el permiso ya
+      // estaba resuelto de sobra.
+      const permiso = await Notification.requestPermission();
+      if (permiso !== "granted") return;
+
       await peticiones.subscribe();
       await avisos.subscribe();
       await citas.subscribe();
