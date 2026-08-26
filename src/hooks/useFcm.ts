@@ -45,6 +45,48 @@ function marcarEnCurso(topic: Topic, enCurso: boolean) {
   window.dispatchEvent(new Event(TOPICS_CHANGED_EVENT));
 }
 
+// Temas ya re-registrados en esta pestaña desde que cargó la página —
+// evita que dos instancias de useFcm(mismoTema) (ej. el auto-suscriptor
+// del header y Configuración, montados a la vez) disparen el mismo
+// re-registro por duplicado.
+const topicsResuscritos = new Set<string>();
+
+// FCM puede rotar el token del dispositivo de forma silenciosa
+// (actualización del navegador, larga inactividad, etc.) sin que la app
+// se entere: localStorage sigue diciendo "suscrito" y el permiso del
+// navegador sigue "granted", pero la suscripción al tema en los
+// servidores de FCM quedó apuntando a un token que ya nadie escucha. Un
+// envío a ese tema no falla (topic messaging no reporta por-token), así
+// que esto se ve como "antes llegaban, ahora ya no" sin ningún error en
+// el servidor. Para autosanarlo, en cada carga se vuelve a pedir el
+// token vigente y se re-registra contra el tema — subscribeToTopic es
+// idempotente, así que si el token no cambió esto es un no-op.
+async function resuscribirSilenciosamente(topic: Topic) {
+  if (topicsResuscritos.has(topic)) return;
+  topicsResuscritos.add(topic);
+
+  try {
+    const { getMessaging, getToken, isSupported } = await import("firebase/messaging");
+    if (!(await isSupported())) return;
+
+    const registration = await navigator.serviceWorker.register("/firebase-messaging-sw.js");
+    const messaging = getMessaging(app);
+    const token = await getToken(messaging, {
+      vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+      serviceWorkerRegistration: registration,
+    });
+    if (!token) return;
+
+    await fetch("/api/fcm/subscribe", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, topic }),
+    });
+  } catch (error) {
+    console.error("❌ Error re-suscribiendo en segundo plano:", error);
+  }
+}
+
 export function useFcm(topic: Topic) {
   const [status, setStatus] = useState<FcmStatus>("idle");
 
@@ -70,6 +112,11 @@ export function useFcm(topic: Topic) {
 
     sincronizar();
     window.addEventListener(TOPICS_CHANGED_EVENT, sincronizar);
+
+    if (Notification.permission === "granted" && leerTopicsSuscritos().includes(topic)) {
+      resuscribirSilenciosamente(topic);
+    }
+
     return () => window.removeEventListener(TOPICS_CHANGED_EVENT, sincronizar);
   }, [topic]);
 
