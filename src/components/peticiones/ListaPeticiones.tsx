@@ -45,7 +45,7 @@ export function ListaPeticiones({ data, filtro, user }: ListaPeticionesProps) {
           {busqueda ? (
             <>
               No se encontraron peticiones para{" "}
-              <span className="font-medium text-primary dark:text-white">"{busqueda}"</span>.
+              <span className="font-medium text-primary dark:text-white">&quot;{busqueda}&quot;</span>.
             </>
           ) : (
             "No hay peticiones con este filtro."
