@@ -13,6 +13,29 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
+// Precacheados para que el ícono y el badge de la notificación se sirvan desde
+// caché en vez de depender de la red justo cuando llega el push — sin esto,
+// una descarga lenta o fallida del badge hace que Android muestre un cuadro
+// blanco genérico en la barra de estatus en vez del logo monocromo.
+const ICON_CACHE_NAME = "notif-icons-v1";
+const ICON_PATHS = ["/icons/icon-192.png", "/icons/badge-192.png"];
+
+self.addEventListener("install", (event) => {
+  self.skipWaiting();
+  event.waitUntil(
+    caches.open(ICON_CACHE_NAME).then((cache) => cache.addAll(ICON_PATHS)),
+  );
+});
+
+self.addEventListener("fetch", (event) => {
+  const path = new URL(event.request.url).pathname;
+  if (ICON_PATHS.includes(path)) {
+    event.respondWith(
+      caches.match(event.request).then((cached) => cached ?? fetch(event.request)),
+    );
+  }
+});
+
 messaging.onBackgroundMessage((payload) => {
   const { title, body } = payload.notification ?? {};
   self.registration.showNotification(title ?? "Centro Cristiano Jordán", {
