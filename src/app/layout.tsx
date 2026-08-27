@@ -47,7 +47,7 @@ export const metadata: Metadata = {
     description: SITE_DESCRIPTION,
     url: SITE_URL,
     siteName: SITE_NAME,
-    images: [{ url: "/logo-08-web.png", width: 5465, height: 1901, alt: SITE_NAME }],
+    images: [{ url: "/og-image.png", width: 1200, height: 630, alt: SITE_NAME }],
     locale: "es_MX",
     type: "website",
   },
@@ -55,7 +55,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: SITE_NAME,
     description: SITE_DESCRIPTION,
-    images: ["/logo-08-web.png"],
+    images: ["/og-image.png"],
   },
 };
 
