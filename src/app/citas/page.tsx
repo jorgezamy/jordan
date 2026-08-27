@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import { BackHomeLink } from "../../components/ui/BackHomeLink";
 import GestionCitas from "../../components/citaBiblica/GestionCitas";
+
+export const metadata: Metadata = {
+  title: "Gestionar Citas Bíblicas",
+  robots: { index: false, follow: false },
+};
 
 export default function Page() {
   return (

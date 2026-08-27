@@ -1,12 +1,17 @@
 // Bump esta fecha cada vez que se publique algo nuevo — vuelve a mostrar
 // el modal a todos, incluso a quien ya vio una versión anterior.
-export const VERSION_NOVEDADES = "2026-08-26";
+export const VERSION_NOVEDADES = "2026-08-27";
 
 // Si nadie lo cierra activamente, deja de aparecer después de esta cantidad
 // de veces (para no insistir para siempre).
 export const NOVEDADES_MAX_VECES = 4;
 
 export const NOVEDADES = [
+  {
+    titulo: "Nuestra dirección, más fácil de encontrar",
+    descripcion:
+      "Agregamos la dirección del templo al final de cada página — tócala para abrirla directo en Google Maps.",
+  },
   {
     titulo: "Avisos que se repiten cada semana",
     descripcion:

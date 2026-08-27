@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import { BackHomeLink } from "../../components/ui/BackHomeLink";
 import GestionAvisos from "../../components/avisos/GestionAvisos";
+
+export const metadata: Metadata = {
+  title: "Gestionar Avisos",
+  robots: { index: false, follow: false },
+};
 
 export default function Page() {
   return (

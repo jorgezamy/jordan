@@ -1,5 +1,12 @@
+import type { Metadata } from "next";
 import { BackHomeLink } from "../../components/ui/BackHomeLink";
 import Peticiones from "../../components/peticiones/peticiones";
+
+export const metadata: Metadata = {
+  title: "Peticiones de Oración",
+  description:
+    "Comparte tu petición de oración con el Centro Cristiano Jordán y ora junto a nuestra comunidad.",
+};
 
 export default function Page() {
   return (

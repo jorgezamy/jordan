@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import { BackHomeLink } from "../../components/ui/BackHomeLink";
 import Configuracion from "../../components/settings/Configuracion";
+
+export const metadata: Metadata = {
+  title: "Configuración",
+  robots: { index: false, follow: false },
+};
 
 export default function Page() {
   return (

@@ -1,5 +1,11 @@
+import type { Metadata } from "next";
 import { BackHomeLink } from "../../components/ui/BackHomeLink";
 import GestionAlertas from "../../components/alertas/GestionAlertas";
+
+export const metadata: Metadata = {
+  title: "Enviar Notificación",
+  robots: { index: false, follow: false },
+};
 
 export default function Page() {
   return (
