@@ -5,7 +5,9 @@ import { Alert } from "../ui/Alert";
 import { Button } from "../ui/Button";
 import { FieldLabel } from "../ui/FieldLabel";
 import { TextInput } from "../ui/TextInput";
+import { DIAS_SEMANA_OPCIONES, TIPO_PROGRAMACION_OPCIONES } from "./constants";
 import { useAvisosAdmin } from "./useAvisosAdmin";
+import { calcularTextoRecurrente } from "./utils";
 
 interface AvisoFormProps {
   admin: ReturnType<typeof useAvisosAdmin>;
@@ -22,6 +24,8 @@ export function AvisoForm({ admin, mensajeExito }: AvisoFormProps) {
     horaFecha,
     fechaFin,
     horaFechaFin,
+    tipoProgramacion,
+    diasRecurrentes,
     guardando,
     idEditando,
     confirmando,
@@ -33,6 +37,8 @@ export function AvisoForm({ admin, mensajeExito }: AvisoFormProps) {
     setHoraFecha,
     setFechaFin,
     setHoraFechaFin,
+    setTipoProgramacion,
+    toggleDiaRecurrente,
     cancelarEdicion,
     cancelarConfirmacion,
     guardarAviso,
@@ -144,12 +150,31 @@ export function AvisoForm({ admin, mensajeExito }: AvisoFormProps) {
       </div>
 
       {fecha && (
+        <div className="mb-4">
+          <FieldLabel>¿Qué debe pasar con este aviso después de esa fecha?</FieldLabel>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            {TIPO_PROGRAMACION_OPCIONES.map((opt) => (
+              <button
+                key={opt.key}
+                type="button"
+                onClick={() => setTipoProgramacion(opt.key)}
+                className={`text-sm font-medium rounded-lg border-2 px-3 py-2 text-left transition ${
+                  tipoProgramacion === opt.key
+                    ? "border-primary bg-primary/5 text-primary dark:border-primary-accent dark:bg-primary-accent/10 dark:text-white"
+                    : "border-gray-200 dark:border-white/15 text-gray-600 dark:text-gray-300 hover:border-primary/40"
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {fecha && tipoProgramacion === "expira" && (
         <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div>
-            <FieldLabel>
-              Fecha de fin{" "}
-              <span className="text-gray-400 dark:text-gray-500 font-normal">(opcional)</span>
-            </FieldLabel>
+            <FieldLabel>Fecha de fin</FieldLabel>
             <TextInput
               type="date"
               value={fechaFin}
@@ -172,6 +197,33 @@ export function AvisoForm({ admin, mensajeExito }: AvisoFormProps) {
                 className="w-full rounded-lg px-3 py-2"
               />
             </div>
+          )}
+        </div>
+      )}
+
+      {fecha && tipoProgramacion === "recurrente" && (
+        <div className="mb-4">
+          <FieldLabel>¿Qué días se repite?</FieldLabel>
+          <div className="flex flex-wrap gap-2">
+            {DIAS_SEMANA_OPCIONES.map((dia) => (
+              <button
+                key={dia.key}
+                type="button"
+                onClick={() => toggleDiaRecurrente(dia.key)}
+                className={`w-11 h-11 rounded-full text-sm font-semibold transition ${
+                  diasRecurrentes.includes(dia.key)
+                    ? "bg-primary text-white dark:bg-primary-accent"
+                    : "bg-gray-100 dark:bg-white/10 text-gray-600 dark:text-gray-300 hover:bg-primary/10"
+                }`}
+              >
+                {dia.label}
+              </button>
+            ))}
+          </div>
+          {diasRecurrentes.length > 0 && (
+            <p className="mt-2 text-sm text-accent-hover dark:text-accent font-medium">
+              {calcularTextoRecurrente(diasRecurrentes, horaFecha)}
+            </p>
           )}
         </div>
       )}

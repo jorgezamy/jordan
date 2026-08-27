@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { useAvisos } from "./useAvisos";
-import { formatRangoFecha } from "./utils";
+import { formatProgramacion } from "./utils";
 
 const AUTOPLAY_MS = 6000;
 
@@ -98,7 +98,7 @@ export function AvisosCarousel() {
 
             {aviso.fecha && (
               <p className="mt-1.5 text-xs font-medium text-white/80">
-                {formatRangoFecha(aviso.fecha, aviso.fechaFin)}
+                {formatProgramacion(aviso)}
               </p>
             )}
           </div>
@@ -122,7 +122,7 @@ export function AvisosCarousel() {
 
           {aviso.fecha && (
             <p className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-accent-hover dark:text-accent">
-              {formatRangoFecha(aviso.fecha, aviso.fechaFin)}
+              {formatProgramacion(aviso)}
             </p>
           )}
         </div>

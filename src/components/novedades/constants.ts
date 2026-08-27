@@ -1,12 +1,22 @@
 // Bump esta fecha cada vez que se publique algo nuevo — vuelve a mostrar
 // el modal a todos, incluso a quien ya vio una versión anterior.
-export const VERSION_NOVEDADES = "2026-08-21";
+export const VERSION_NOVEDADES = "2026-08-26";
 
 // Si nadie lo cierra activamente, deja de aparecer después de esta cantidad
 // de veces (para no insistir para siempre).
 export const NOVEDADES_MAX_VECES = 4;
 
 export const NOVEDADES = [
+  {
+    titulo: "Avisos que se repiten cada semana",
+    descripcion:
+      "Al programar un aviso ahora eliges si se quita después de cierta fecha, si se queda siempre visible, o si se repite ciertos días de la semana.",
+  },
+  {
+    titulo: "Recordatorio antes de cada aviso",
+    descripcion:
+      "Si tienes activadas las notificaciones de avisos, te avisamos una hora antes de que comience un evento programado.",
+  },
   {
     titulo: "Notificaciones más confiables",
     descripcion:

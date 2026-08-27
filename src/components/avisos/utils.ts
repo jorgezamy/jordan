@@ -1,7 +1,88 @@
 import { Timestamp } from "firebase/firestore";
 
-import { EXPIRACION_DIAS } from "./constants";
 import { Aviso } from "./types";
+
+const DIAS_SEMANA_NOMBRE = [
+  "domingo",
+  "lunes",
+  "martes",
+  "miércoles",
+  "jueves",
+  "viernes",
+  "sábado",
+];
+
+function esMismoDia(a: Date, b: Date) {
+  return (
+    a.getFullYear() === b.getFullYear() &&
+    a.getMonth() === b.getMonth() &&
+    a.getDate() === b.getDate()
+  );
+}
+
+function formatHora12(hora: string) {
+  const [h, m] = hora.split(":").map(Number);
+  return new Intl.DateTimeFormat("es-MX", { hour: "numeric", minute: "2-digit" }).format(
+    new Date(2000, 0, 1, h, m),
+  );
+}
+
+// Si `timestamp` cae en el mismo día calendario que `ahora`, se muestra "Hoy"
+// (con hora si tiene) en vez de la fecha completa.
+function formatFechaODia(timestamp: Timestamp, ahora: Date) {
+  const date = timestamp.toDate();
+  if (!esMismoDia(date, ahora)) return formatFecha(timestamp);
+
+  const tieneHora = date.getHours() !== 0 || date.getMinutes() !== 0;
+  if (!tieneHora) return "Hoy";
+
+  const hora = new Intl.DateTimeFormat("es-MX", { hour: "numeric", minute: "2-digit" }).format(
+    date,
+  );
+  return `Hoy, ${hora}`;
+}
+
+// Calcula el texto relativo para un aviso recurrente: "Hoy" si hoy es uno de
+// los días seleccionados, o "Próximo <día>" con el más cercano hacia adelante.
+export function calcularTextoRecurrente(
+  dias: number[],
+  hora: string,
+  ahora: Date = new Date(),
+): string {
+  if (dias.length === 0) return "";
+
+  const hoy = ahora.getDay();
+  const sufijo = hora ? `, ${formatHora12(hora)}` : "";
+
+  if (dias.includes(hoy)) return `Hoy${sufijo}`;
+
+  const proximo = [1, 2, 3, 4, 5, 6]
+    .map((offset) => (hoy + offset) % 7)
+    .find((dia) => dias.includes(dia));
+
+  if (proximo === undefined) return "";
+  return `Próximo ${DIAS_SEMANA_NOMBRE[proximo]}${sufijo}`;
+}
+
+export function formatDiasRecurrentes(dias: number[]): string {
+  const nombres = [...dias].sort((a, b) => a - b).map((d) => DIAS_SEMANA_NOMBRE[d]);
+  if (nombres.length <= 1) return nombres.join("");
+  return `${nombres.slice(0, -1).join(", ")} y ${nombres[nombres.length - 1]}`;
+}
+
+// Calcula el fin por defecto al elegir "Quitar después de esa fecha": mismo
+// día, y si hay hora de inicio, 1 hora más tarde (puede cruzar a medianoche
+// del día siguiente, lo cual es correcto). Sin hora de inicio, se deja el
+// mismo día sin hora (evento de todo el día).
+export function calcularFinPorDefecto(
+  fecha: string,
+  horaFecha: string,
+): { fecha: string; hora: string } {
+  const inicio = inputValueAFechaHora(fecha, horaFecha);
+  const fin = new Date(inicio);
+  if (horaFecha) fin.setHours(fin.getHours() + 1);
+  return { fecha: fechaAInputValue(fin), hora: horaAInputValue(fin) };
+}
 
 export function formatFecha(timestamp?: Timestamp) {
   if (!timestamp) return "";
@@ -44,19 +125,47 @@ export function horaAInputValue(date: Date): string {
   return `${h}:${min}`;
 }
 
-export function esVisible(aviso: Aviso, ahora: Date) {
-  if (!aviso.fecha) return true;
-
-  const fechaBase = aviso.fechaFin ?? aviso.fecha;
-  const limite = fechaBase.toDate();
-  limite.setDate(limite.getDate() + EXPIRACION_DIAS);
-  return ahora <= limite;
+function noExpira(aviso: Aviso) {
+  return aviso.tipoProgramacion === "permanente" || aviso.tipoProgramacion === "recurrente";
 }
 
-export function formatRangoFecha(fecha?: Timestamp, fechaFin?: Timestamp) {
+export function esVisible(aviso: Aviso, ahora: Date) {
+  if (!aviso.fecha || noExpira(aviso)) return true;
+
+  const fechaBase = aviso.fechaFin ?? aviso.fecha;
+  return ahora <= fechaBase.toDate();
+}
+
+export function formatRangoFecha(fecha?: Timestamp, fechaFin?: Timestamp, ahora: Date = new Date()) {
   if (!fecha) return "";
-  if (!fechaFin) return formatFecha(fecha);
-  return `Del ${formatFecha(fecha)} al ${formatFecha(fechaFin)}`;
+  if (!fechaFin) return formatFechaODia(fecha, ahora);
+  return `Del ${formatFechaODia(fecha, ahora)} al ${formatFecha(fechaFin)}`;
+}
+
+// Texto de fecha/programación a mostrar en las vistas públicas (carrusel):
+// "Hoy"/"Próximo <día>" para recurrentes, o el rango normal para el resto.
+export function formatProgramacion(aviso: Aviso, ahora: Date = new Date()): string {
+  if (aviso.tipoProgramacion === "recurrente" && aviso.diasRecurrentes?.length) {
+    const hora = aviso.fecha ? horaAInputValue(aviso.fecha.toDate()) : "";
+    return calcularTextoRecurrente(aviso.diasRecurrentes, hora, ahora);
+  }
+  if (!aviso.fecha) return "";
+  return formatRangoFecha(aviso.fecha, aviso.fechaFin, ahora);
+}
+
+// Descripción de la programación para la lista de administración.
+export function describirProgramacion(aviso: Aviso, ahora: Date = new Date()): string {
+  if (!aviso.fecha) return "Sin fecha (permanente)";
+
+  if (aviso.tipoProgramacion === "recurrente" && aviso.diasRecurrentes?.length) {
+    return `Se repite los ${formatDiasRecurrentes(aviso.diasRecurrentes)} · ${formatProgramacion(aviso, ahora)}`;
+  }
+
+  if (aviso.tipoProgramacion === "permanente") {
+    return `Activo desde ${formatFechaODia(aviso.fecha, ahora)} (sin expiración)`;
+  }
+
+  return `Programado: ${formatRangoFecha(aviso.fecha, aviso.fechaFin, ahora)}`;
 }
 
 export function ordenarAvisos(avisos: Aviso[]) {
@@ -67,13 +176,13 @@ export function ordenarAvisos(avisos: Aviso[]) {
     .filter((a) => a.importante)
     .sort(porFechaCreacion);
 
-  const sinFecha = avisos
-    .filter((a) => !a.importante && !a.fecha)
+  const sinExpiracion = avisos
+    .filter((a) => !a.importante && (!a.fecha || noExpira(a)))
     .sort(porFechaCreacion);
 
   const conFecha = avisos
-    .filter((a) => !a.importante && a.fecha)
+    .filter((a) => !a.importante && a.fecha && !noExpira(a))
     .sort((a, b) => a.fecha!.toMillis() - b.fecha!.toMillis());
 
-  return [...importantes, ...sinFecha, ...conFecha];
+  return [...importantes, ...sinExpiracion, ...conFecha];
 }

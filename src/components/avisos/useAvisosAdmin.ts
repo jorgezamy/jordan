@@ -18,8 +18,13 @@ import {
 
 import { db } from "../../../firebaseConfig";
 import { AVISOS_LIMITE } from "./constants";
-import { Aviso, ConfirmacionAviso } from "./types";
-import { fechaAInputValue, horaAInputValue, inputValueAFechaHora } from "./utils";
+import { Aviso, ConfirmacionAviso, TipoProgramacion } from "./types";
+import {
+  calcularFinPorDefecto,
+  fechaAInputValue,
+  horaAInputValue,
+  inputValueAFechaHora,
+} from "./utils";
 
 export function useAvisosAdmin(mostrarMensaje: (mensaje: string) => void) {
   const [avisos, setAvisos] = useState<Aviso[]>([]);
@@ -33,22 +38,75 @@ export function useAvisosAdmin(mostrarMensaje: (mensaje: string) => void) {
   const [bannerUrl, setBannerUrl] = useState("");
   const [importante, setImportante] = useState(false);
   const [fecha, setFechaState] = useState("");
-  const [horaFecha, setHoraFecha] = useState("");
+  const [horaFecha, setHoraFechaState] = useState("");
   const [fechaFin, setFechaFinState] = useState("");
-  const [horaFechaFin, setHoraFechaFin] = useState("");
+  const [horaFechaFin, setHoraFechaFinState] = useState("");
+  const [tipoProgramacion, setTipoProgramacionState] = useState<TipoProgramacion>("expira");
+  const [diasRecurrentes, setDiasRecurrentes] = useState<number[]>([]);
+  // true mientras la fecha/hora de fin siguen siendo el default calculado
+  // (no las ha tocado el admin) — así seguimos recalculándolas al cambiar
+  // la fecha/hora de inicio, pero dejamos de tocarlas en cuanto las edita.
+  const [fechaFinAuto, setFechaFinAuto] = useState(true);
+
+  const aplicarFinPorDefecto = (fechaValor: string, horaValor: string) => {
+    const def = calcularFinPorDefecto(fechaValor, horaValor);
+    setFechaFinState(def.fecha);
+    setHoraFechaFinState(def.hora);
+  };
 
   const setFecha = (valor: string) => {
     setFechaState(valor);
     if (!valor) {
-      setHoraFecha("");
+      setHoraFechaState("");
       setFechaFinState("");
-      setHoraFechaFin("");
+      setHoraFechaFinState("");
+      setDiasRecurrentes([]);
+      setFechaFinAuto(true);
+      return;
+    }
+    if (tipoProgramacion === "expira" && fechaFinAuto) {
+      aplicarFinPorDefecto(valor, horaFecha);
+    }
+  };
+
+  const setHoraFecha = (valor: string) => {
+    setHoraFechaState(valor);
+    if (fecha && tipoProgramacion === "expira" && fechaFinAuto) {
+      aplicarFinPorDefecto(fecha, valor);
     }
   };
 
   const setFechaFin = (valor: string) => {
     setFechaFinState(valor);
-    if (!valor) setHoraFechaFin("");
+    setFechaFinAuto(false);
+    if (!valor) setHoraFechaFinState("");
+  };
+
+  const setHoraFechaFin = (valor: string) => {
+    setHoraFechaFinState(valor);
+    setFechaFinAuto(false);
+  };
+
+  const setTipoProgramacion = (valor: TipoProgramacion) => {
+    setTipoProgramacionState(valor);
+
+    if (valor === "expira") {
+      if (fechaFinAuto && fecha) {
+        aplicarFinPorDefecto(fecha, horaFecha);
+      }
+    } else {
+      setFechaFinState("");
+      setHoraFechaFinState("");
+      setFechaFinAuto(true);
+    }
+
+    if (valor !== "recurrente") setDiasRecurrentes([]);
+  };
+
+  const toggleDiaRecurrente = (dia: number) => {
+    setDiasRecurrentes((prev) =>
+      prev.includes(dia) ? prev.filter((d) => d !== dia) : [...prev, dia].sort((a, b) => a - b),
+    );
   };
 
   const avisosQuery = useMemo(
@@ -90,9 +148,12 @@ export function useAvisosAdmin(mostrarMensaje: (mensaje: string) => void) {
     setBannerUrl("");
     setImportante(false);
     setFechaState("");
-    setHoraFecha("");
+    setHoraFechaState("");
     setFechaFinState("");
-    setHoraFechaFin("");
+    setHoraFechaFinState("");
+    setTipoProgramacionState("expira");
+    setDiasRecurrentes([]);
+    setFechaFinAuto(true);
     setIdEditando(null);
   };
 
@@ -103,9 +164,14 @@ export function useAvisosAdmin(mostrarMensaje: (mensaje: string) => void) {
     setBannerUrl(aviso.bannerUrl ?? "");
     setImportante(aviso.importante);
     setFechaState(aviso.fecha ? fechaAInputValue(aviso.fecha.toDate()) : "");
-    setHoraFecha(aviso.fecha ? horaAInputValue(aviso.fecha.toDate()) : "");
+    setHoraFechaState(aviso.fecha ? horaAInputValue(aviso.fecha.toDate()) : "");
     setFechaFinState(aviso.fechaFin ? fechaAInputValue(aviso.fechaFin.toDate()) : "");
-    setHoraFechaFin(aviso.fechaFin ? horaAInputValue(aviso.fechaFin.toDate()) : "");
+    setHoraFechaFinState(aviso.fechaFin ? horaAInputValue(aviso.fechaFin.toDate()) : "");
+    setTipoProgramacionState(aviso.tipoProgramacion ?? "expira");
+    setDiasRecurrentes(aviso.diasRecurrentes ?? []);
+    // Sin fechaFin guardada todavía se puede autocompletar; si ya existe una,
+    // es una elección real del admin y no debe recalcularse sola.
+    setFechaFinAuto(!aviso.fechaFin);
   };
 
   const ejecutarGuardado = async () => {
@@ -118,23 +184,31 @@ export function useAvisosAdmin(mostrarMensaje: (mensaje: string) => void) {
         importante,
       };
 
+      const guardaFechaFin = fecha && tipoProgramacion === "expira" && fechaFin;
+      const guardaDiasRecurrentes = fecha && tipoProgramacion === "recurrente" && diasRecurrentes.length > 0;
+
       if (idEditando) {
         await updateDoc(doc(db, "avisos", idEditando), {
           ...base,
           fecha: fecha ? Timestamp.fromDate(inputValueAFechaHora(fecha, horaFecha)) : deleteField(),
-          fechaFin: fechaFin
+          tipoProgramacion: fecha ? tipoProgramacion : deleteField(),
+          fechaFin: guardaFechaFin
             ? Timestamp.fromDate(inputValueAFechaHora(fechaFin, horaFechaFin))
             : deleteField(),
+          diasRecurrentes: guardaDiasRecurrentes ? diasRecurrentes : deleteField(),
           bannerUrl: bannerUrl.trim() ? bannerUrl.trim() : deleteField(),
         });
         mostrarMensaje("Aviso actualizado");
       } else {
         const newDocRef = await addDoc(collection(db, "avisos"), {
           ...base,
-          ...(fecha ? { fecha: Timestamp.fromDate(inputValueAFechaHora(fecha, horaFecha)) } : {}),
-          ...(fechaFin
+          ...(fecha
+            ? { fecha: Timestamp.fromDate(inputValueAFechaHora(fecha, horaFecha)), tipoProgramacion }
+            : {}),
+          ...(guardaFechaFin
             ? { fechaFin: Timestamp.fromDate(inputValueAFechaHora(fechaFin, horaFechaFin)) }
             : {}),
+          ...(guardaDiasRecurrentes ? { diasRecurrentes } : {}),
           ...(bannerUrl.trim() ? { bannerUrl: bannerUrl.trim() } : {}),
           fechaCreacion: serverTimestamp(),
         });
@@ -176,6 +250,12 @@ export function useAvisosAdmin(mostrarMensaje: (mensaje: string) => void) {
     if (!descripcion.trim() && !bannerUrl.trim()) {
       return alert("Debes escribir una descripción breve o adjuntar un banner.");
     }
+    if (fecha && tipoProgramacion === "expira" && !fechaFin) {
+      return alert("Indica la fecha en que debe quitarse el aviso, o elige otro tipo de programación.");
+    }
+    if (fecha && tipoProgramacion === "recurrente" && diasRecurrentes.length === 0) {
+      return alert("Selecciona al menos un día de la semana en que se repite.");
+    }
 
     if (idEditando) {
       setConfirmando({ accion: "guardar" });
@@ -213,6 +293,8 @@ export function useAvisosAdmin(mostrarMensaje: (mensaje: string) => void) {
     horaFecha,
     fechaFin,
     horaFechaFin,
+    tipoProgramacion,
+    diasRecurrentes,
     setTitulo,
     setDescripcion,
     setBannerUrl,
@@ -221,6 +303,8 @@ export function useAvisosAdmin(mostrarMensaje: (mensaje: string) => void) {
     setHoraFecha,
     setFechaFin,
     setHoraFechaFin,
+    setTipoProgramacion,
+    toggleDiaRecurrente,
     empezarEdicion,
     cancelarEdicion: limpiarFormulario,
     guardarAviso,

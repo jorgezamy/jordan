@@ -188,11 +188,11 @@ Lives in `src/components/avisos/`, same hooks/components split as `peticiones/`.
 
 | File | Responsibility |
 |---|---|
-| `types.ts` | `Aviso`, `AccionAviso`, `ConfirmacionAviso` |
-| `constants.ts` | `EXPIRACION_DIAS` (7), `AVISOS_LIMITE` (50) |
-| `utils.ts` | `formatFecha` (see date/time note below), `formatRangoFecha`, `esVisible`, `ordenarAvisos`, `inputValueAFechaHora`/`fechaAInputValue`/`horaAInputValue` |
+| `types.ts` | `Aviso`, `TipoProgramacion`, `AccionAviso`, `ConfirmacionAviso` |
+| `constants.ts` | `AVISOS_LIMITE` (50), `TIPO_PROGRAMACION_OPCIONES`, `DIAS_SEMANA_OPCIONES` |
+| `utils.ts` | `formatFecha` (see date/time note below), `formatRangoFecha`, `formatProgramacion`, `describirProgramacion`, `calcularTextoRecurrente`, `formatDiasRecurrentes`, `calcularFinPorDefecto`, `esVisible`, `ordenarAvisos`, `inputValueAFechaHora`/`fechaAInputValue`/`horaAInputValue` |
 | `useAvisos.ts` | Public realtime read (home carousel) — subscribes, filters by `esVisible`, sorts by `ordenarAvisos` |
-| `useAvisosAdmin.ts` | Admin CRUD: form state, create/update/delete, inline confirm flow, fires `/api/avisos/notify` on create |
+| `useAvisosAdmin.ts` | Admin CRUD: form state, create/update/delete, inline confirm flow, fires `/api/avisos/notify` on create (never on update — editing an existing aviso does not re-notify) |
 
 **Components (presentation):**
 
@@ -200,21 +200,27 @@ Lives in `src/components/avisos/`, same hooks/components split as `peticiones/`.
 |---|---|
 | `AvisosCarousel.tsx` | Public homepage carousel — autoplay (6s, pauses on hover/focus, respects `prefers-reduced-motion`), manual prev/next, and an Instagram-stories-style **segmented progress bar** (one bar per aviso, fills over the autoplay duration, doubles as a position indicator and is clickable to jump) instead of dots |
 | `GestionAvisos.tsx` | `/avisos` page orchestrator — gates on `user` (`Alert` "Esta sección es solo para administradores" if logged out), else renders `AvisoForm` + `ListaAvisosAdmin` |
-| `AvisoForm.tsx` | Create/edit form: título, banner URL (with a live `<img>` preview that falls back to an error message if the link doesn't load), descripción, fecha/hora de inicio, fecha/hora de fin (each date/time pair progressively disclosed only once the prior field has a value), "importante" checkbox, inline "¿Guardar cambios?" confirm (edits only — first-time publish saves directly) |
-| `ListaAvisosAdmin.tsx` | Admin history list — banner thumbnail if set, edit/delete buttons, inline "¿Eliminar?" confirm |
+| `AvisoForm.tsx` | Create/edit form: título, banner URL (with a live `<img>` preview that falls back to an error message if the link doesn't load), descripción, fecha/hora de inicio, then — once a start date is picked — the `TIPO_PROGRAMACION_OPCIONES` 3-way choice (`expira`/`permanente`/`recurrente`) and its dependent fields, "importante" checkbox, inline "¿Guardar cambios?" confirm (edits only — first-time publish saves directly) |
+| `ListaAvisosAdmin.tsx` | Admin history list — banner thumbnail if set, `describirProgramacion` summary line, edit/delete buttons, inline "¿Eliminar?" confirm |
 
 Behavior:
 
 - Reads/writes the Firestore `avisos` collection (last 50, ordered by `fechaCreacion` desc)
-- **Ordering on the public carousel** (`ordenarAvisos`): `importante` avisos first (sorted by `fechaCreacion` asc among themselves) → avisos with no `fecha` ("permanent", sorted by `fechaCreacion` asc) → avisos with a `fecha` (sorted by `fecha` asc — soonest first)
-- **Expiration** (`esVisible`): an aviso with no `fecha` never expires. One with a `fecha` (and optional `fechaFin`) stops appearing `EXPIRACION_DIAS` (7) days after `fechaFin ?? fecha`
+- **Ordering on the public carousel** (`ordenarAvisos`): `importante` avisos first (sorted by `fechaCreacion` asc among themselves) → avisos that never expire — no `fecha`, or `tipoProgramacion` `permanente`/`recurrente` (sorted by `fechaCreacion` asc) → avisos with `tipoProgramacion` `expira` (or legacy avisos with a `fecha` and no `tipoProgramacion`, treated as `expira`), sorted by `fecha` asc — soonest first
+- **Programación, chosen once a start date (`fecha`) is set** (`TIPO_PROGRAMACION_OPCIONES` in `AvisoForm`), stored as `tipoProgramacion`:
+  - `expira` ("Quitar después de esa fecha", the default) — requires an end date `fechaFin` (client-validated in `useAvisosAdmin.guardarAviso`, enforced in `firestore.rules`). Picking this (or picking the start date/time while it's already selected) auto-fills `fechaFin`/hora via `calcularFinPorDefecto`: same day, and 1 hour after the start time if one is set — tracked by a `fechaFinAuto` flag in `useAvisosAdmin` so the default keeps following start-date/start-time edits, but stops the moment the admin manually edits the end fields themselves (a real reported bug: without that flag, setting the start date before the start time locked in a default with no end time, since only `setFecha` recomputed the default — `setHoraFecha` didn't)
+  - `permanente` ("Mantener activo sin expirar") — has a `fecha` (shown as its date) but never expires
+  - `recurrente` ("Se repite cada semana") — has `diasRecurrentes: number[]` (`Date.getDay()` indices, 0=domingo…6=sábado, picked via `DIAS_SEMANA_OPCIONES`), never expires, and its displayed text is dynamic — see below
+  - Legacy avisos saved before this feature existed have a `fecha` but no `tipoProgramacion`; every read path treats that as `expira`
+- **Expiration** (`esVisible`): an aviso with no `fecha`, or `tipoProgramacion` `permanente`/`recurrente`, never expires. One with `tipoProgramacion` `expira` (or legacy, no `tipoProgramacion`) stops appearing **the instant** `fechaFin ?? fecha` passes — no grace period. (An earlier version kept it visible for an extra `EXPIRACION_DIAS` (7) days after that; removed per explicit user request — once the end date passes, it should come off the home page immediately.)
+- **Dynamic display text** (`formatProgramacion`, used by the carousel and — via `describirProgramacion` — the admin list): for `recurrente` avisos this is *not* a fixed date. `calcularTextoRecurrente` compares `diasRecurrentes` against "today" and returns `"Hoy"` (+ time, if the aviso has one) if today is one of the selected days, otherwise `"Próximo <día>"` for the nearest upcoming selected day — recomputed on every render, so e.g. a martes+viernes aviso reads "Próximo viernes" on Wednesday and flips to "Hoy" on Friday. For non-recurring avisos, `formatRangoFecha` shows `"Hoy"` (+ time) instead of the full date whenever `fecha` falls on the current calendar day.
 - **Date and time are independent, both optional, captured as separate `<input type="date">` + `<input type="time">` fields** (not a combined `datetime-local`) — an aviso can have a date with no specific time ("all day"). Internally a date-with-no-time is stored as local midnight, and `formatFecha` treats exactly-midnight as "no time was set" and omits the time from the formatted output. This is a deliberate heuristic rather than a new "has time" boolean field — accepted because a real event starting at exactly 00:00 is essentially never going to happen for this church.
 - All date/time ↔ `<input>` string conversion goes through `inputValueAFechaHora`/`fechaAInputValue`/`horaAInputValue`, which build/read `Date` objects from local (not UTC) components — using `new Date("YYYY-MM-DD")` directly is a real bug here (it parses as UTC midnight, which displays as the *previous* day in any timezone behind UTC, as this project's `America/Mexico_City` is)
-- Clearing the start date auto-clears the end date/time; an end date always requires a start date (enforced client-side and in `firestore.rules`)
+- Clearing the start date auto-clears the end date/time and `diasRecurrentes`, and resets `tipoProgramacion` back to `expira`; an end date always requires a start date (enforced client-side and in `firestore.rules`)
 - **Banner (optional, URL only — no file upload, see [Firebase integration](#firebase-integration))**: when set, the carousel renders the image edge-to-edge with a `bg-gradient-to-t from-black/85` scrim and título/"Importante" badge/descripción/fecha overlaid in white at the bottom. If the URL fails to load, it falls back to the plain-text layout automatically (tracked per-aviso-id in local component state, not persisted)
 - **Descripción is optional once a banner is set** (título is always required) — enforced both client-side (`useAvisosAdmin.guardarAviso`) and in `firestore.rules` (`descripcion.size() > 0 || bannerUrl present`)
 - Editing or deleting an existing aviso requires the inline "¿Confirmar?" step; publishing a **new** aviso does not
-- Publishing a new aviso fires `/api/avisos/notify` (fire-and-forget) — see [Push notifications](#push-notifications-fcm)
+- Publishing a new aviso fires `/api/avisos/notify` (fire-and-forget) — see [Push notifications](#push-notifications-fcm). Updating an existing one does not re-fire it — the `fetch()` call only sits in the `addDoc` branch of `ejecutarGuardado`, never the `updateDoc` one.
 
 The `Aviso` document shape:
 ```ts
@@ -222,11 +228,15 @@ The `Aviso` document shape:
   titulo: string,
   descripcion: string,      // required unless bannerUrl is set
   importante: boolean,
-  fecha?: Timestamp,        // start; optional
-  fechaFin?: Timestamp,     // end; only valid together with fecha
+  fecha?: Timestamp,               // start; optional
+  fechaFin?: Timestamp,            // end; only valid together with fecha, required when tipoProgramacion is "expira"
+  tipoProgramacion?: "expira" | "permanente" | "recurrente",  // only present when fecha is set; absent = legacy "expira"
+  diasRecurrentes?: number[],      // 0=domingo…6=sábado; only when tipoProgramacion is "recurrente"
   bannerUrl?: string,       // must be http(s), validated in firestore.rules
   fechaCreacion: Timestamp,
-  notificado?: boolean,
+  notificado?: boolean,            // set by /api/avisos/notify, prevents duplicate push on create
+  recordatorioEnviado?: boolean,   // set by /api/cron/recordatorio-avisos for one-time avisos (expira/permanente)
+  recordatorioFecha?: string,      // "YYYY-MM-DD"; set by the same route for recurrente avisos, one per occurrence
 }
 ```
 
@@ -298,6 +308,12 @@ Unlike the per-feature notify routes, this one sends to **all three topics at on
 The route only accepts `GET` requests carrying `Authorization: Bearer $CRON_SECRET` — Vercel automatically attaches that header when it invokes a cron path, as long as a `CRON_SECRET` env var is set on the project. **This must be added to Vercel's env vars (Project Settings → Environment Variables) for the cron to work in production** — it's not read from `.env.local` at build time the way `NEXT_PUBLIC_*`/Admin vars are, since Vercel injects it at request time; add it locally too if you want to hit the route manually while developing (`curl -H "Authorization: Bearer $CRON_SECRET" http://localhost:3000/api/cron/notificacion-diaria`).
 
 Unlike the `/api/*/notify` routes, this one has no `notificado`/recency idempotency check — nothing about it is triggered by a fresh Firestore write, so there's nothing to check against. If you repurpose this route for something other than a fixed test message, consider whether double-firing (retried cron invocation) matters for that use case.
+
+**Aviso reminders ("1 hora antes")** — `src/app/api/cron/recordatorio-avisos/route.ts` checks every aviso with a `fecha` that has a real time set (skips "todo el día" avisos — there's no meaningful "1 hour before" for those) and sends a push to the `avisos` topic once its occurrence is between 1 hour and 0 minutes away:
+- One-time avisos (`tipoProgramacion` `expira`/`permanente`, or legacy docs with no `tipoProgramacion`) get exactly one reminder, guarded by a `recordatorioEnviado: true` flag set after sending (never resets — matches the `notificado` idempotency pattern used by the `/notify` routes, just not surfaced in the `Aviso` TS type either, same as `notificado`)
+- `recurrente` avisos get one reminder **per occurrence**: the check recomputes today's occurrence from `diasRecurrentes` + the time-of-day stored in `fecha`, and guards with `recordatorioFecha` (a `"YYYY-MM-DD"` string of the last date a reminder was sent) instead of a boolean, since the same aviso needs to remind again every week
+- All the day-of-week/hour math is done by shifting between real UTC instants and a fixed `UTC-6` "Mexico-shifted" `Date` (reading it back with `getUTCDay()`/`getUTCHours()` etc. then gives Mexico local components) — same fixed-offset assumption as the daily cron above, not a general timezone library
+- **This route is deliberately not on Vercel Cron.** Detecting a 1-hour-out window needs a check roughly every 10–15 minutes, but Vercel's Hobby plan throttles cron jobs to once a day regardless of the configured schedule — Pro allows finer schedules, but this project doesn't assume that tier. Instead, `.github/workflows/recordatorio-avisos.yml` runs on a GitHub Actions `schedule` (`*/15 * * * *`) and just `curl`s this route with the same `Authorization: Bearer $CRON_SECRET` convention. **This requires `CRON_SECRET` to also be added as a GitHub Actions repository secret** (Settings → Secrets and variables → Actions), using the same value as Vercel's — it is a separate secret store, adding it to Vercel alone is not enough for this path. GitHub also disables scheduled workflows after ~60 days of repo inactivity; if reminders silently stop, check the Actions tab for a disabled workflow before assuming the app itself is broken.
 
 ### Configuración page (`/configuracion`)
 

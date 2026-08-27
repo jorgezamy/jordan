@@ -1,0 +1,26 @@
+name: Recordatorio de avisos
+
+# Dispara /api/cron/recordatorio-avisos cada 15 min. Se usa GitHub Actions en
+# vez de Vercel Cron porque el plan Hobby de Vercel limita los cron jobs a
+# una ejecución diaria — insuficiente para detectar la ventana de "1 hora
+# antes" de cada aviso. Requiere el secret CRON_SECRET en este repo
+# (Settings → Secrets and variables → Actions), con el mismo valor que
+# CRON_SECRET en las variables de entorno de Vercel.
+#
+# Nota: GitHub deshabilita los workflows programados tras ~60 días sin
+# actividad en el repo. Si los recordatorios dejan de llegar, revisar en la
+# pestaña Actions si este workflow quedó deshabilitado y reactivarlo ahí.
+
+on:
+  schedule:
+    - cron: "*/15 * * * *"
+  workflow_dispatch: {}
+
+jobs:
+  disparar:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Llamar al endpoint de recordatorio
+        run: |
+          curl -sf -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            https://www.centrocristianojordan.com/api/cron/recordatorio-avisos

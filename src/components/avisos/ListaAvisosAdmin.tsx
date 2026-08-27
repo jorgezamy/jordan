@@ -2,7 +2,7 @@
 
 import { Button } from "../ui/Button";
 import { useAvisosAdmin } from "./useAvisosAdmin";
-import { formatFecha, formatRangoFecha } from "./utils";
+import { describirProgramacion, formatFecha } from "./utils";
 
 interface ListaAvisosAdminProps {
   admin: ReturnType<typeof useAvisosAdmin>;
@@ -57,7 +57,7 @@ export function ListaAvisosAdmin({ admin }: ListaAvisosAdminProps) {
                         <p className="text-sm text-gray-700 dark:text-gray-300 mt-1">{a.descripcion}</p>
                       )}
                       <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">
-                        {a.fecha ? `Programado: ${formatRangoFecha(a.fecha, a.fechaFin)}` : "Sin fecha (permanente)"}
+                        {describirProgramacion(a)}
                         {" · "}Publicado: {formatFecha(a.fechaCreacion)}
                       </p>
                     </div>
