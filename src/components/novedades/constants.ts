@@ -10,7 +10,7 @@ export const NOVEDADES = [
   {
     titulo: "Nuestra dirección, más fácil de encontrar",
     descripcion:
-      "Agregamos la dirección del templo al final de cada página — tócala para abrirla directo en Google Maps.",
+      "Agregamos la dirección de la iglesia al final de cada página — tócala para abrirla directo en Google Maps.",
   },
   {
     titulo: "Avisos que se repiten cada semana",

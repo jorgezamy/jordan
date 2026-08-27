@@ -10,7 +10,7 @@ export const FooterPage = () => {
           href={CHURCH_MAPS_URL}
           target="_blank"
           rel="noopener noreferrer"
-          className="inline-flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400 hover:text-accent dark:hover:text-accent transition"
+          className="inline-flex items-center gap-1.5 text-sm text-gray-600 dark:text-gray-400 underline underline-offset-2 hover:text-accent dark:hover:text-accent transition"
         >
           <LocationIcon className="w-4 h-4 shrink-0 text-accent" />
           <span>{CHURCH_ADDRESS}</span>
