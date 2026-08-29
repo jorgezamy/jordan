@@ -31,9 +31,18 @@ function claveFechaMx(fechaMx: Date): string {
   return `${y}-${m}-${d}`;
 }
 
+// El cron corre cada ~15 min (ver nota arriba), así que el envío real puede
+// caer en cualquier punto de la ventana de 1 hora, no justo a los 60 min.
+function formatTiempoRestante(minutos: number): string {
+  if (minutos >= 60) return "Comienza en menos de 1 hora.";
+  if (minutos <= 1) return "Comienza en menos de 1 minuto.";
+  return `Comienza en aproximadamente ${minutos} minutos.`;
+}
+
 interface RecordatorioPendiente {
   ref: DocumentReference;
   titulo: string;
+  minutosRestantes: number;
   marcarEnviado: () => Promise<WriteResult>;
 }
 
@@ -84,6 +93,7 @@ export async function GET(req: NextRequest) {
           pendientes.push({
             ref: docSnap.ref,
             titulo: data.titulo,
+            minutosRestantes: Math.round(msRestantes / 60000),
             marcarEnviado: () => docSnap.ref.update({ recordatorioFecha: claveHoy }),
           });
         }
@@ -95,6 +105,7 @@ export async function GET(req: NextRequest) {
           pendientes.push({
             ref: docSnap.ref,
             titulo: data.titulo,
+            minutosRestantes: Math.round(msRestantes / 60000),
             marcarEnviado: () => docSnap.ref.update({ recordatorioEnviado: true }),
           });
         }
@@ -108,7 +119,7 @@ export async function GET(req: NextRequest) {
           topic: TOPICS.avisos,
           notification: {
             title: `Recordatorio: ${item.titulo}`,
-            body: "Comienza en aproximadamente 1 hora.",
+            body: formatTiempoRestante(item.minutosRestantes),
           },
           data: { avisoId: item.ref.id, link: "/" },
           webpush: {
