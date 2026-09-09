@@ -140,7 +140,7 @@ Behavior:
 
 - Reads/writes to the Firestore `peticiones` collection (last 50, ordered by `fechaCreacion` desc)
 - Uses a realtime `onSnapshot` listener (raw docs kept in `peticionesRaw`) — no manual refresh needed
-- Visibility is computed client-side in a `useMemo` keyed on `[peticionesRaw, user]`, filtering by state: `pendiente` = always visible, `resuelto` = visible for 1 month, `eliminada` = **only visible to logged-in registered users**, and additionally only within 2 weeks of `fechaEliminada`
+- Visibility is computed client-side in a `useMemo` keyed on `[peticionesRaw, user]`, filtering by state: `pendiente` and `resuelto` = always visible, `eliminada` = **only visible to logged-in registered users**, and additionally only within 2 weeks of `fechaEliminada`
 - The `eliminada` state is shown in the UI as **"Cancelada"** (status pill, date label, messages) — only the display label changed, the Firestore `estado` value and field names (`fechaEliminada`, etc.) are still `"eliminada"`
 - Admin actions are **only visible to logged-in registered users** (`user !== null`), one set per state:
   - `pendiente` → mark resolved (✔) or cancel (✕ icon on `bg-danger`)

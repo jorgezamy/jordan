@@ -67,11 +67,8 @@ export function usePeticionesData(
         return true;
       }
 
-      if (p.estado === "resuelto" && p.fechaResuelta) {
-        const fechaResuelta = p.fechaResuelta.toDate();
-        const unMesDespues = new Date(fechaResuelta);
-        unMesDespues.setMonth(unMesDespues.getMonth() + 1);
-        return ahora <= unMesDespues;
+      if (p.estado === "resuelto") {
+        return true;
       }
 
       if (p.estado === "eliminada") {
