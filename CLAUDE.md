@@ -373,6 +373,13 @@ No longer a static "coming soon" page. Renders `<CitaBiblicaCard />` and `<Aviso
 - The layout is a plain `flex flex-col`. **Do not** reintroduce a `grid-rows-[1fr_auto_1fr]` / `min-h-screen` "vertically centered hero" trick here, and don't put `mt-auto` back on `<footer>` (`src/components/footer/page.tsx`). Both were tried together as a "sticky footer" pattern and left a large empty gap between content and the footer whenever the page was short (e.g. before any avisos/citas had been published) — the footer should always directly follow content, never be force-pinned to the viewport bottom.
 - The tagline ("Estamos trabajando para el reino de los cielos.") and the "Seguir canal de WhatsApp" button both intentionally combine `whitespace-nowrap` with a smaller mobile font size (`text-sm`/`text-base` vs. the `sm:` desktop size) specifically to guarantee one line on real phones (~340px width and up) — this was a reported bug fix, not arbitrary styling. The tagline also has `max-w-[92vw] sm:max-w-none` as a safety net, so on any narrower/legacy viewport it degrades to wrapping instead of causing horizontal page scroll.
 
+### SEO
+
+- Site-wide `metadata` (title template, description, Open Graph, Twitter card) is defined once in `layout.tsx`, plus a `Church` JSON-LD block (name, address, `sameAs` social links) injected into `<head>`. `og-image.png` (`public/`, 1200×630) is a dedicated image, not a crop of the site logo — regenerate it at that exact size if branding changes.
+- Every route under `src/app/` sets its own `export const metadata` (at minimum a `title`). The four admin-only pages (`avisos`, `citas`, `alertas`, `configuracion`) set `robots: { index: false, follow: false }` — keep this in sync with `robots.ts`'s `disallow` list and `sitemap.ts` (both currently agree on excluding those same four routes)
+- `sitemap.ts` / `robots.ts` are hand-written (not content-driven) since only three routes are meant to be publicly indexed: `/`, `/peticiones`, `/politica-privacidad`. If a new public-facing top-level page is added, add it to `sitemap.ts` too — it isn't auto-discovered from the route tree
+- **Known gap:** the home page (`src/app/page.tsx`) has no `<h1>` — its first heading is the `<h2>Síguenos</h2>` card. Fix this before doing further on-page SEO work there, since it's the one page meant to rank. There's also no `alternates.canonical` set anywhere (global or per-page); low priority since `metadataBase` is set, but worth adding if duplicate-content issues show up.
+
 ### Component conventions
 
 - Components live in `src/components/<feature>/` and are exported through `src/components/index.ts`

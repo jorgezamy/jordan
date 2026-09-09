@@ -63,6 +63,10 @@ Todo cambio o funcionalidad nueva debe seguir estas reglas (detalladas en [CLAUD
 - **Seguridad primero.** Ninguna validación del lado del cliente reemplaza autorización real del lado del servidor / reglas de Firestore. No exponer datos sensibles (`telefono`, `correo`, peticiones canceladas) a usuarios no autenticados.
 - Verificar con `npx tsc --noEmit` (y `npm run build` en cambios grandes) antes de dar por terminado un cambio, y desplegar `firestore.rules` si se tocó.
 
+## SEO
+
+Metadata (Open Graph, Twitter card, JSON-LD `Church`), `sitemap.ts` y `robots.ts` están configurados para indexar solo `/`, `/peticiones` y `/politica-privacidad` — las páginas admin-only (`avisos`, `citas`, `alertas`, `configuracion`) están marcadas `noindex`. Detalle completo en [CLAUDE.md → SEO](./CLAUDE.md#seo).
+
 ## Aprender más
 
 - [Documentación de Next.js](https://nextjs.org/docs)
