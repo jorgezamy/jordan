@@ -6,6 +6,7 @@ import { SOCIAL_LINKS } from "./constants";
 export default function Home() {
   return (
     <div className="flex flex-col items-center gap-12 px-8 py-12 sm:px-20 sm:py-16 font-[family-name:var(--font-geist-sans)]">
+      <h1 className="sr-only">Centro Cristiano Jordán</h1>
       <div className="w-full max-w-2xl flex flex-col items-center gap-4">
         <CitaBiblicaCard />
         <AvisosCarousel />

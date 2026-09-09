@@ -6,6 +6,7 @@ export const metadata: Metadata = {
   title: "Peticiones de Oración",
   description:
     "Comparte tu petición de oración con el Centro Cristiano Jordán y ora junto a nuestra comunidad.",
+  alternates: { canonical: "/peticiones" },
 };
 
 export default function Page() {

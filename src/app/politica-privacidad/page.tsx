@@ -5,6 +5,7 @@ import { BackHomeLink } from "../../components/ui/BackHomeLink";
 export const metadata: Metadata = {
   title: "Política de privacidad — Centro Cristiano Jordán",
   description: "Cómo el Centro Cristiano Jordán recopila, usa y protege tu información.",
+  alternates: { canonical: "/politica-privacidad" },
 };
 
 function PolicySection({ title, children }: { title: string; children: ReactNode }) {
