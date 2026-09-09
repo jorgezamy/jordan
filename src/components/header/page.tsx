@@ -7,6 +7,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useAutoSolicitarNotificaciones } from "../../hooks/useAutoSolicitarNotificaciones";
 import { useFcmForeground } from "../../hooks/useFcmForeground";
 import AuthModal from "../auth/AuthModal";
+import { CloseIcon } from "../ui/CloseIcon";
 import { GearIcon } from "../ui/GearIcon";
 import { LockIcon } from "../ui/LockIcon";
 import { UserAvatarButton } from "./UserAvatarButton";
@@ -26,7 +27,7 @@ export const HeaderPage = () => {
   return (
     <>
       <header className="bg-primary shadow-lg">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
+        <div className="relative z-50 max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
 
           {/* Logo */}
           <Link href="/" className="flex-shrink-0">
@@ -95,10 +96,26 @@ export const HeaderPage = () => {
           </div>
         </div>
 
-        {/* Dropdown móvil */}
+        {/* Dropdown móvil — overlay flotante, no desplaza el contenido */}
         {menuOpen && user && (
-          <div className="sm:hidden bg-primary-darker border-t border-white/10 px-3 py-4">
-            <UserMenuContent email={user.email!} onLogout={handleLogout} onNavigate={handleNavigate} />
+          <div className="sm:hidden">
+            <div
+              onClick={() => setMenuOpen(false)}
+              aria-hidden="true"
+              className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm motion-safe:animate-[fade-in_0.2s_ease-out]"
+            />
+            <div className="fixed top-16 inset-x-0 z-40 bg-primary-darker rounded-b-2xl shadow-2xl px-4 pt-3 pb-4 motion-safe:animate-[modal-in_0.25s_ease-out]">
+              <div className="flex justify-end mb-1">
+                <button
+                  onClick={() => setMenuOpen(false)}
+                  aria-label="Cerrar menú"
+                  className="w-8 h-8 flex items-center justify-center rounded-full text-white/70 hover:text-white hover:bg-white/10 transition"
+                >
+                  <CloseIcon />
+                </button>
+              </div>
+              <UserMenuContent email={user.email!} onLogout={handleLogout} onNavigate={handleNavigate} />
+            </div>
           </div>
         )}
       </header>
