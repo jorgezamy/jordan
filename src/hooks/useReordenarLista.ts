@@ -13,62 +13,39 @@ export interface DragHandleGestureProps {
   onPointerCancel: (e: React.PointerEvent<HTMLButtonElement>) => void;
 }
 
-// Una fila renderizable de una lista arrastrable: un item, o el hueco que
-// marca dónde quedaría el item arrastrado si se soltara en ese punto.
-export type FilaArrastre<T> = { tipo: "item"; item: T } | { tipo: "hueco" };
-
-// Arma las filas a renderizar: los items en su orden actual, con un "hueco"
-// insertado donde quedaría el item arrastrado si se soltara ahí ahora
-// (indicador visual de destino durante el arrastre). Pensada para usarse
-// directamente con el `items`/`arrastrandoId`/`indiceDestino` que devuelve
-// `useReordenarLista`.
-export function construirFilasArrastre<T extends { id: string }>(
-  items: T[],
-  arrastrandoId: string | null,
-  indiceDestino: number | null,
-): FilaArrastre<T>[] {
-  if (!arrastrandoId || indiceDestino === null) {
-    return items.map((item) => ({ tipo: "item", item }));
-  }
-
-  const filas: FilaArrastre<T>[] = [];
-  let indiceVisible = 0;
-
-  items.forEach((item) => {
-    const esArrastrado = item.id === arrastrandoId;
-    if (!esArrastrado && indiceVisible === indiceDestino) filas.push({ tipo: "hueco" });
-    filas.push({ tipo: "item", item });
-    if (!esArrastrado) indiceVisible++;
-  });
-
-  if (indiceVisible === indiceDestino) filas.push({ tipo: "hueco" });
-
-  return filas;
-}
-
 // Reordenamiento por arrastre (mouse + touch, vía Pointer Events) para
 // cualquier lista con filas identificables por `id` — hoy la usa
 // "Avisos publicados" (src/components/avisos/ListaAvisosAdmin.tsx), pero no
 // depende de nada específico de avisos, para poder reusarla en la próxima
 // lista que necesite orden manual.
 //
-// Mientras se arrastra, la fila activa flota siguiendo al puntero (vía
-// `offsetY`, aplicado por quien la use como `translateY`) y `indiceDestino`
-// indica dónde quedaría al soltar; el resto de la lista no se reacomoda
-// hasta soltar. Al soltar (o cuando `items` cambia por una actualización
-// remota), toda la lista anima con la técnica FLIP en vez de saltar de golpe
-// a su nueva posición.
+// La fila arrastrada sigue al puntero pixel a pixel escribiendo su
+// `transform` directamente en el DOM (no vía estado de React) para que sea
+// fluido — actualizar estado de React en cada evento de movimiento fuerza un
+// re-render de toda la lista por cada pixel, que es lo que se sentía
+// "atorado". El resto de la lista sí se reordena en vivo en cuanto el
+// puntero cruza a un vecino (para que se aparten de verdad, no solo se
+// muestre una línea de destino), animado con la técnica FLIP. Lo único que
+// se pospone hasta soltar es `onReordenar`: el guardado real (Firestore vía
+// quien use el hook) solo se dispara una vez, al final.
 export function useReordenarLista<T extends { id: string }>(
   itemsIniciales: T[],
   onReordenar: (nuevoOrden: T[]) => void,
 ) {
   const [items, setItems] = useState(itemsIniciales);
   const [arrastrandoId, setArrastrandoId] = useState<string | null>(null);
-  const [offsetY, setOffsetY] = useState(0);
-  const [indiceDestino, setIndiceDestino] = useState<number | null>(null);
 
   const elementosRef = useRef<Map<string, HTMLLIElement>>(new Map());
+  // Última posición natural (top, sin transform) conocida de cada fila —
+  // usada tanto para animar el FLIP de las filas quietas como para anclar
+  // la fila arrastrada al puntero.
   const posicionesRef = useRef<Map<string, number>>(new Map());
+  // Dónde debería estar visualmente el top de la fila arrastrada ahora
+  // mismo (coordenadas de viewport), actualizado en cada pointermove.
+  const desiredTopRef = useRef(0);
+  // Distancia entre el puntero y el top de la fila al agarrarla — se resta
+  // siempre para que la fila no "salte" a quedar centrada en el puntero.
+  const grabOffsetRef = useRef(0);
   const startYRef = useRef(0);
   const seMovioRef = useRef(false);
 
@@ -81,20 +58,33 @@ export function useReordenarLista<T extends { id: string }>(
   useLayoutEffect(() => {
     items.forEach((item) => {
       const el = elementosRef.current.get(item.id);
-      if (!el || item.id === arrastrandoId) return;
+      if (!el) return;
+
+      // Medir la posición "natural" (sin transform) siempre requiere
+      // quitar primero cualquier transform que haya quedado puesto a mano
+      // (arrastre en curso, o recién soltado) — si no, la medición
+      // arrastraría ese offset y el cálculo de abajo saldría mal.
+      el.style.transition = "none";
+      el.style.transform = "none";
+      const posicionNatural = el.getBoundingClientRect().top;
+
+      if (item.id === arrastrandoId) {
+        posicionesRef.current.set(item.id, posicionNatural);
+        el.style.transform = `translateY(${desiredTopRef.current - posicionNatural}px) scale(1.02)`;
+        return;
+      }
 
       const posicionPrevia = posicionesRef.current.get(item.id);
-      const posicionActual = el.getBoundingClientRect().top;
-
-      if (posicionPrevia !== undefined && posicionPrevia !== posicionActual) {
-        el.style.transition = "none";
-        el.style.transform = `translateY(${posicionPrevia - posicionActual}px)`;
+      if (posicionPrevia !== undefined && posicionPrevia !== posicionNatural) {
+        el.style.transform = `translateY(${posicionPrevia - posicionNatural}px)`;
         requestAnimationFrame(() => {
-          el.style.transition = "transform 220ms ease";
+          el.style.transition = "transform 200ms ease";
           el.style.transform = "";
         });
+      } else {
+        el.style.transform = "";
       }
-      posicionesRef.current.set(item.id, posicionActual);
+      posicionesRef.current.set(item.id, posicionNatural);
     });
   }, [items, arrastrandoId]);
 
@@ -103,8 +93,8 @@ export function useReordenarLista<T extends { id: string }>(
     else elementosRef.current.delete(id);
   };
 
-  // Índice (entre los items NO arrastrados) donde quedaría el item
-  // arrastrado si se soltara ahora, según la posición vertical del puntero.
+  // Índice (entre los items NO arrastrados) donde debería quedar el item
+  // arrastrado ahora mismo, según la posición vertical del puntero.
   const calcularIndiceDestino = (pointerY: number, idArrastrado: string) => {
     const visibles = items.filter((item) => item.id !== idArrastrado);
     for (let i = 0; i < visibles.length; i++) {
@@ -114,52 +104,63 @@ export function useReordenarLista<T extends { id: string }>(
     return visibles.length;
   };
 
-  const soltar = () => {
-    if (arrastrandoId && seMovioRef.current && indiceDestino !== null) {
-      const arrastrado = items.find((item) => item.id === arrastrandoId);
-      if (arrastrado) {
-        // Guarda dónde quedó visualmente (con el transform del arrastre
-        // todavía aplicado) para que la animación FLIP que sigue arranque
-        // justo ahí, en vez de saltar de vuelta a su posición original.
-        const el = elementosRef.current.get(arrastrandoId);
-        if (el) posicionesRef.current.set(arrastrandoId, el.getBoundingClientRect().top);
-
-        const nuevo = items.filter((item) => item.id !== arrastrandoId);
-        nuevo.splice(indiceDestino, 0, arrastrado);
-        setItems(nuevo);
-        onReordenar(nuevo);
-      }
-    }
-    setArrastrandoId(null);
-    setOffsetY(0);
-    setIndiceDestino(null);
-  };
-
   const onPointerDown = (id: string) => (e: React.PointerEvent<HTMLButtonElement>) => {
     if (e.pointerType === "mouse" && e.button !== 0) return;
     e.currentTarget.setPointerCapture(e.pointerId);
-    setArrastrandoId(id);
+
+    const rect = elementosRef.current.get(id)?.getBoundingClientRect();
+    const naturalTop = rect ? rect.top : e.clientY;
+
+    grabOffsetRef.current = e.clientY - naturalTop;
+    desiredTopRef.current = naturalTop;
     startYRef.current = e.clientY;
-    // Insertarlo de vuelta en este mismo índice (dentro de la lista sin él)
-    // reconstruye el orden original si se suelta sin mover el puntero.
-    setIndiceDestino(items.findIndex((item) => item.id === id));
-    setOffsetY(0);
     seMovioRef.current = false;
+
+    setArrastrandoId(id);
   };
 
   const onPointerMove = (id: string) => (e: React.PointerEvent<HTMLButtonElement>) => {
     if (arrastrandoId !== id) return;
-    const delta = e.clientY - startYRef.current;
-    if (Math.abs(delta) > UMBRAL_ARRASTRE_PX) seMovioRef.current = true;
-    setOffsetY(delta);
-    setIndiceDestino(calcularIndiceDestino(e.clientY, id));
+
+    if (!seMovioRef.current && Math.abs(e.clientY - startYRef.current) > UMBRAL_ARRASTRE_PX) {
+      seMovioRef.current = true;
+    }
+
+    desiredTopRef.current = e.clientY - grabOffsetRef.current;
+
+    const el = elementosRef.current.get(id);
+    const naturalTop = posicionesRef.current.get(id);
+    if (el && naturalTop !== undefined) {
+      el.style.transform = `translateY(${desiredTopRef.current - naturalTop}px) scale(1.02)`;
+    }
+
+    if (!seMovioRef.current) return;
+
+    const indiceActual = items.findIndex((item) => item.id === id);
+    const indiceDestino = calcularIndiceDestino(e.clientY, id);
+    if (indiceDestino !== indiceActual) {
+      const arrastrado = items[indiceActual];
+      const nuevo = items.filter((item) => item.id !== id);
+      nuevo.splice(indiceDestino, 0, arrastrado);
+      setItems(nuevo);
+    }
   };
 
-  const cancelar = () => {
+  const soltar = () => {
+    if (arrastrandoId) {
+      const el = elementosRef.current.get(arrastrandoId);
+      if (el) {
+        // Congela dónde quedó visualmente (con el transform del arrastre
+        // todavía aplicado) para que la animación FLIP que sigue arranque
+        // justo ahí, en vez de saltar de vuelta a su posición natural.
+        posicionesRef.current.set(arrastrandoId, el.getBoundingClientRect().top);
+      }
+      if (seMovioRef.current) onReordenar(items);
+    }
     setArrastrandoId(null);
-    setOffsetY(0);
-    setIndiceDestino(null);
   };
+
+  const cancelar = () => setArrastrandoId(null);
 
   const dragHandleProps = (id: string): DragHandleGestureProps => ({
     onPointerDown: onPointerDown(id),
@@ -168,5 +169,5 @@ export function useReordenarLista<T extends { id: string }>(
     onPointerCancel: cancelar,
   });
 
-  return { items, arrastrandoId, offsetY, indiceDestino, registrarRef, dragHandleProps };
+  return { items, arrastrandoId, registrarRef, dragHandleProps };
 }

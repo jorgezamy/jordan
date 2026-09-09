@@ -1,6 +1,6 @@
 "use client";
 
-import { construirFilasArrastre, useReordenarLista } from "../../hooks/useReordenarLista";
+import { useReordenarLista } from "../../hooks/useReordenarLista";
 import { GripIcon } from "../ui/GripIcon";
 import { AvisoAdminCard } from "./AvisoAdminCard";
 import { useAvisosAdmin } from "./useAvisosAdmin";
@@ -14,13 +14,9 @@ export function ListaAvisosAdmin({ admin }: ListaAvisosAdminProps) {
   const { avisos, loading, confirmando, empezarEdicion, pedirEliminar, cancelarConfirmacion, confirmarAccion, guardarOrden } =
     admin;
 
-  const { items, arrastrandoId, offsetY, indiceDestino, registrarRef, dragHandleProps } = useReordenarLista(
-    avisos,
-    guardarOrden,
-  );
+  const { items, arrastrandoId, registrarRef, dragHandleProps } = useReordenarLista(avisos, guardarOrden);
 
   const ahora = new Date();
-  const filas = construirFilasArrastre(items, arrastrandoId, indiceDestino);
 
   return (
     <>
@@ -43,35 +39,21 @@ export function ListaAvisosAdmin({ admin }: ListaAvisosAdminProps) {
         <p className="text-gray-500 dark:text-gray-400">No hay avisos todavía.</p>
       ) : (
         <ul className="space-y-4">
-          {filas.map((fila) => {
-            if (fila.tipo === "hueco") {
-              return (
-                <li
-                  key="hueco"
-                  className="h-1.5 -my-2.5 rounded-full bg-accent motion-safe:animate-[fade-in_0.15s_ease-out]"
-                />
-              );
-            }
-
-            const a = fila.item;
-
-            return (
-              <AvisoAdminCard
-                key={a.id}
-                aviso={a}
-                activo={esVisible(a, ahora)}
-                arrastrando={a.id === arrastrandoId}
-                offsetY={offsetY}
-                refCallback={registrarRef(a.id)}
-                dragHandleProps={dragHandleProps(a.id)}
-                confirmandoEliminar={confirmando?.accion === "eliminar" && confirmando.id === a.id}
-                onEditar={() => empezarEdicion(a)}
-                onPedirEliminar={() => pedirEliminar(a.id)}
-                onConfirmarEliminar={confirmarAccion}
-                onCancelarConfirmacion={cancelarConfirmacion}
-              />
-            );
-          })}
+          {items.map((a) => (
+            <AvisoAdminCard
+              key={a.id}
+              aviso={a}
+              activo={esVisible(a, ahora)}
+              arrastrando={a.id === arrastrandoId}
+              refCallback={registrarRef(a.id)}
+              dragHandleProps={dragHandleProps(a.id)}
+              confirmandoEliminar={confirmando?.accion === "eliminar" && confirmando.id === a.id}
+              onEditar={() => empezarEdicion(a)}
+              onPedirEliminar={() => pedirEliminar(a.id)}
+              onConfirmarEliminar={confirmarAccion}
+              onCancelarConfirmacion={cancelarConfirmacion}
+            />
+          ))}
         </ul>
       )}
     </>

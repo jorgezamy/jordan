@@ -10,7 +10,6 @@ interface AvisoAdminCardProps {
   aviso: Aviso;
   activo: boolean;
   arrastrando: boolean;
-  offsetY: number;
   refCallback: (el: HTMLLIElement | null) => void;
   dragHandleProps: DragHandleGestureProps;
   confirmandoEliminar: boolean;
@@ -24,7 +23,6 @@ export function AvisoAdminCard({
   aviso,
   activo,
   arrastrando,
-  offsetY,
   refCallback,
   dragHandleProps,
   confirmandoEliminar,
@@ -36,11 +34,10 @@ export function AvisoAdminCard({
   return (
     <li
       ref={refCallback}
-      style={
-        arrastrando
-          ? { transform: `translateY(${offsetY}px) scale(1.01)`, position: "relative", zIndex: 30 }
-          : undefined
-      }
+      // El transform del arrastre lo escribe useReordenarLista directamente
+      // en el DOM (ver ese hook) — aquí solo position/z-index, que sí puede
+      // ir por el ciclo normal de React porque no cambia en cada pixel.
+      style={arrastrando ? { position: "relative", zIndex: 30 } : undefined}
       className={`p-4 rounded-lg border-t border-r border-b border-t-gray-200 border-r-gray-200 border-b-gray-200 dark:border-t-white/10 dark:border-r-white/10 dark:border-b-white/10 border-l-4 shadow-sm bg-white dark:bg-surface-dark ${
         activo ? "border-l-success" : "border-l-gray-300 dark:border-l-gray-600"
       } ${arrastrando ? "shadow-xl ring-2 ring-accent" : ""}`}
