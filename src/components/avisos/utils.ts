@@ -27,19 +27,28 @@ function formatHora12(hora: string) {
   );
 }
 
+function formatHora(date: Date) {
+  return new Intl.DateTimeFormat("es-MX", { hour: "numeric", minute: "2-digit" }).format(date);
+}
+
+function formatFechaSola(date: Date) {
+  return new Intl.DateTimeFormat("es-MX", { day: "numeric", month: "long", year: "numeric" }).format(
+    date,
+  );
+}
+
+function tieneHora(date: Date) {
+  return date.getHours() !== 0 || date.getMinutes() !== 0;
+}
+
 // Si `timestamp` cae en el mismo día calendario que `ahora`, se muestra "Hoy"
 // (con hora si tiene) en vez de la fecha completa.
 function formatFechaODia(timestamp: Timestamp, ahora: Date) {
   const date = timestamp.toDate();
   if (!esMismoDia(date, ahora)) return formatFecha(timestamp);
+  if (!tieneHora(date)) return "Hoy";
 
-  const tieneHora = date.getHours() !== 0 || date.getMinutes() !== 0;
-  if (!tieneHora) return "Hoy";
-
-  const hora = new Intl.DateTimeFormat("es-MX", { hour: "numeric", minute: "2-digit" }).format(
-    date,
-  );
-  return `Hoy, ${hora}`;
+  return `Hoy, ${formatHora(date)}`;
 }
 
 // Calcula el texto relativo para un aviso recurrente: "Hoy" si hoy es uno de
@@ -88,13 +97,12 @@ export function formatFecha(timestamp?: Timestamp) {
   if (!timestamp) return "";
 
   const date = timestamp.toDate();
-  const tieneHora = date.getHours() !== 0 || date.getMinutes() !== 0;
 
   return new Intl.DateTimeFormat("es-MX", {
     day: "numeric",
     month: "long",
     year: "numeric",
-    ...(tieneHora ? { hour: "numeric" as const, minute: "2-digit" as const } : {}),
+    ...(tieneHora(date) ? { hour: "numeric" as const, minute: "2-digit" as const } : {}),
   }).format(date);
 }
 
@@ -139,6 +147,20 @@ export function esVisible(aviso: Aviso, ahora: Date) {
 export function formatRangoFecha(fecha?: Timestamp, fechaFin?: Timestamp, ahora: Date = new Date()) {
   if (!fecha) return "";
   if (!fechaFin) return formatFechaODia(fecha, ahora);
+
+  const inicio = fecha.toDate();
+  const fin = fechaFin.toDate();
+
+  // Mismo día: "Hoy de 8:00 p. m. a 9:00 p. m." en vez de repetir la fecha
+  // completa en ambos extremos ("Del hoy, 8pm al 8 de septiembre, 9pm").
+  if (esMismoDia(inicio, fin)) {
+    const dia = esMismoDia(inicio, ahora) ? "Hoy" : formatFechaSola(inicio);
+    if (tieneHora(inicio) && tieneHora(fin)) {
+      return `${dia} de ${formatHora(inicio)} a ${formatHora(fin)}`;
+    }
+    return dia;
+  }
+
   return `Del ${formatFechaODia(fecha, ahora)} al ${formatFecha(fechaFin)}`;
 }
 
