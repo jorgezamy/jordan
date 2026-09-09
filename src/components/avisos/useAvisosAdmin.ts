@@ -14,6 +14,7 @@ import {
   serverTimestamp,
   Timestamp,
   updateDoc,
+  writeBatch,
 } from "firebase/firestore";
 
 import { db } from "../../../firebaseConfig";
@@ -24,10 +25,11 @@ import {
   fechaAInputValue,
   horaAInputValue,
   inputValueAFechaHora,
+  ordenarPorPosicion,
 } from "./utils";
 
 export function useAvisosAdmin(mostrarMensaje: (mensaje: string) => void) {
-  const [avisos, setAvisos] = useState<Aviso[]>([]);
+  const [avisosRaw, setAvisosRaw] = useState<Aviso[]>([]);
   const [loading, setLoading] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [idEditando, setIdEditando] = useState<string | null>(null);
@@ -129,7 +131,7 @@ export function useAvisosAdmin(mostrarMensaje: (mensaje: string) => void) {
           ...docSnap.data(),
         })) as Aviso[];
 
-        setAvisos(docs);
+        setAvisosRaw(docs);
         setLoading(false);
       },
 
@@ -141,6 +143,8 @@ export function useAvisosAdmin(mostrarMensaje: (mensaje: string) => void) {
 
     return () => unsubscribe();
   }, [avisosQuery]);
+
+  const avisos = useMemo(() => ordenarPorPosicion(avisosRaw), [avisosRaw]);
 
   const limpiarFormulario = () => {
     setTitulo("");
@@ -200,8 +204,15 @@ export function useAvisosAdmin(mostrarMensaje: (mensaje: string) => void) {
         });
         mostrarMensaje("Aviso actualizado");
       } else {
+        // Se publica al frente de la lista/carrusel: un orden menor a
+        // cualquier existente. El admin puede arrastrarlo después si quiere
+        // otra posición.
+        const ordenActual = avisos.map((a) => a.orden).filter((o): o is number => o !== undefined);
+        const nuevoOrden = ordenActual.length ? Math.min(...ordenActual) - 1 : 0;
+
         const newDocRef = await addDoc(collection(db, "avisos"), {
           ...base,
+          orden: nuevoOrden,
           ...(fecha
             ? { fecha: Timestamp.fromDate(inputValueAFechaHora(fecha, horaFecha)), tipoProgramacion }
             : {}),
@@ -264,6 +275,29 @@ export function useAvisosAdmin(mostrarMensaje: (mensaje: string) => void) {
     }
   };
 
+  // Persiste un nuevo orden de arrastre: solo escribe los avisos cuya
+  // posición realmente cambió, no la lista completa en cada drop.
+  const guardarOrden = async (nuevoOrden: Aviso[]) => {
+    const batch = writeBatch(db);
+    let huboCambios = false;
+
+    nuevoOrden.forEach((a, index) => {
+      if (a.orden !== index) {
+        batch.update(doc(db, "avisos", a.id), { orden: index });
+        huboCambios = true;
+      }
+    });
+
+    if (!huboCambios) return;
+
+    try {
+      await batch.commit();
+    } catch (error) {
+      console.error("❌ Error guardando el orden:", error);
+      alert("Ocurrió un error al guardar el nuevo orden.");
+    }
+  };
+
   const pedirEliminar = (id: string) => setConfirmando({ accion: "eliminar", id });
   const cancelarConfirmacion = () => setConfirmando(null);
 
@@ -308,6 +342,7 @@ export function useAvisosAdmin(mostrarMensaje: (mensaje: string) => void) {
     empezarEdicion,
     cancelarEdicion: limpiarFormulario,
     guardarAviso,
+    guardarOrden,
     pedirEliminar,
     cancelarConfirmacion,
     confirmarAccion,

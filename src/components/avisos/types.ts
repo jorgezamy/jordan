@@ -15,6 +15,11 @@ export interface Aviso {
   diasRecurrentes?: number[]; // 0 = domingo … 6 = sábado; solo si tipoProgramacion === "recurrente"
   bannerUrl?: string;
   fechaCreacion: Timestamp;
+  // Posición manual (menor = primero) asignada por el admin al arrastrar en
+  // "Avisos publicados"; determina el orden en el carrusel de inicio. Avisos
+  // previos a esta funcionalidad no lo tienen hasta correr la migración —
+  // ver ordenarPorPosicion en utils.ts.
+  orden?: number;
 }
 
 export type AccionAviso = "guardar" | "eliminar";

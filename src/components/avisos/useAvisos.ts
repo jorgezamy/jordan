@@ -12,7 +12,7 @@ import {
 import { db } from "../../../firebaseConfig";
 import { AVISOS_LIMITE } from "./constants";
 import { Aviso } from "./types";
-import { esVisible, ordenarAvisos } from "./utils";
+import { esVisible, ordenarPorPosicion } from "./utils";
 
 export function useAvisos() {
   const [avisosRaw, setAvisosRaw] = useState<Aviso[]>([]);
@@ -53,7 +53,7 @@ export function useAvisos() {
 
   const avisos = useMemo(() => {
     const ahora = new Date();
-    return ordenarAvisos(avisosRaw.filter((a) => esVisible(a, ahora)));
+    return ordenarPorPosicion(avisosRaw.filter((a) => esVisible(a, ahora)));
   }, [avisosRaw]);
 
   return { avisos, loading };

@@ -190,21 +190,15 @@ export function describirProgramacion(aviso: Aviso, ahora: Date = new Date()): s
   return `Programado: ${formatRangoFecha(aviso.fecha, aviso.fechaFin, ahora)}`;
 }
 
-export function ordenarAvisos(avisos: Aviso[]) {
-  const porFechaCreacion = (a: Aviso, b: Aviso) =>
-    a.fechaCreacion.toMillis() - b.fechaCreacion.toMillis();
-
-  const importantes = avisos
-    .filter((a) => a.importante)
-    .sort(porFechaCreacion);
-
-  const sinExpiracion = avisos
-    .filter((a) => !a.importante && (!a.fecha || noExpira(a)))
-    .sort(porFechaCreacion);
-
-  const conFecha = avisos
-    .filter((a) => !a.importante && a.fecha && !noExpira(a))
-    .sort((a, b) => a.fecha!.toMillis() - b.fecha!.toMillis());
-
-  return [...importantes, ...sinExpiracion, ...conFecha];
+// Orden manual asignado por el admin (arrastrar en "Avisos publicados"),
+// menor `orden` primero. Es el mismo orden que ve el público en el
+// carrusel de inicio. Avisos sin `orden` (no migrados todavía) van al
+// final, ordenados entre sí por fecha de creación más reciente primero.
+export function ordenarPorPosicion(avisos: Aviso[]) {
+  return [...avisos].sort((a, b) => {
+    if (a.orden !== undefined && b.orden !== undefined) return a.orden - b.orden;
+    if (a.orden !== undefined) return -1;
+    if (b.orden !== undefined) return 1;
+    return b.fechaCreacion.toMillis() - a.fechaCreacion.toMillis();
+  });
 }
