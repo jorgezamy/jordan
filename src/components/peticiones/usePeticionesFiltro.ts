@@ -42,12 +42,17 @@ export function usePeticionesFiltro(peticiones: Peticion[], user: User | null) {
       );
     });
 
+    // Filtrando por "Resueltas", el orden más reciente/antigua debe basarse
+    // en cuándo se resolvió cada una, no en cuándo se creó originalmente.
+    const fechaOrden = (p: Peticion) =>
+      estadoFiltro === "resuelto" ? (p.fechaResuelta ?? p.fechaCreacion) : p.fechaCreacion;
+
     return [...resultado].sort((a, b) => {
       const ordenEstado = ESTADO_ORDEN[a.estado] - ESTADO_ORDEN[b.estado];
       if (ordenEstado !== 0) return ordenEstado;
 
-      const fechaA = a.fechaCreacion?.toMillis?.() ?? 0;
-      const fechaB = b.fechaCreacion?.toMillis?.() ?? 0;
+      const fechaA = fechaOrden(a)?.toMillis?.() ?? 0;
+      const fechaB = fechaOrden(b)?.toMillis?.() ?? 0;
       return ordenAsc ? fechaA - fechaB : fechaB - fechaA;
     });
   }, [peticiones, busqueda, estadoFiltro, ordenAsc]);
