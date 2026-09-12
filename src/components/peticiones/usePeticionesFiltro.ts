@@ -42,10 +42,11 @@ export function usePeticionesFiltro(peticiones: Peticion[], user: User | null) {
       );
     });
 
-    // Filtrando por "Resueltas", el orden más reciente/antigua debe basarse
-    // en cuándo se resolvió cada una, no en cuándo se creó originalmente.
+    // Para una petición resuelta, más reciente/antigua se basa en cuándo se
+    // resolvió, no en cuándo se creó originalmente — aplica tanto si se
+    // filtra por "Resueltas" como dentro de ese grupo al ver "Todas".
     const fechaOrden = (p: Peticion) =>
-      estadoFiltro === "resuelto" ? (p.fechaResuelta ?? p.fechaCreacion) : p.fechaCreacion;
+      p.estado === "resuelto" ? (p.fechaResuelta ?? p.fechaCreacion) : p.fechaCreacion;
 
     return [...resultado].sort((a, b) => {
       const ordenEstado = ESTADO_ORDEN[a.estado] - ESTADO_ORDEN[b.estado];
