@@ -12,9 +12,18 @@ export default function Home() {
         <AvisosCarousel />
       </div>
 
-      <p className="text-sm sm:text-2xl text-gray-600 dark:text-gray-400 text-center max-w-[92vw] sm:max-w-none">
-        Estamos trabajando para el reino de los cielos.
-      </p>
+      <div className="w-full max-w-md flex flex-col items-center gap-2.5">
+        <div className="flex items-center gap-3 w-full">
+          <span className="flex-1 h-px bg-gradient-to-r from-transparent to-accent/40" />
+          <span className="shrink-0 text-xs font-bold uppercase tracking-widest text-accent">
+            Nuestra misión
+          </span>
+          <span className="flex-1 h-px bg-gradient-to-l from-transparent to-accent/40" />
+        </div>
+        <p className="whitespace-nowrap text-sm sm:text-lg font-medium text-gray-700 dark:text-gray-300 text-center max-w-[92vw] sm:max-w-none">
+          Estamos trabajando para el reino de los cielos.
+        </p>
+      </div>
 
       <div className="w-full max-w-md">
         <div className="relative overflow-hidden rounded-3xl border border-accent-subtle dark:border-white/10 bg-white/80 dark:bg-surface-dark/80 backdrop-blur-sm shadow-[0_10px_40px_rgba(20,184,166,0.12)] p-6 sm:p-8">
