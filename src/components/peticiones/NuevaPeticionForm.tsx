@@ -4,7 +4,7 @@ import { EditorContent } from "@tiptap/react";
 
 import { Alert } from "../ui/Alert";
 import { Button } from "../ui/Button";
-import { TextInput } from "../ui/TextInput";
+import { ClearableTextInput } from "../ui/ClearableTextInput";
 import { useNuevaPeticion } from "./useNuevaPeticion";
 
 interface NuevaPeticionFormProps {
@@ -59,12 +59,13 @@ export function NuevaPeticionForm({ form, mensajeExito }: NuevaPeticionFormProps
           Nombre
         </label>
 
-        <TextInput
+        <ClearableTextInput
           type="text"
           value={nombre}
           disabled={anonimo}
           maxLength={80}
           onChange={(e) => setNombre(e.target.value)}
+          onClear={() => setNombre("")}
           placeholder={anonimo ? "Anónimo" : "Escribe aquí el nombre..."}
           className="w-full rounded-lg px-3 py-2"
         />
@@ -95,10 +96,11 @@ export function NuevaPeticionForm({ form, mensajeExito }: NuevaPeticionFormProps
               Teléfono{" "}
               <span className="text-gray-400 dark:text-gray-500 font-normal">(opcional)</span>
             </label>
-            <TextInput
+            <ClearableTextInput
               type="tel"
               value={telefono}
               onChange={(e) => setTelefono(e.target.value)}
+              onClear={() => setTelefono("")}
               maxLength={20}
               placeholder="Ej. 55 1234 5678"
               className="w-full rounded-lg px-3 py-2"
@@ -110,10 +112,11 @@ export function NuevaPeticionForm({ form, mensajeExito }: NuevaPeticionFormProps
               Correo electrónico{" "}
               <span className="text-gray-400 dark:text-gray-500 font-normal">(opcional)</span>
             </label>
-            <TextInput
+            <ClearableTextInput
               type="email"
               value={correo}
               onChange={(e) => setCorreo(e.target.value)}
+              onClear={() => setCorreo("")}
               maxLength={80}
               placeholder="Ej. nombre@correo.com"
               className="w-full rounded-lg px-3 py-2"

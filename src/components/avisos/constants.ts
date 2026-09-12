@@ -1,6 +1,17 @@
-import { TipoProgramacion } from "./types";
+import { OrigenBanner, TipoProgramacion } from "./types";
 
 export const AVISOS_LIMITE = 50;
+
+export const ORIGEN_BANNER_OPCIONES: { key: OrigenBanner; label: string }[] = [
+  { key: "publica", label: "URL pública" },
+  { key: "drive", label: "Google Drive" },
+];
+
+// El link normal de "compartir" de Google Drive no sirve como <img src> (es
+// una página HTML, no la imagen); este prefijo sí carga la imagen
+// directamente, siempre que el archivo esté compartido como "Cualquier
+// persona con el enlace". El admin solo pega el ID del archivo.
+export const DRIVE_BANNER_BASE_URL = "https://lh3.googleusercontent.com/d/";
 
 export const TIPO_PROGRAMACION_OPCIONES: { key: TipoProgramacion; label: string }[] = [
   { key: "expira", label: "Quitar después de esa fecha" },

@@ -1,13 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Alert } from "../ui/Alert";
 import { Button } from "../ui/Button";
+import { ClearableTextInput } from "../ui/ClearableTextInput";
 import { FieldLabel } from "../ui/FieldLabel";
+import { SegmentedControl } from "../ui/SegmentedControl";
 import { TextInput } from "../ui/TextInput";
-import { DIAS_SEMANA_OPCIONES, TIPO_PROGRAMACION_OPCIONES } from "./constants";
+import { DIAS_SEMANA_OPCIONES, DRIVE_BANNER_BASE_URL, ORIGEN_BANNER_OPCIONES, TIPO_PROGRAMACION_OPCIONES } from "./constants";
+import { OrigenBanner } from "./types";
 import { useAvisosAdmin } from "./useAvisosAdmin";
-import { calcularTextoRecurrente } from "./utils";
+import { calcularTextoRecurrente, construirBannerUrlDrive, extraerIdDriveDeBannerUrl } from "./utils";
 
 interface AvisoFormProps {
   admin: ReturnType<typeof useAvisosAdmin>;
@@ -46,6 +49,22 @@ export function AvisoForm({ admin, mensajeExito }: AvisoFormProps) {
   } = admin;
 
   const [bannerError, setBannerError] = useState(false);
+  const [origenBanner, setOrigenBanner] = useState<OrigenBanner>(() =>
+    extraerIdDriveDeBannerUrl(bannerUrl) ? "drive" : "publica",
+  );
+
+  // Re-sincroniza qué input mostrar cada vez que se entra/sale de editar un
+  // aviso (idEditando cambia), ya que bannerUrl pasa a ser el de ese aviso.
+  useEffect(() => {
+    setOrigenBanner(extraerIdDriveDeBannerUrl(bannerUrl) ? "drive" : "publica");
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [idEditando]);
+
+  const bannerDriveId = extraerIdDriveDeBannerUrl(bannerUrl);
+  const limpiarBanner = () => {
+    setBannerUrl("");
+    setBannerError(false);
+  };
 
   const confirmandoGuardar = confirmando?.accion === "guardar";
 
@@ -57,11 +76,12 @@ export function AvisoForm({ admin, mensajeExito }: AvisoFormProps) {
 
       <div className="mb-4">
         <FieldLabel>Título</FieldLabel>
-        <TextInput
+        <ClearableTextInput
           type="text"
           value={titulo}
           maxLength={80}
           onChange={(e) => setTitulo(e.target.value)}
+          onClear={() => setTitulo("")}
           placeholder="Ej. Ayuno congregacional"
           className="w-full rounded-lg px-3 py-2"
         />
@@ -72,17 +92,58 @@ export function AvisoForm({ admin, mensajeExito }: AvisoFormProps) {
           URL del banner{" "}
           <span className="text-gray-400 dark:text-gray-500 font-normal">(opcional)</span>
         </FieldLabel>
-        <TextInput
-          type="url"
-          value={bannerUrl}
-          maxLength={500}
-          onChange={(e) => {
-            setBannerUrl(e.target.value);
-            setBannerError(false);
-          }}
-          placeholder="https://..."
-          className="w-full rounded-lg px-3 py-2"
+        <SegmentedControl
+          options={ORIGEN_BANNER_OPCIONES}
+          value={origenBanner}
+          onChange={setOrigenBanner}
+          className="flex w-full sm:w-fit mb-2"
+          optionClassName="flex-1 sm:flex-none px-3 py-1.5 text-xs"
         />
+
+        {origenBanner === "drive" ? (
+          <div>
+            <p
+              className="text-xs font-mono text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-white/10 rounded-md px-2 py-1.5 mb-1.5 truncate"
+              title={DRIVE_BANNER_BASE_URL}
+            >
+              {DRIVE_BANNER_BASE_URL}
+            </p>
+            <ClearableTextInput
+              type="text"
+              value={bannerDriveId}
+              maxLength={200}
+              onChange={(e) => {
+                setBannerUrl(construirBannerUrlDrive(e.target.value));
+                setBannerError(false);
+              }}
+              onClear={limpiarBanner}
+              placeholder="ID del archivo"
+              className="w-full rounded-lg px-3 py-2"
+            />
+          </div>
+        ) : (
+          <ClearableTextInput
+            type="url"
+            value={bannerUrl}
+            maxLength={500}
+            onChange={(e) => {
+              setBannerUrl(e.target.value);
+              setBannerError(false);
+            }}
+            onClear={limpiarBanner}
+            placeholder="https://..."
+            className="w-full rounded-lg px-3 py-2"
+          />
+        )}
+
+        {origenBanner === "drive" && (
+          <p className="mt-1.5 text-xs text-gray-500 dark:text-gray-400">
+            El archivo debe estar compartido como &quot;Cualquier persona con el enlace&quot;. Copia solo el ID
+            (la parte entre <span className="font-mono">/d/</span> y <span className="font-mono">/view</span> del
+            link para compartir).
+          </p>
+        )}
+
         {bannerUrl.trim() && (
           <div className="mt-2 rounded-lg overflow-hidden border border-primary/20 dark:border-white/20 bg-gray-50 dark:bg-white/5 aspect-[16/9] max-w-sm">
             {bannerError ? (

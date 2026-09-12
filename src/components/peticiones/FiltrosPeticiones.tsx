@@ -2,8 +2,8 @@
 
 import { User } from "firebase/auth";
 
+import { ClearableTextInput } from "../ui/ClearableTextInput";
 import { SegmentedControl } from "../ui/SegmentedControl";
-import { TextInput } from "../ui/TextInput";
 import { ORDEN_OPCIONES } from "./constants";
 import { usePeticionesFiltro } from "./usePeticionesFiltro";
 
@@ -42,24 +42,15 @@ export function FiltrosPeticiones({ filtro, user }: FiltrosPeticionesProps) {
           <circle cx="11" cy="11" r="8" />
           <path d="m21 21-4.35-4.35" />
         </svg>
-        <TextInput
+        <ClearableTextInput
           type="text"
           value={busqueda}
           onChange={(e) => setBusqueda(e.target.value)}
+          onClear={() => setBusqueda("")}
+          clearAriaLabel="Limpiar búsqueda"
           placeholder="Buscar por nombre, descripción o número."
-          className="w-full rounded-full pl-9 pr-9 py-2 text-sm"
+          className="w-full rounded-full pl-9 py-2 text-sm"
         />
-        {busqueda && (
-          <button
-            onClick={() => setBusqueda("")}
-            className="absolute right-2.5 top-1/2 -translate-y-1/2 flex items-center justify-center w-5 h-5 rounded-full bg-primary/20 dark:bg-white/20 hover:bg-primary/40 hover:dark:bg-white/40 text-primary dark:text-white transition"
-            aria-label="Limpiar búsqueda"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-3 h-3">
-              <path fillRule="evenodd" d="M5.47 5.47a.75.75 0 0 1 1.06 0L12 10.94l5.47-5.47a.75.75 0 1 1 1.06 1.06L13.06 12l5.47 5.47a.75.75 0 1 1-1.06 1.06L12 13.06l-5.47 5.47a.75.75 0 0 1-1.06-1.06L10.94 12 5.47 6.53a.75.75 0 0 1 0-1.06Z" clipRule="evenodd" />
-            </svg>
-          </button>
-        )}
       </div>
 
       <div className="flex flex-wrap items-center gap-2">

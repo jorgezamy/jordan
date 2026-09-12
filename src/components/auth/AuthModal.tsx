@@ -2,10 +2,10 @@
 
 import { Alert } from "../ui/Alert";
 import { Button } from "../ui/Button";
+import { ClearableTextInput } from "../ui/ClearableTextInput";
 import { FieldLabel } from "../ui/FieldLabel";
 import { LockIcon } from "../ui/LockIcon";
 import { PasswordInput } from "../ui/PasswordInput";
-import { TextInput } from "../ui/TextInput";
 import { AuthTab, useAuthModal } from "./useAuthModal";
 
 interface AuthModalProps {
@@ -108,11 +108,12 @@ export default function AuthModal({
                 <form onSubmit={handleForgot} className="space-y-4">
                   <div>
                     <FieldLabel>Correo electrónico</FieldLabel>
-                    <TextInput
+                    <ClearableTextInput
                       variant="modal"
                       type="email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
+                      onClear={() => setEmail("")}
                       required
                       className="w-full rounded-lg px-3 py-2.5"
                       placeholder="correo@ejemplo.com"
@@ -143,11 +144,12 @@ export default function AuthModal({
             <form onSubmit={handleLogin} className="space-y-4">
               <div>
                 <FieldLabel>Correo electrónico</FieldLabel>
-                <TextInput
+                <ClearableTextInput
                   variant="modal"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onClear={() => setEmail("")}
                   required
                   className="w-full rounded-lg px-3 py-2.5"
                   placeholder="correo@ejemplo.com"
@@ -184,11 +186,12 @@ export default function AuthModal({
             <form onSubmit={handleRegister} className="space-y-4">
               <div>
                 <FieldLabel>Correo electrónico</FieldLabel>
-                <TextInput
+                <ClearableTextInput
                   variant="modal"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
+                  onClear={() => setEmail("")}
                   required
                   className="w-full rounded-lg px-3 py-2.5"
                   placeholder="correo@ejemplo.com"

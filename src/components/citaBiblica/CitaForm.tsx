@@ -2,8 +2,8 @@
 
 import { Alert } from "../ui/Alert";
 import { Button } from "../ui/Button";
+import { ClearableTextInput } from "../ui/ClearableTextInput";
 import { FieldLabel } from "../ui/FieldLabel";
-import { TextInput } from "../ui/TextInput";
 import { VERSIONES_BIBLICAS } from "./constants";
 import { useCitasAdmin } from "./useCitasAdmin";
 
@@ -52,11 +52,12 @@ export function CitaForm({ admin, mensajeExito }: CitaFormProps) {
       <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
         <div>
           <FieldLabel>Referencia</FieldLabel>
-          <TextInput
+          <ClearableTextInput
             type="text"
             value={referencia}
             maxLength={80}
             onChange={(e) => setReferencia(e.target.value)}
+            onClear={() => setReferencia("")}
             placeholder="Ej. Juan 3:16"
             className="w-full rounded-lg px-3 py-2"
           />

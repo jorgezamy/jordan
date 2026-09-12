@@ -4,6 +4,10 @@ import { Timestamp } from "firebase/firestore";
 // para avisos antiguos que tienen `fecha` pero no `tipoProgramacion`.
 export type TipoProgramacion = "expira" | "permanente" | "recurrente";
 
+// Solo controla qué input muestra AvisoForm para capturar bannerUrl — no se
+// persiste en Firestore, el documento solo guarda la URL final resultante.
+export type OrigenBanner = "publica" | "drive";
+
 export interface Aviso {
   id: string;
   titulo: string;

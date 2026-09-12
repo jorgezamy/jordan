@@ -1,5 +1,6 @@
 import { Timestamp } from "firebase/firestore";
 
+import { DRIVE_BANNER_BASE_URL } from "./constants";
 import { Aviso } from "./types";
 
 const DIAS_SEMANA_NOMBRE = [
@@ -131,6 +132,18 @@ export function horaAInputValue(date: Date): string {
   const h = String(date.getHours()).padStart(2, "0");
   const min = String(date.getMinutes()).padStart(2, "0");
   return `${h}:${min}`;
+}
+
+export function construirBannerUrlDrive(id: string): string {
+  return id.trim() ? `${DRIVE_BANNER_BASE_URL}${id.trim()}` : "";
+}
+
+// Si bannerUrl viene de Drive, devuelve solo el ID para precargar el input al
+// editar un aviso existente; si es una URL pública normal, devuelve "".
+export function extraerIdDriveDeBannerUrl(bannerUrl: string): string {
+  return bannerUrl.startsWith(DRIVE_BANNER_BASE_URL)
+    ? bannerUrl.slice(DRIVE_BANNER_BASE_URL.length)
+    : "";
 }
 
 function noExpira(aviso: Aviso) {

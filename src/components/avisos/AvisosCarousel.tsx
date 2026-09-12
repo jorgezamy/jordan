@@ -71,33 +71,35 @@ export function AvisosCarousel() {
       {mostrarBanner ? (
         <div
           key={aviso.id}
-          className="relative rounded-2xl overflow-hidden aspect-video motion-safe:animate-[fade-in_0.35s_ease-out]"
+          className="rounded-2xl overflow-hidden border border-gray-100 dark:border-white/10 shadow-sm motion-safe:animate-[fade-in_0.35s_ease-out]"
         >
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={aviso.bannerUrl}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover"
-            onError={() => setBannerError((prev) => ({ ...prev, [aviso.id]: true }))}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
+          <div className="relative aspect-video">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src={aviso.bannerUrl}
+              alt=""
+              className="absolute inset-0 w-full h-full object-cover"
+              onError={() => setBannerError((prev) => ({ ...prev, [aviso.id]: true }))}
+            />
+            {aviso.importante && (
+              <span className="absolute top-3 left-3 inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-primary-accent text-white shadow">
+                Importante
+              </span>
+            )}
+          </div>
 
-          <div className="absolute inset-x-0 bottom-0 p-4">
-            <div className="flex items-center gap-2 flex-wrap">
-              {aviso.importante && (
-                <span className="inline-flex items-center gap-1 text-xs font-bold px-2.5 py-1 rounded-full bg-primary-accent text-white">
-                  Importante
-                </span>
-              )}
-              <h3 className="text-lg font-bold text-white drop-shadow-sm">{aviso.titulo}</h3>
-            </div>
+          {/* Texto en un panel sólido, no sobre la imagen — así se ve legible sin importar qué banner suba el admin */}
+          <div className="bg-white dark:bg-surface-dark px-4 py-3">
+            <h3 className="text-lg font-bold text-gray-900 dark:text-white">{aviso.titulo}</h3>
 
             {aviso.descripcion && (
-              <p className="mt-1 text-sm text-white/90 leading-relaxed">{aviso.descripcion}</p>
+              <p className="mt-1 text-sm text-gray-600 dark:text-gray-300 leading-relaxed">
+                {aviso.descripcion}
+              </p>
             )}
 
             {aviso.fecha && (
-              <p className="mt-1.5 text-xs font-medium text-white/80">
+              <p className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-accent-hover dark:text-accent">
                 {formatProgramacion(aviso)}
               </p>
             )}
