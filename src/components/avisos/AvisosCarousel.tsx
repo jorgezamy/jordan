@@ -12,6 +12,7 @@ export function AvisosCarousel() {
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [bannerError, setBannerError] = useState<Record<string, boolean>>({});
+  const [bannerCargado, setBannerCargado] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     setIndex(0);
@@ -73,12 +74,15 @@ export function AvisosCarousel() {
           key={aviso.id}
           className="rounded-2xl overflow-hidden border border-gray-100 dark:border-white/10 shadow-sm motion-safe:animate-[fade-in_0.35s_ease-out]"
         >
-          <div className="relative aspect-video">
+          <div className="relative aspect-video bg-gray-100 dark:bg-white/10">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={aviso.bannerUrl}
               alt=""
-              className="absolute inset-0 w-full h-full object-cover"
+              className={`absolute inset-0 w-full h-full object-cover transition-all duration-700 ease-out motion-reduce:transition-none ${
+                bannerCargado[aviso.id] ? "opacity-100 scale-100" : "opacity-0 scale-105"
+              }`}
+              onLoad={() => setBannerCargado((prev) => ({ ...prev, [aviso.id]: true }))}
               onError={() => setBannerError((prev) => ({ ...prev, [aviso.id]: true }))}
             />
             {aviso.importante && (
@@ -89,7 +93,7 @@ export function AvisosCarousel() {
           </div>
 
           {/* Texto en un panel sólido, no sobre la imagen — así se ve legible sin importar qué banner suba el admin */}
-          <div className="bg-white dark:bg-surface-dark px-4 py-3">
+          <div className="bg-white dark:bg-surface-dark px-4 py-3 motion-safe:animate-[fade-in_0.4s_ease-out_0.15s_backwards]">
             <h3 className="text-lg font-bold text-gray-900 dark:text-white">{aviso.titulo}</h3>
 
             {aviso.descripcion && (
