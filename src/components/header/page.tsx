@@ -33,7 +33,7 @@ export const HeaderPage = () => {
   return (
     <>
       <header className="bg-primary shadow-lg">
-        <div className="relative z-50 max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-between h-16">
+        <div className="relative z-50 max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-center sm:justify-between h-16">
 
           <div className="flex items-center gap-8">
             <Link href="/" className="flex-shrink-0">
