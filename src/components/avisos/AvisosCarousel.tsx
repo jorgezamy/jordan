@@ -30,7 +30,19 @@ export function AvisosCarousel() {
     return () => clearInterval(timer);
   }, [paused, avisos.length]);
 
-  if (loading) return null;
+  if (loading) {
+    return (
+      <div
+        className="w-full max-w-2xl rounded-3xl border border-accent-subtle dark:border-white/10 bg-white/80 dark:bg-surface-dark/80 px-6 py-5 sm:px-8 sm:py-6 motion-safe:animate-pulse"
+        aria-hidden="true"
+      >
+        <div className="h-3 w-16 rounded-full bg-gray-200 dark:bg-white/10 mb-4" />
+        <div className="aspect-video rounded-2xl bg-gray-200 dark:bg-white/10 mb-3" />
+        <div className="h-4 w-2/3 rounded-full bg-gray-200 dark:bg-white/10 mb-2" />
+        <div className="h-3 w-1/2 rounded-full bg-gray-200 dark:bg-white/10" />
+      </div>
+    );
+  }
 
   if (error) {
     return (

@@ -7,6 +7,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useAutoSolicitarNotificaciones } from "../../hooks/useAutoSolicitarNotificaciones";
 import { useFcmForeground } from "../../hooks/useFcmForeground";
 import AuthModal from "../auth/AuthModal";
+import { Alert } from "../ui/Alert";
 import { CloseIcon } from "../ui/CloseIcon";
 import { GearIcon } from "../ui/GearIcon";
 import { LockIcon } from "../ui/LockIcon";
@@ -17,11 +18,21 @@ export const HeaderPage = () => {
   const { user, logout } = useAuth();
   const [showModal, setShowModal] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [logoutError, setLogoutError] = useState("");
   useFcmForeground();
   useAutoSolicitarNotificaciones();
 
   const initial = user?.email?.[0]?.toUpperCase();
-  const handleLogout = () => { logout(); setMenuOpen(false); };
+  const handleLogout = async () => {
+    setLogoutError("");
+    try {
+      await logout();
+      setMenuOpen(false);
+    } catch (error) {
+      console.error("❌ Error cerrando sesión:", error);
+      setLogoutError("No se pudo cerrar sesión. Revisa tu conexión e intenta de nuevo.");
+    }
+  };
   const handleNavigate = () => setMenuOpen(false);
 
   return (
@@ -66,6 +77,11 @@ export const HeaderPage = () => {
                 <UserAvatarButton initial={initial} onClick={() => setMenuOpen((v) => !v)} />
                 {menuOpen && (
                   <div className="absolute right-0 top-full mt-2 bg-primary-darker border border-white/10 rounded-xl shadow-2xl p-3 pt-4 min-w-[220px] z-50">
+                    {logoutError && (
+                      <Alert variant="danger" className="px-3 py-2 mb-2 text-xs">
+                        {logoutError}
+                      </Alert>
+                    )}
                     <UserMenuContent email={user.email!} onLogout={handleLogout} onNavigate={handleNavigate} />
                   </div>
                 )}
@@ -114,6 +130,11 @@ export const HeaderPage = () => {
                   <CloseIcon />
                 </button>
               </div>
+              {logoutError && (
+                <Alert variant="danger" className="px-3 py-2 mb-2 text-xs">
+                  {logoutError}
+                </Alert>
+              )}
               <UserMenuContent email={user.email!} onLogout={handleLogout} onNavigate={handleNavigate} />
             </div>
           </div>

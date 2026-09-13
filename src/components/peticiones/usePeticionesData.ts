@@ -21,6 +21,7 @@ import { AccionPeticion, Confirmacion, Peticion } from "./types";
 export function usePeticionesData(
   user: User | null,
   mostrarMensaje: (mensaje: string) => void,
+  mostrarError: (mensaje: string) => void,
 ) {
   const [peticionesRaw, setPeticionesRaw] = useState<Peticion[]>([]);
   const [loading, setLoading] = useState(true);
@@ -135,7 +136,7 @@ export function usePeticionesData(
       mostrarMensaje(mensaje);
     } catch (error) {
       console.error("❌ Error actualizando:", error);
-      alert("Ocurrió un error.");
+      mostrarError("Ocurrió un error al actualizar la petición. Revisa tu conexión e intenta de nuevo.");
     }
   };
 

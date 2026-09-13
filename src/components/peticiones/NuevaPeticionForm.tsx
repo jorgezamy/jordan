@@ -19,6 +19,7 @@ export function NuevaPeticionForm({ form, mensajeExito }: NuevaPeticionFormProps
     telefono,
     correo,
     guardando,
+    error,
     editor,
     setNombre,
     setTelefono,
@@ -156,6 +157,12 @@ export function NuevaPeticionForm({ form, mensajeExito }: NuevaPeticionFormProps
       {/* ========================= */}
       {/* MENSAJE */}
       {/* ========================= */}
+
+      {error && (
+        <Alert variant="danger" className="mt-4 px-4 py-3 text-center">
+          {error}
+        </Alert>
+      )}
 
       {mensajeExito && (
         <Alert variant="success" className="mt-4 px-4 py-3 text-center animate-pulse">

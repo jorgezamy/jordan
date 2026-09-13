@@ -22,6 +22,7 @@ export function useCitasAdmin(mostrarMensaje: (mensaje: string) => void) {
   const [citas, setCitas] = useState<Cita[]>([]);
   const [loading, setLoading] = useState(true);
   const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState("");
   const [idEditando, setIdEditando] = useState<string | null>(null);
   const [confirmando, setConfirmando] = useState<ConfirmacionCita | null>(null);
 
@@ -79,6 +80,7 @@ export function useCitasAdmin(mostrarMensaje: (mensaje: string) => void) {
   const ejecutarGuardado = async () => {
     try {
       setGuardando(true);
+      setError("");
 
       if (idEditando) {
         await updateDoc(doc(db, "citas", idEditando), {
@@ -106,7 +108,7 @@ export function useCitasAdmin(mostrarMensaje: (mensaje: string) => void) {
       limpiarFormulario();
     } catch (error) {
       console.error("❌ Error guardando cita:", error);
-      alert("Ocurrió un error al guardar.");
+      setError("Ocurrió un error al guardar. Revisa tu conexión e intenta de nuevo.");
     } finally {
       setGuardando(false);
     }
@@ -119,18 +121,19 @@ export function useCitasAdmin(mostrarMensaje: (mensaje: string) => void) {
       mostrarMensaje("Cita eliminada");
     } catch (error) {
       console.error("❌ Error eliminando cita:", error);
-      alert("Ocurrió un error al eliminar.");
+      setError("Ocurrió un error al eliminar. Revisa tu conexión e intenta de nuevo.");
     }
   };
 
   const guardarCita = () => {
     if (guardando) return;
+    setError("");
 
     if (!texto.trim()) {
-      return alert("Debes escribir el texto de la cita.");
+      return setError("Debes escribir el texto de la cita.");
     }
     if (!referencia.trim()) {
-      return alert("Debes escribir la referencia (ej. Juan 3:16).");
+      return setError("Debes escribir la referencia (ej. Juan 3:16).");
     }
 
     if (idEditando) {
@@ -159,6 +162,7 @@ export function useCitasAdmin(mostrarMensaje: (mensaje: string) => void) {
     citas,
     loading,
     guardando,
+    error,
     idEditando,
     confirmando,
     texto,

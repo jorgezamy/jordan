@@ -29,6 +29,12 @@ export default function GestionCitas() {
         Gestionar Citas Bíblicas
       </h1>
 
+      {admin.error && (
+        <Alert variant="danger" className="px-4 py-2.5 mb-4">
+          {admin.error}
+        </Alert>
+      )}
+
       <CitaForm admin={admin} mensajeExito={mensajeExito} />
 
       <ListaCitasAdmin admin={admin} />
