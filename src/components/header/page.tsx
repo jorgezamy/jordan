@@ -7,6 +7,7 @@ import { useAuth } from "../../context/AuthContext";
 import { useAutoSolicitarNotificaciones } from "../../hooks/useAutoSolicitarNotificaciones";
 import { useFcmForeground } from "../../hooks/useFcmForeground";
 import AuthModal from "../auth/AuthModal";
+import { BookIcon } from "../ui/BookIcon";
 import { CloseIcon } from "../ui/CloseIcon";
 import { GearIcon } from "../ui/GearIcon";
 import { LockIcon } from "../ui/LockIcon";
@@ -49,6 +50,15 @@ export const HeaderPage = () => {
               className="bg-accent text-white font-bold text-sm rounded-full px-5 py-2 shadow hover:bg-accent-hover active:scale-95 transition-all"
             >
               Peticiones
+            </Link>
+
+            <Link
+              href="/biblia"
+              className="w-8 h-8 flex items-center justify-center rounded-full text-white/80 hover:text-white hover:bg-white/10 transition"
+              aria-label="Biblia"
+              title="Biblia"
+            >
+              <BookIcon strokeWidth={2.2} />
             </Link>
 
             <Link
