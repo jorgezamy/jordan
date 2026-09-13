@@ -1,11 +1,22 @@
 "use client";
 
+import { Alert } from "../ui/Alert";
 import { useCitaBiblica } from "./useCitaBiblica";
 
 export function CitaBiblicaCard() {
-  const { cita, loading } = useCitaBiblica();
+  const { cita, loading, error } = useCitaBiblica();
 
-  if (loading || !cita) return null;
+  if (loading) return null;
+
+  if (error) {
+    return (
+      <Alert variant="danger" className="w-full max-w-2xl px-4 py-2.5">
+        No se pudo cargar el versículo del día. Revisa tu conexión e intenta de nuevo.
+      </Alert>
+    );
+  }
+
+  if (!cita) return null;
 
   return (
     <div className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-accent-subtle dark:border-white/10 bg-gradient-to-br from-accent-subtle/60 via-white to-white dark:from-primary-darker dark:via-surface-dark dark:to-surface-dark shadow-[0_10px_40px_rgba(20,184,166,0.12)] px-6 py-7 sm:px-8 sm:py-8 motion-safe:animate-[fade-in_0.4s_ease-out]">

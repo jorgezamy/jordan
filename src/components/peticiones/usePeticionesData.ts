@@ -24,6 +24,7 @@ export function usePeticionesData(
 ) {
   const [peticionesRaw, setPeticionesRaw] = useState<Peticion[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
   const [confirmando, setConfirmando] = useState<Confirmacion | null>(null);
 
   const peticionesQuery = useMemo(
@@ -47,11 +48,13 @@ export function usePeticionesData(
         })) as Peticion[];
 
         setPeticionesRaw(docs);
+        setError(false);
         setLoading(false);
       },
 
       (error) => {
         console.error("❌ Firebase Error:", error);
+        setError(true);
         setLoading(false);
       },
     );
@@ -139,6 +142,7 @@ export function usePeticionesData(
   return {
     peticiones,
     loading,
+    error,
     confirmando,
     pedirConfirmacion,
     cancelarConfirmacion,

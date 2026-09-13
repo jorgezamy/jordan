@@ -2,6 +2,7 @@
 
 import { User } from "firebase/auth";
 
+import { Alert } from "../ui/Alert";
 import { PeticionCard } from "./PeticionCard";
 import { usePeticionesData } from "./usePeticionesData";
 import { usePeticionesFiltro } from "./usePeticionesFiltro";
@@ -16,6 +17,7 @@ export function ListaPeticiones({ data, filtro, user }: ListaPeticionesProps) {
   const {
     peticiones,
     loading,
+    error,
     confirmando,
     pedirConfirmacion,
     cancelarConfirmacion,
@@ -38,6 +40,10 @@ export function ListaPeticiones({ data, filtro, user }: ListaPeticionesProps) {
 
       {loading ? (
         <p className="text-gray-500 dark:text-gray-400">Cargando peticiones...</p>
+      ) : error ? (
+        <Alert variant="danger" className="px-3 py-2">
+          No se pudieron cargar las peticiones. Revisa tu conexión e intenta de nuevo.
+        </Alert>
       ) : peticiones.length === 0 ? (
         <p className="text-gray-500 dark:text-gray-400">No hay peticiones todavía.</p>
       ) : peticionesFiltradas.length === 0 ? (

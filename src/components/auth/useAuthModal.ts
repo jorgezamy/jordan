@@ -74,7 +74,12 @@ export function useAuthModal(onClose: () => void, defaultTab: AuthTab = "login")
       await register(email, password, secretWord);
       onClose();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Ocurrió un error. Intenta de nuevo.");
+      const code = (err as { code?: string }).code;
+      if (code) {
+        setError(getFirebaseError(code));
+      } else {
+        setError(err instanceof Error ? err.message : "Ocurrió un error. Intenta de nuevo.");
+      }
     } finally {
       setLoading(false);
     }

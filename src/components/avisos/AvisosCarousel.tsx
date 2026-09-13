@@ -2,13 +2,14 @@
 
 import { useEffect, useState } from "react";
 
+import { Alert } from "../ui/Alert";
 import { useAvisos } from "./useAvisos";
 import { formatProgramacion } from "./utils";
 
 const AUTOPLAY_MS = 6000;
 
 export function AvisosCarousel() {
-  const { avisos, loading } = useAvisos();
+  const { avisos, loading, error } = useAvisos();
   const [index, setIndex] = useState(0);
   const [paused, setPaused] = useState(false);
   const [bannerError, setBannerError] = useState<Record<string, boolean>>({});
@@ -29,7 +30,17 @@ export function AvisosCarousel() {
     return () => clearInterval(timer);
   }, [paused, avisos.length]);
 
-  if (loading || avisos.length === 0) return null;
+  if (loading) return null;
+
+  if (error) {
+    return (
+      <Alert variant="danger" className="w-full max-w-2xl px-4 py-2.5">
+        No se pudieron cargar los avisos. Revisa tu conexión e intenta de nuevo.
+      </Alert>
+    );
+  }
+
+  if (avisos.length === 0) return null;
 
   const aviso = avisos[index];
   const mostrarBanner = Boolean(aviso.bannerUrl) && !bannerError[aviso.id];

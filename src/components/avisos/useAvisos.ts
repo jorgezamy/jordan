@@ -17,6 +17,7 @@ import { esVisible, ordenarPorPosicion } from "./utils";
 export function useAvisos() {
   const [avisosRaw, setAvisosRaw] = useState<Aviso[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const avisosQuery = useMemo(
     () =>
@@ -39,11 +40,13 @@ export function useAvisos() {
         })) as Aviso[];
 
         setAvisosRaw(docs);
+        setError(false);
         setLoading(false);
       },
 
       (error) => {
         console.error("❌ Firebase Error:", error);
+        setError(true);
         setLoading(false);
       },
     );
@@ -56,5 +59,5 @@ export function useAvisos() {
     return ordenarPorPosicion(avisosRaw.filter((a) => esVisible(a, ahora)));
   }, [avisosRaw]);
 
-  return { avisos, loading };
+  return { avisos, loading, error };
 }

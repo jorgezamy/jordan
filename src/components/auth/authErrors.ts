@@ -10,6 +10,12 @@ export function getFirebaseError(code: string): string {
     case "auth/wrong-password":
     case "auth/invalid-credential":
       return "Correo o contraseña incorrectos.";
+    case "auth/too-many-requests":
+      return "Demasiados intentos. Espera unos minutos e intenta de nuevo.";
+    case "auth/network-request-failed":
+      return "Sin conexión a internet. Revisa tu red e intenta de nuevo.";
+    case "auth/user-disabled":
+      return "Esta cuenta fue deshabilitada.";
     default:
       return "Ocurrió un error. Intenta de nuevo.";
   }

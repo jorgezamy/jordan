@@ -9,6 +9,7 @@ import { Cita } from "./types";
 export function useCitaBiblica() {
   const [cita, setCita] = useState<Cita | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const citaQuery = useMemo(
     () => query(collection(db, "citas"), orderBy("fechaCreacion", "desc"), limit(1)),
@@ -22,11 +23,13 @@ export function useCitaBiblica() {
       (snapshot) => {
         const docSnap = snapshot.docs[0];
         setCita(docSnap ? ({ id: docSnap.id, ...docSnap.data() } as Cita) : null);
+        setError(false);
         setLoading(false);
       },
 
       (error) => {
         console.error("❌ Firebase Error:", error);
+        setError(true);
         setLoading(false);
       },
     );
@@ -34,5 +37,5 @@ export function useCitaBiblica() {
     return () => unsubscribe();
   }, [citaQuery]);
 
-  return { cita, loading };
+  return { cita, loading, error };
 }
