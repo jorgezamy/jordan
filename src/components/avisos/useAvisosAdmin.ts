@@ -32,6 +32,7 @@ export function useAvisosAdmin(mostrarMensaje: (mensaje: string) => void) {
   const [avisosRaw, setAvisosRaw] = useState<Aviso[]>([]);
   const [loading, setLoading] = useState(true);
   const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState("");
   const [idEditando, setIdEditando] = useState<string | null>(null);
   const [confirmando, setConfirmando] = useState<ConfirmacionAviso | null>(null);
 
@@ -181,6 +182,7 @@ export function useAvisosAdmin(mostrarMensaje: (mensaje: string) => void) {
   const ejecutarGuardado = async () => {
     try {
       setGuardando(true);
+      setError("");
 
       const base = {
         titulo: titulo.trim(),
@@ -235,7 +237,7 @@ export function useAvisosAdmin(mostrarMensaje: (mensaje: string) => void) {
       limpiarFormulario();
     } catch (error) {
       console.error("❌ Error guardando aviso:", error);
-      alert("Ocurrió un error al guardar.");
+      setError("Ocurrió un error al guardar. Revisa tu conexión e intenta de nuevo.");
     } finally {
       setGuardando(false);
     }
@@ -248,24 +250,25 @@ export function useAvisosAdmin(mostrarMensaje: (mensaje: string) => void) {
       mostrarMensaje("Aviso eliminado");
     } catch (error) {
       console.error("❌ Error eliminando aviso:", error);
-      alert("Ocurrió un error al eliminar.");
+      setError("Ocurrió un error al eliminar. Revisa tu conexión e intenta de nuevo.");
     }
   };
 
   const guardarAviso = () => {
     if (guardando) return;
+    setError("");
 
     if (!titulo.trim()) {
-      return alert("Debes escribir un título.");
+      return setError("Debes escribir un título.");
     }
     if (!descripcion.trim() && !bannerUrl.trim()) {
-      return alert("Debes escribir una descripción breve o adjuntar un banner.");
+      return setError("Debes escribir una descripción breve o adjuntar un banner.");
     }
     if (fecha && tipoProgramacion === "expira" && !fechaFin) {
-      return alert("Indica la fecha en que debe quitarse el aviso, o elige otro tipo de programación.");
+      return setError("Indica la fecha en que debe quitarse el aviso, o elige otro tipo de programación.");
     }
     if (fecha && tipoProgramacion === "recurrente" && diasRecurrentes.length === 0) {
-      return alert("Selecciona al menos un día de la semana en que se repite.");
+      return setError("Selecciona al menos un día de la semana en que se repite.");
     }
 
     if (idEditando) {
@@ -294,7 +297,7 @@ export function useAvisosAdmin(mostrarMensaje: (mensaje: string) => void) {
       await batch.commit();
     } catch (error) {
       console.error("❌ Error guardando el orden:", error);
-      alert("Ocurrió un error al guardar el nuevo orden.");
+      setError("Ocurrió un error al guardar el nuevo orden. Revisa tu conexión e intenta de nuevo.");
     }
   };
 
@@ -317,6 +320,7 @@ export function useAvisosAdmin(mostrarMensaje: (mensaje: string) => void) {
     avisos,
     loading,
     guardando,
+    error,
     idEditando,
     confirmando,
     titulo,

@@ -14,9 +14,10 @@ import { usePeticionesFiltro } from "./usePeticionesFiltro";
 export default function Peticiones() {
   const { user } = useAuth();
   const { mensaje: mensajeExito, mostrarMensaje } = useMensajeTemporal();
+  const { mensaje: errorAccion, mostrarMensaje: mostrarError } = useMensajeTemporal();
 
   const form = useNuevaPeticion(mostrarMensaje);
-  const data = usePeticionesData(user, mostrarMensaje);
+  const data = usePeticionesData(user, mostrarMensaje, mostrarError);
   const filtro = usePeticionesFiltro(data.peticiones, user);
 
   return (
@@ -31,7 +32,7 @@ export default function Peticiones() {
 
       <FiltrosPeticiones filtro={filtro} user={user} />
 
-      <ListaPeticiones data={data} filtro={filtro} user={user} />
+      <ListaPeticiones data={data} filtro={filtro} user={user} errorAccion={errorAccion} />
     </div>
   );
 }

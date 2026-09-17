@@ -11,9 +11,10 @@ interface ListaPeticionesProps {
   data: ReturnType<typeof usePeticionesData>;
   filtro: ReturnType<typeof usePeticionesFiltro>;
   user: User | null;
+  errorAccion: string;
 }
 
-export function ListaPeticiones({ data, filtro, user }: ListaPeticionesProps) {
+export function ListaPeticiones({ data, filtro, user, errorAccion }: ListaPeticionesProps) {
   const {
     peticiones,
     loading,
@@ -37,6 +38,12 @@ export function ListaPeticiones({ data, filtro, user }: ListaPeticionesProps) {
           </span>
         )}
       </div>
+
+      {errorAccion && (
+        <Alert variant="danger" className="px-3 py-2 mb-4">
+          {errorAccion}
+        </Alert>
+      )}
 
       {loading ? (
         <p className="text-gray-500 dark:text-gray-400">Cargando peticiones...</p>

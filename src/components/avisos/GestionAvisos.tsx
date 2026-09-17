@@ -29,6 +29,12 @@ export default function GestionAvisos() {
         Gestionar Avisos
       </h1>
 
+      {admin.error && (
+        <Alert variant="danger" className="px-4 py-2.5 mb-4">
+          {admin.error}
+        </Alert>
+      )}
+
       <AvisoForm admin={admin} mensajeExito={mensajeExito} />
 
       <ListaAvisosAdmin admin={admin} />

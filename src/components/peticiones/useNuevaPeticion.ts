@@ -18,6 +18,7 @@ export function useNuevaPeticion(mostrarMensaje: (mensaje: string) => void) {
   const [telefono, setTelefono] = useState("");
   const [correo, setCorreo] = useState("");
   const [guardando, setGuardando] = useState(false);
+  const [error, setError] = useState("");
 
   const editor = useEditor({
     extensions: [StarterKit],
@@ -47,18 +48,19 @@ export function useNuevaPeticion(mostrarMensaje: (mensaje: string) => void) {
   const guardarPeticion = async () => {
     if (!editor || guardando) return;
 
+    setError("");
     const textoPlano = editor.getText().trim();
 
     if (!anonimo && !nombre.trim()) {
-      return alert("Debes escribir el nombre.");
+      return setError("Debes escribir el nombre.");
     }
 
     if (!textoPlano) {
-      return alert("Debes escribir una petición.");
+      return setError("Debes escribir una petición.");
     }
 
     if (textoPlano.length > 1000) {
-      return alert("Máximo 1000 caracteres.");
+      return setError("Máximo 1000 caracteres.");
     }
 
     try {
@@ -99,9 +101,9 @@ export function useNuevaPeticion(mostrarMensaje: (mensaje: string) => void) {
       setTelefono("");
       setCorreo("");
       editor.commands.clearContent();
-    } catch (error) {
-      console.error("❌ Error guardando:", error);
-      alert("Ocurrió un error al guardar.");
+    } catch (err) {
+      console.error("❌ Error guardando:", err);
+      setError("Ocurrió un error al guardar. Revisa tu conexión e intenta de nuevo.");
     } finally {
       setGuardando(false);
     }
@@ -113,6 +115,7 @@ export function useNuevaPeticion(mostrarMensaje: (mensaje: string) => void) {
     telefono,
     correo,
     guardando,
+    error,
     editor,
     setNombre,
     setTelefono,
