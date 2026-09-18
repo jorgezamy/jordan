@@ -1,12 +1,41 @@
 // Bump esta fecha cada vez que se publique algo nuevo — vuelve a mostrar
 // el modal a todos, incluso a quien ya vio una versión anterior.
-export const VERSION_NOVEDADES = "2026-08-27";
+export const VERSION_NOVEDADES = "2026-09-18";
 
 // Si nadie lo cierra activamente, deja de aparecer después de esta cantidad
 // de veces (para no insistir para siempre).
 export const NOVEDADES_MAX_VECES = 4;
 
 export const NOVEDADES = [
+  {
+    titulo: "La Biblia completa, en la app",
+    descripcion:
+      "Lee los 66 libros en Reina Valera 1960, Reina Valera 1909, NVI o NTV. Elige libro y capítulo, y navega de uno a otro.",
+  },
+  {
+    titulo: "Copia versículos con un toque",
+    descripcion:
+      "Copia un versículo, un capítulo completo o un rango de versículos (por ejemplo, del 3 al 7) para compartirlo donde quieras.",
+  },
+  {
+    titulo: "Un menú renovado",
+    descripcion:
+      "En la computadora, el menú ahora tiene etiquetas claras. En el celular, una barra inferior te lleva a Inicio, Biblia, Peticiones, Configuración y tu cuenta.",
+  },
+  {
+    titulo: "Avisos claros cuando algo falla",
+    descripcion:
+      "Si no cargan los avisos, las citas o las peticiones, ahora te lo decimos en pantalla en vez de mostrarte una página vacía. Los mensajes emergentes del navegador también se reemplazaron por mensajes dentro de la app.",
+  },
+  {
+    titulo: "Nuestra misión, mejor presentada",
+    descripcion: "La frase de nuestra misión en el inicio ahora tiene su propio espacio y se lee mejor.",
+  },
+  {
+    titulo: "Actualizaciones de la app más seguras",
+    descripcion:
+      "Si hay una versión nueva importante de la app en Google Play, te avisaremos para que puedas actualizarla y no te pierdas nada.",
+  },
   {
     titulo: "Nuestra dirección, más fácil de encontrar",
     descripcion:
