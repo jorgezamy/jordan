@@ -350,7 +350,8 @@ Web changes reach every installed app immediately on deploy; only shell changes 
 - The app opens the site at `/?appv=<versionCode>`; `release.ps1` bumps `appVersionCode` and writes the same number into `startUrl` on every build, so the two never drift.
 - `detectarVersionApp()` (`utils.ts`) treats a load as "inside the app" if `?appv=` is present **or** `document.referrer` starts with `android-app://com.centrocristianojordan.app` (old builds without `appv` count as version 0). The result is kept in `sessionStorage`, **not** `localStorage` — a TWA shares storage with Chrome, so localStorage would mark normal browser visitors as "app".
 - Browser visitors are never affected (`detectarVersionApp()` returns `null`).
-- **To force an update:** raise `MIN_APP_VERSION` in `appUpdate/constants.ts` to the new versionCode and push to `main`, but only *after* that build is published and available to users in Play — otherwise they get blocked with nothing to install. `0` (the default) blocks nobody.
+- **To force an update:** raise `MIN_APP_VERSION` in `appUpdate/constants.ts` to the new versionCode and push to `main`, but only *after* that build is published and available to users in Play — otherwise they get blocked with nothing to install. `0` blocks nobody. It is **not** automatic: a new `.aab` never forces anything by itself; users on any version `>= MIN_APP_VERSION` keep working. It was raised to `10` on 2026-09-18 (first build with the update screen).
+- **Reminder — every time a new `.aab` is uploaded to Play, ask the user whether to force this version.** Forcing only makes sense when the Android shell itself changed (permissions, icon, package, TWA config); web-only changes already reach everyone on deploy and don't need it. If they say yes, wait until Play shows the release as available, then set `MIN_APP_VERSION` to the new versionCode and push.
 
 ### Novedades ("what's new") modal
 
