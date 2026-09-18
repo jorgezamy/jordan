@@ -4,7 +4,7 @@ import { CHURCH_ADDRESS, CHURCH_MAPS_URL } from "./constants";
 
 export const FooterPage = () => {
   return (
-    <footer className="border-t border-primary/10 dark:border-white/10">
+    <footer className="border-t border-primary/10 dark:border-white/10 pb-32 sm:pb-0">
       <div className="max-w-3xl mx-auto px-4 py-6 flex flex-col sm:flex-row items-center justify-between gap-3 text-center sm:text-left">
         <a
           href={CHURCH_MAPS_URL}
