@@ -341,6 +341,17 @@ A dedicated page (not a modal/popover — a popover version was built and replac
 
 **Auto-requesting permission on first visit** — `useAutoSolicitarNotificaciones()` (`src/hooks/useAutoSolicitarNotificaciones.ts`), mounted once in `HeaderPage` next to `useFcmForeground()`. If `Notification.permission === "default"` (visitor has never decided), it shows the native OS permission dialog on its own instead of waiting for someone to find Configuración manually; if granted, it subscribes all three topics right away. The permission request is made **once, explicitly, before** attempting any of the three `subscribe()` calls (`await Notification.requestPermission()` up front), rather than letting the first `subscribe()` call's own internal request be the one that resolves the dialog. A real reported bug: relying on the first call's own promise raced with Android actually committing the "granted" decision, so the *first* topic in the sequence (peticiones) sometimes ended up not subscribed while the second and third — whose own internal `requestPermission()` calls landed after the decision had fully settled — succeeded.
 
+### Android app (TWA) and forced updates
+
+The Play Store app (`com.centrocristianojordan.app`) is a Trusted Web Activity built with Bubblewrap that just opens `https://www.centrocristianojordan.com`. The Android project is **not in this repo** — it lives in a sibling folder, `jordan-twa/` (outside git; contains `twa-manifest.json` and `release.ps1`). Its `host` must be `www.centrocristianojordan.com` (the apex 308-redirects and `assetlinks.json` only answers 200 on `www`), and the signing keystore (alias `jordan`) is kept in Drive, never committed.
+
+Web changes reach every installed app immediately on deploy; only shell changes need a new `.aab`. To **force** users off an old `.aab`, `src/components/appUpdate/` (`<AppUpdateGate />`, mounted in `layout.tsx`) shows a blocking "update in Google Play" screen:
+
+- The app opens the site at `/?appv=<versionCode>`; `release.ps1` bumps `appVersionCode` and writes the same number into `startUrl` on every build, so the two never drift.
+- `detectarVersionApp()` (`utils.ts`) treats a load as "inside the app" if `?appv=` is present **or** `document.referrer` starts with `android-app://com.centrocristianojordan.app` (old builds without `appv` count as version 0). The result is kept in `sessionStorage`, **not** `localStorage` — a TWA shares storage with Chrome, so localStorage would mark normal browser visitors as "app".
+- Browser visitors are never affected (`detectarVersionApp()` returns `null`).
+- **To force an update:** raise `MIN_APP_VERSION` in `appUpdate/constants.ts` to the new versionCode and push to `main`, but only *after* that build is published and available to users in Play — otherwise they get blocked with nothing to install. `0` (the default) blocks nobody.
+
 ### Novedades ("what's new") modal
 
 `src/components/novedades/`, mounted exactly once, globally, in `layout.tsx` (`<NovedadesModal />`, sibling to `HeaderPage`/`FooterPage`) so it can appear no matter which page a visitor lands on first.

@@ -5,6 +5,7 @@ import { AuthProvider } from "../context/AuthContext";
 import { ThemeProvider } from "../context/ThemeContext";
 import { HeaderPage, FooterPage } from "../components";
 import { NovedadesModal } from "../components/novedades/NovedadesModal";
+import { AppUpdateGate } from "../components/appUpdate/AppUpdateGate";
 
 const themeInitScript = `
 (function () {
@@ -108,6 +109,7 @@ export default function RootLayout({
             <div className="flex flex-col">{children}</div>
             <FooterPage />
             <NovedadesModal />
+            <AppUpdateGate />
           </AuthProvider>
         </ThemeProvider>
       </body>
