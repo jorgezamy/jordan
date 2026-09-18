@@ -10,6 +10,6 @@ export const PLAY_STORE_URL = `https://play.google.com/store/apps/details?id=${A
 // actualizar a todos los que tengan instalada una versión menor. Solo afecta
 // a quien abre el sitio desde la app instalada, nunca a quien lo abre en el navegador.
 // 0 = nadie es bloqueado.
-export const MIN_APP_VERSION = 0;
+export const MIN_APP_VERSION = 10;
 
 export const APP_VERSION_SESSION_KEY = "app-version";
