@@ -1,11 +1,10 @@
 "use client";
 
 import { Button } from "../ui/Button";
-import { PLAY_STORE_URL } from "./constants";
 import { useAppUpdate } from "./useAppUpdate";
 
 export function AppUpdateGate() {
-  const { obligatoria } = useAppUpdate();
+  const { obligatoria, fueALaTienda, abrirTienda } = useAppUpdate();
 
   if (!obligatoria) return null;
 
@@ -32,10 +31,14 @@ export function AppUpdateGate() {
           Para seguir usando la app necesitas actualizarla desde Google Play.
         </p>
 
-        <Button
-          onClick={() => window.location.assign(PLAY_STORE_URL)}
-          className="relative mt-6 w-full py-2.5 rounded-xl font-medium"
-        >
+        {fueALaTienda && (
+          <p className="relative mt-4 rounded-xl bg-accent/10 px-4 py-3 text-sm font-medium text-gray-900 dark:text-white">
+            ¿Ya la actualizaste? Cierra la app por completo (deslízala fuera de las apps recientes) y
+            ábrela de nuevo para terminar.
+          </p>
+        )}
+
+        <Button onClick={abrirTienda} className="relative mt-6 w-full py-2.5 rounded-xl font-medium">
           Actualizar en Google Play
         </Button>
       </div>
