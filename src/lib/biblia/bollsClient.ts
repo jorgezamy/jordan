@@ -12,6 +12,23 @@ interface VersiculoBolls {
   text: string;
 }
 
+// Algunas versiones traen HTML embebido en el texto. El componente muestra
+// v.texto como texto plano, así que sin esto esas etiquetas aparecían
+// literalmente en pantalla (y al copiar el versículo).
+function limpiarTexto(texto: string): string {
+  return texto
+    // NVI marca notas al pie con <sup>[N]</sup>, pero la API nunca manda el
+    // contenido de la nota — dejar el "[N]" suelto sería un número sin
+    // ningún contexto, así que se quita completo (etiqueta y contenido).
+    .replace(/<sup>.*?<\/sup>/gi, "")
+    // El resto (<br> de saltos de línea poéticos en RV1960/NTV, <b>título
+    // del salmo</b> en NVI, etc.) solo se le quita la etiqueta — su
+    // contenido, cuando lo tiene, sí es parte del versículo.
+    .replace(/<[^>]+>/g, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
 export async function obtenerCapitulo(
   version: string,
   libroId: number,
@@ -24,5 +41,5 @@ export async function obtenerCapitulo(
   if (!res.ok) throw new Error(`bolls.life respondió ${res.status}`);
 
   const datos: VersiculoBolls[] = await res.json();
-  return datos.map((v) => ({ numero: v.verse, texto: v.text }));
+  return datos.map((v) => ({ numero: v.verse, texto: limpiarTexto(v.text) }));
 }
