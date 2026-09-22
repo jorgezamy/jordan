@@ -87,4 +87,4 @@ export const VERSIONES_BIBLIA: OpcionVersion[] = [
   { value: "NTV", label: "Nueva Traducción Viviente" },
 ];
 
-export const VERSION_POR_DEFECTO = "RV1960";
+export const VERSION_POR_DEFECTO = "NVI";
