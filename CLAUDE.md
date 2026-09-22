@@ -5,7 +5,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Commands
 
 ```bash
-npm run dev      # Start dev server (accessible from LAN at 192.168.1.28:3000)
+npm run dev      # Start dev server (also reachable from LAN — see allowedDevOrigins in next.config.ts)
 npm run build    # Production build
 npm run lint     # ESLint check
 npm run start    # Start production server
@@ -380,7 +380,9 @@ Responsive header designed for a non-tech-savvy audience:
 - **`UserAvatarButton`** (`header/UserAvatarButton.tsx`) is the circular initial-avatar trigger, reused for both the desktop and mobile logged-in states.
 - `useFcmForeground()` is called once here — see [Push notifications](#push-notifications-fcm) for why it must not be duplicated per-page.
 - Hamburger menu is **only used for auth on mobile** — "Peticiones" is never inside it
-- `allowedDevOrigins` in `next.config.ts` includes `192.168.1.28` and `192.168.1.29` for LAN testing
+- `allowedDevOrigins` in `next.config.ts` lists known LAN IPs of the dev machine (`192.168.1.28`, `192.168.1.29`, `192.168.1.46`) — DHCP can reassign this over time, so add the current one (`ipconfig` → IPv4 of the Wi-Fi adapter) whenever testing from a phone on the same network stops hydrating (links still navigate since they're plain `<a>` tags, but anything depending on React event handlers, like the "Cuenta" button below, silently does nothing)
+- **`BottomNav` (`header/BottomNav.tsx`)** is the mobile-only nav (`sm:hidden`, `fixed bottom-0`). The 5 tabs (Inicio, Biblia, Peticiones, Configuración, Cuenta) are equal-width (`flex-1`) columns so spacing stays even regardless of which one is active. Each renders through a shared `NavTabContent` helper: the active tab gets an elevated (`-top-4`) `accent`-colored circle that "pops" above the bar; every other tab stays flat and muted (`text-white/55`) — this replaced an earlier version where the "Peticiones" tab was permanently shown as the elevated green circle regardless of the current page, which read as if it were always selected.
+  - Only **one** tab is ever active. "Cuenta" doesn't correspond to a route — opening it just toggles `menuOpen` in `HeaderPage`, it never navigates — so a `rutaActiva()` helper explicitly suppresses the route tabs' active state while the account sheet is open (`!cuentaActiva && pathname === ruta`). A real reported bug: without that guard, opening "Cuenta" left both it *and* the tab for whatever page you were already on lit up green at the same time, since `pathname` never changes when the sheet opens. Closing the sheet needs no separate "restore" step — `rutaActiva` is recomputed from `pathname`/`cuentaActiva` on every render, so the previous tab's highlight comes back on its own.
 
 ### Back-to-home navigation
 
