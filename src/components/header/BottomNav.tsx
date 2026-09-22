@@ -40,6 +40,9 @@ function NavTabContent({ icon, label, activo }: { icon: React.ReactNode; label: 
 export function BottomNav({ user, cuentaActiva, onCuentaClick }: BottomNavProps) {
   const pathname = usePathname();
   const initial = user?.email?.[0]?.toUpperCase();
+  // Con la hoja de cuenta abierta, esa es la única pestaña activa —
+  // ninguna ruta se marca como seleccionada mientras tanto.
+  const rutaActiva = (ruta: string) => !cuentaActiva && pathname === ruta;
 
   return (
     <nav
@@ -48,18 +51,18 @@ export function BottomNav({ user, cuentaActiva, onCuentaClick }: BottomNavProps)
     >
       <div className="flex items-start pt-2 pb-1.5">
         <Link href="/" className="flex-1 flex justify-center">
-          <NavTabContent icon={<HomeIcon className="w-[22px] h-[22px]" />} label="Inicio" activo={pathname === "/"} />
+          <NavTabContent icon={<HomeIcon className="w-[22px] h-[22px]" />} label="Inicio" activo={rutaActiva("/")} />
         </Link>
 
         <Link href="/biblia" className="flex-1 flex justify-center">
-          <NavTabContent icon={<BookIcon className="w-[22px] h-[22px]" />} label="Biblia" activo={pathname === "/biblia"} />
+          <NavTabContent icon={<BookIcon className="w-[22px] h-[22px]" />} label="Biblia" activo={rutaActiva("/biblia")} />
         </Link>
 
         <Link href="/peticiones" className="flex-1 flex justify-center">
           <NavTabContent
             icon={<HeartIcon className="w-[22px] h-[22px]" strokeWidth={2.2} />}
             label="Peticiones"
-            activo={pathname === "/peticiones"}
+            activo={rutaActiva("/peticiones")}
           />
         </Link>
 
@@ -67,7 +70,7 @@ export function BottomNav({ user, cuentaActiva, onCuentaClick }: BottomNavProps)
           <NavTabContent
             icon={<GearIcon className="w-[22px] h-[22px]" />}
             label="Configuración"
-            activo={pathname === "/configuracion"}
+            activo={rutaActiva("/configuracion")}
           />
         </Link>
 
