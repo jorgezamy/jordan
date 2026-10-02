@@ -33,7 +33,7 @@ export function AvisosCarousel() {
   if (loading) {
     return (
       <div
-        className="w-full max-w-2xl rounded-3xl border border-accent-subtle dark:border-white/10 bg-white/80 dark:bg-surface-dark/80 px-6 py-5 sm:px-8 sm:py-6 motion-safe:animate-pulse"
+        className="w-full max-w-2xl rounded-3xl border border-accent/40 dark:border-white/10 bg-accent-subtle/70 dark:bg-surface-dark/80 px-6 py-5 sm:px-8 sm:py-6 motion-safe:animate-pulse"
         aria-hidden="true"
       >
         <div className="h-3 w-16 rounded-full bg-gray-200 dark:bg-white/10 mb-4" />
@@ -61,7 +61,7 @@ export function AvisosCarousel() {
 
   return (
     <div
-      className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-accent-subtle dark:border-white/10 bg-white/80 dark:bg-surface-dark/80 backdrop-blur-sm shadow-[0_10px_30px_rgba(20,184,166,0.10)] px-6 py-5 sm:px-8 sm:py-6"
+      className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-accent/40 dark:border-white/10 bg-accent-subtle/70 dark:bg-surface-dark/80 backdrop-blur-sm shadow-[0_10px_30px_rgba(20,184,166,0.28)] px-6 py-5 sm:px-8 sm:py-6"
       onMouseEnter={() => setPaused(true)}
       onMouseLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}

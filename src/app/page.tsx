@@ -26,7 +26,7 @@ export default function Home() {
       </div>
 
       <div className="w-full max-w-md">
-        <div className="relative overflow-hidden rounded-3xl border border-accent-subtle dark:border-white/10 bg-white/80 dark:bg-surface-dark/80 backdrop-blur-sm shadow-[0_10px_40px_rgba(20,184,166,0.12)] p-6 sm:p-8">
+        <div className="relative overflow-hidden rounded-3xl border border-accent/40 dark:border-white/10 bg-accent-subtle/70 dark:bg-surface-dark/80 backdrop-blur-sm shadow-[0_10px_40px_rgba(20,184,166,0.30)] p-6 sm:p-8">
           <div className="absolute -top-10 -right-10 w-32 h-32 bg-accent/15 dark:bg-accent/10 rounded-full blur-3xl" />
 
           <div className="relative z-10 text-center">

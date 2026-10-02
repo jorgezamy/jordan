@@ -19,7 +19,7 @@ export function CitaBiblicaCard() {
   if (!cita) return null;
 
   return (
-    <div className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-accent-subtle dark:border-white/10 bg-gradient-to-br from-accent-subtle/60 via-white to-white dark:from-primary-darker dark:via-surface-dark dark:to-surface-dark shadow-[0_10px_40px_rgba(20,184,166,0.12)] px-6 py-7 sm:px-8 sm:py-8 motion-safe:animate-[fade-in_0.4s_ease-out]">
+    <div className="relative w-full max-w-2xl overflow-hidden rounded-3xl border border-accent/40 dark:border-white/10 bg-gradient-to-br from-accent-subtle via-accent-subtle/50 to-white dark:from-primary-darker dark:via-surface-dark dark:to-surface-dark shadow-[0_10px_40px_rgba(20,184,166,0.30)] px-6 py-7 sm:px-8 sm:py-8 motion-safe:animate-[fade-in_0.4s_ease-out]">
       <div className="absolute -top-12 -right-12 w-40 h-40 bg-accent/20 dark:bg-accent/10 rounded-full blur-3xl" />
 
       <span
