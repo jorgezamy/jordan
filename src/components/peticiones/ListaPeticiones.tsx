@@ -12,9 +12,10 @@ interface ListaPeticionesProps {
   filtro: ReturnType<typeof usePeticionesFiltro>;
   user: User | null;
   errorAccion: string;
+  resaltada: string | null;
 }
 
-export function ListaPeticiones({ data, filtro, user, errorAccion }: ListaPeticionesProps) {
+export function ListaPeticiones({ data, filtro, user, errorAccion, resaltada }: ListaPeticionesProps) {
   const {
     peticiones,
     loading,
@@ -75,6 +76,7 @@ export function ListaPeticiones({ data, filtro, user, errorAccion }: ListaPetici
               pedirConfirmacion={pedirConfirmacion}
               cancelarConfirmacion={cancelarConfirmacion}
               ejecutarAccion={ejecutarAccion}
+              resaltada={resaltada === p.id}
             />
           ))}
         </ul>

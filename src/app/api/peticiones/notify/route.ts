@@ -47,11 +47,11 @@ export async function POST(req: NextRequest) {
         title: "Nueva petición de oración",
         body: data.nombre ? `${data.nombre} envió una petición nueva.` : "Se envió una petición nueva.",
       },
-      data: { peticionId: id, link: "/peticiones" },
+      data: { peticionId: id, link: `/peticiones?id=${id}` },
       webpush: {
         headers: { Urgency: "high" },
         notification: { icon: NOTIFICATION_ICON_URL, badge: NOTIFICATION_BADGE_URL },
-        fcmOptions: { link: "/peticiones" },
+        fcmOptions: { link: `/peticiones?id=${id}` },
       },
     });
 

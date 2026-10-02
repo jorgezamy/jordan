@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import { User } from "firebase/auth";
 
 import { Button } from "../ui/Button";
@@ -13,6 +14,7 @@ interface PeticionCardProps {
   pedirConfirmacion: (id: string, accion: AccionPeticion) => void;
   cancelarConfirmacion: () => void;
   ejecutarAccion: (id: string, accion: AccionPeticion) => void;
+  resaltada: boolean;
 }
 
 export function PeticionCard({
@@ -22,9 +24,24 @@ export function PeticionCard({
   pedirConfirmacion,
   cancelarConfirmacion,
   ejecutarAccion,
+  resaltada,
 }: PeticionCardProps) {
+  const ref = useRef<HTMLLIElement>(null);
+
+  // La tarjeta recién monta cuando el snapshot de Firestore carga, así que
+  // el scroll va aquí (al montar con resaltada=true) en vez de en el padre.
+  useEffect(() => {
+    if (resaltada) ref.current?.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, [resaltada]);
+
   return (
-    <li className="p-4 rounded-lg border border-gray-200 dark:border-white/10 shadow-sm bg-white dark:bg-surface-dark">
+    <li
+      ref={ref}
+      className={`p-4 rounded-lg border shadow-sm bg-white dark:bg-surface-dark transition-shadow duration-700 ${resaltada
+        ? "border-accent ring-2 ring-accent"
+        : "border-gray-200 dark:border-white/10"
+        }`}
+    >
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-3">
         <div className="flex items-center gap-2 min-w-0">
           {p.numero !== undefined && (

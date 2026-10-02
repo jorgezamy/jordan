@@ -10,6 +10,7 @@ import { NuevaPeticionForm } from "./NuevaPeticionForm";
 import { useNuevaPeticion } from "./useNuevaPeticion";
 import { usePeticionesData } from "./usePeticionesData";
 import { usePeticionesFiltro } from "./usePeticionesFiltro";
+import { useResaltarPeticion } from "./useResaltarPeticion";
 
 export default function Peticiones() {
   const { user } = useAuth();
@@ -19,6 +20,7 @@ export default function Peticiones() {
   const form = useNuevaPeticion(mostrarMensaje);
   const data = usePeticionesData(user, mostrarMensaje, mostrarError);
   const filtro = usePeticionesFiltro(data.peticiones, user);
+  const resaltada = useResaltarPeticion();
 
   return (
     <div className="max-w-3xl mx-auto p-4 sm:p-6 bg-white dark:bg-surface-dark shadow-lg rounded-xl">
@@ -32,7 +34,7 @@ export default function Peticiones() {
 
       <FiltrosPeticiones filtro={filtro} user={user} />
 
-      <ListaPeticiones data={data} filtro={filtro} user={user} errorAccion={errorAccion} />
+      <ListaPeticiones data={data} filtro={filtro} user={user} errorAccion={errorAccion} resaltada={resaltada} />
     </div>
   );
 }

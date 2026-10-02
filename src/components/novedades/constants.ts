@@ -1,12 +1,22 @@
 // Bump esta fecha cada vez que se publique algo nuevo — vuelve a mostrar
 // el modal a todos, incluso a quien ya vio una versión anterior.
-export const VERSION_NOVEDADES = "2026-09-18";
+export const VERSION_NOVEDADES = "2026-10-02";
 
 // Si nadie lo cierra activamente, deja de aparecer después de esta cantidad
 // de veces (para no insistir para siempre).
 export const NOVEDADES_MAX_VECES = 4;
 
 export const NOVEDADES = [
+  {
+    titulo: "Directo a la petición",
+    descripcion:
+      "Al tocar una notificación de una petición nueva o resuelta, ahora te lleva directo a ella en la lista y la resalta.",
+  },
+  {
+    titulo: "Aviso de actualización más preciso",
+    descripcion:
+      "Corregimos que la app pidiera actualizar al refrescar Biblia, Peticiones o Configuración aunque ya tuvieras la versión más reciente.",
+  },
   {
     titulo: "La Biblia completa, en la app",
     descripcion:
