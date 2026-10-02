@@ -28,11 +28,32 @@ export function detectarVersionApp(): number | null {
   const param = new URLSearchParams(window.location.search).get(APP_VERSION_PARAM);
   const desdeApp = document.referrer.startsWith(`android-app://${APP_PACKAGE_ID}`);
 
-  if (param !== null || desdeApp) {
-    const parsed = parseInt(param ?? "", 10);
+  // `appv` solo viaja en la URL del `startUrl` (home). Al refrescar cualquier
+  // otra ruta dentro de la TWA, el referrer sigue siendo `android-app://`
+  // pero la URL de esa ruta nunca trae `appv` — no es una app vieja, es la
+  // misma sesión ya detectada antes. Por eso, sin `param`, se prioriza lo ya
+  // guardado en sessionStorage antes de asumir versión 0.
+  if (param !== null) {
+    const parsed = parseInt(param, 10);
     const version = Number.isFinite(parsed) ? parsed : 0;
     guardarVersion(version);
     return version;
+  }
+
+  if (desdeApp) {
+    const guardada = leerVersionGuardada();
+    if (guardada !== null) return guardada;
+
+    // Nada guardado todavía: el `startUrl` real de la app siempre apunta a
+    // `/`, así que si justo aquí tampoco hay `appv` es una build vieja de
+    // antes de este sistema. Pero un deep link directo a otra ruta (p. ej.
+    // al tocar una notificación con la app recién instalada, sin sesión
+    // previa) no trae esa info — ahí no hay forma de saber la versión, así
+    // que no se bloquea en vez de asumir lo peor.
+    if (window.location.pathname !== "/") return null;
+
+    guardarVersion(0);
+    return 0;
   }
 
   return leerVersionGuardada();
