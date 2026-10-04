@@ -5,8 +5,7 @@ import { getAdminApp } from "../../../../lib/firebaseAdmin";
 import { TOPICS, NOTIFICATION_ICON_URL, NOTIFICATION_BADGE_URL } from "../../../../lib/fcm";
 
 const UNA_HORA_MS = 60 * 60 * 1000;
-// America/Mexico_City está fija en UTC-6 (sin DST) — ver la misma nota en
-// notificacion-diaria/route.ts. Re-revisar si eso llega a cambiar.
+// America/Mexico_City está fija en UTC-6 (sin DST). Re-revisar si eso llega a cambiar.
 const MX_OFFSET_MS = 6 * 60 * 60 * 1000;
 
 // Este endpoint se dispara desde fuera de Vercel (GitHub Actions, cada ~15
