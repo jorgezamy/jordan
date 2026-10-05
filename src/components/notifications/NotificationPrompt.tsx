@@ -1,21 +1,20 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useFcm } from "../../hooks/useFcm";
-import { TOPICS } from "../../lib/fcm";
 import { Button } from "../ui/Button";
+import { useNotificationPrompt } from "./useNotificationPrompt";
 
 const DISMISS_KEY = "notificaciones-descartadas";
 
 export default function NotificationPrompt() {
-  const { status, subscribe } = useFcm(TOPICS.peticiones);
+  const { unsupported, todoActivo, subscribing, activar } = useNotificationPrompt();
   const [dismissed, setDismissed] = useState(true);
 
   useEffect(() => {
     setDismissed(window.localStorage.getItem(DISMISS_KEY) === "1");
   }, []);
 
-  if (status === "unsupported" || status === "subscribed" || dismissed) {
+  if (unsupported || todoActivo || dismissed) {
     return null;
   }
 
@@ -27,16 +26,16 @@ export default function NotificationPrompt() {
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-primary/20 dark:border-white/20 bg-primary/5 dark:bg-white/5 px-4 py-3 mb-6">
       <p className="text-sm text-primary/80 dark:text-white/80">
-        Activa las notificaciones para enterarte cuando se suba una petición de oración nueva.
+        Activa las notificaciones para enterarte de peticiones, avisos y la cita bíblica del día.
       </p>
       <div className="flex items-center gap-2 shrink-0">
         <Button
           type="button"
-          onClick={subscribe}
-          disabled={status === "subscribing"}
+          onClick={activar}
+          disabled={subscribing}
           className="text-sm px-4 py-2 rounded-lg font-medium"
         >
-          {status === "subscribing" ? "Activando..." : "Activar notificaciones"}
+          {subscribing ? "Activando..." : "Activar notificaciones"}
         </Button>
         <button
           type="button"
