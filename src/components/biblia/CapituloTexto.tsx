@@ -47,7 +47,9 @@ export function CapituloTexto({
           <span
             key={v.numero}
             className={`inline-block mr-1.5 mb-1 rounded px-0.5 ${
-              seleccionado ? "bg-accent/15" : ""
+              seleccionado
+                ? "bg-accent/25 underline decoration-accent decoration-2 underline-offset-4"
+                : ""
             }`}
           >
             <sup className="text-accent font-semibold mr-0.5">{v.numero}</sup>

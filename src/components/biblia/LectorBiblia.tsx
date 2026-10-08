@@ -97,6 +97,52 @@ export function LectorBiblia() {
         </div>
       </div>
 
+      {/* Rango de versículos a copiar — opcional, por eso ambos selects
+          arrancan en "Todo el capítulo"/"Hasta el final"; nunca bloquean
+          nada si no se tocan. Antes vivía en su propia sección hasta abajo
+          de la página (lejos de los botones que la usan); se movió aquí,
+          junto a Libro/Capítulo/Versión, porque quedaba poco práctico tener
+          que bajar hasta el fondo solo para copiar un rango. */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+        <div>
+          <FieldLabel>Desde (opcional)</FieldLabel>
+          <select
+            value={versoInicio ?? ""}
+            onChange={(e) => seleccionarVersoInicio(e.target.value ? Number(e.target.value) : null)}
+            disabled={loading || opcionesVerso.length === 0}
+            className={`${selectClassName} disabled:opacity-60`}
+          >
+            <option value="" className={optionClassName}>
+              Todo el capítulo
+            </option>
+            {opcionesVerso.map((n) => (
+              <option key={n} value={n} className={optionClassName}>
+                Verso {n}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <FieldLabel>Hasta (opcional)</FieldLabel>
+          <select
+            value={versoFin ?? ""}
+            onChange={(e) => seleccionarVersoFin(e.target.value ? Number(e.target.value) : null)}
+            disabled={!versoInicio}
+            className={`${selectClassName} disabled:opacity-60`}
+          >
+            <option value="" className={optionClassName}>
+              Hasta el final / solo ese verso
+            </option>
+            {opcionesVersoFin.map((n) => (
+              <option key={n} value={n} className={optionClassName}>
+                Verso {n}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
       <div className="flex items-center justify-between mb-4">
         <Button onClick={irAnterior} variant="secondary" className="px-3 py-1.5 rounded-md text-sm font-medium">
           ← Anterior
@@ -107,7 +153,7 @@ export function LectorBiblia() {
           className="px-3 py-1.5 rounded-md text-sm font-medium inline-flex items-center gap-1.5"
         >
           <CopyIcon className="w-3.5 h-3.5" />
-          Copiar capítulo
+          {versoInicio ? "Copiar selección" : "Copiar capítulo"}
         </Button>
         <Button onClick={irSiguiente} variant="secondary" className="px-3 py-1.5 rounded-md text-sm font-medium">
           Siguiente →
@@ -130,66 +176,6 @@ export function LectorBiblia() {
         versoFin={versoFin}
         onCopiarVerso={(numero) => copiar(numero)}
       />
-
-      {!loading && !error && versiculos.length > 0 && (
-        <>
-          <hr className="border-t border-primary/15 dark:border-white/15 my-4" />
-
-          <h2 className="text-sm font-semibold text-primary/70 dark:text-white/70 uppercase tracking-wide mb-3">
-            Copiar un rango de versículos
-          </h2>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
-            <div>
-              <FieldLabel>Verso inicial</FieldLabel>
-              <select
-                value={versoInicio ?? ""}
-                onChange={(e) => seleccionarVersoInicio(e.target.value ? Number(e.target.value) : null)}
-                className={selectClassName}
-              >
-                <option value="" className={optionClassName}>
-                  Selecciona un verso
-                </option>
-                {opcionesVerso.map((n) => (
-                  <option key={n} value={n} className={optionClassName}>
-                    {n}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {versoInicio && (
-              <div>
-                <FieldLabel>Verso final (opcional, para un rango)</FieldLabel>
-                <select
-                  value={versoFin ?? ""}
-                  onChange={(e) => seleccionarVersoFin(e.target.value ? Number(e.target.value) : null)}
-                  className={selectClassName}
-                >
-                  <option value="" className={optionClassName}>
-                    Solo este verso
-                  </option>
-                  {opcionesVersoFin.map((n) => (
-                    <option key={n} value={n} className={optionClassName}>
-                      {n}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-          </div>
-
-          {versoInicio && (
-            <Button
-              onClick={() => copiar()}
-              className="py-2 px-4 rounded-lg font-medium inline-flex items-center gap-1.5"
-            >
-              <CopyIcon className="w-3.5 h-3.5" />
-              Copiar selección
-            </Button>
-          )}
-        </>
-      )}
     </div>
   );
 }
