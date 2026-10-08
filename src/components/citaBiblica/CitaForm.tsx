@@ -4,6 +4,7 @@ import { Alert } from "../ui/Alert";
 import { Button } from "../ui/Button";
 import { ClearableTextInput } from "../ui/ClearableTextInput";
 import { FieldLabel } from "../ui/FieldLabel";
+import { Select, selectOptionClassName } from "../ui/Select";
 import { VERSIONES_BIBLICAS } from "./constants";
 import { useCitasAdmin } from "./useCitasAdmin";
 
@@ -65,17 +66,13 @@ export function CitaForm({ admin, mensajeExito }: CitaFormProps) {
 
         <div>
           <FieldLabel>Versión</FieldLabel>
-          <select
-            value={version}
-            onChange={(e) => setVersion(e.target.value)}
-            className="w-full outline-none transition-colors border-2 border-primary/40 dark:border-white/40 bg-gray-50 dark:bg-white/5 shadow-sm focus:border-primary focus:dark:border-white focus:ring-2 focus:ring-primary focus:dark:ring-white rounded-lg px-3 py-2 text-gray-800 dark:text-gray-100"
-          >
+          <Select value={version} onChange={(e) => setVersion(e.target.value)}>
             {VERSIONES_BIBLICAS.map((v) => (
-              <option key={v} value={v}>
+              <option key={v} value={v} className={selectOptionClassName}>
                 {v}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
       </div>
 

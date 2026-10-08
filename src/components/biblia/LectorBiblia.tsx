@@ -4,21 +4,11 @@ import { Alert } from "../ui/Alert";
 import { Button } from "../ui/Button";
 import { CopyIcon } from "../ui/CopyIcon";
 import { FieldLabel } from "../ui/FieldLabel";
+import { Select, selectOptionClassName } from "../ui/Select";
 import { CapituloTexto } from "./CapituloTexto";
 import { LIBROS_BIBLIA, VERSIONES_BIBLIA } from "./constants";
 import { useBiblia } from "./useBiblia";
 import { obtenerLibro } from "./utils";
-
-const selectClassName =
-  "w-full outline-none transition-colors border-2 border-primary/40 dark:border-white/40 bg-gray-50 dark:bg-white/5 shadow-sm focus:border-primary focus:dark:border-white focus:ring-2 focus:ring-primary focus:dark:ring-white rounded-lg px-3 py-2 text-gray-800 dark:text-gray-100";
-
-// El menú desplegable de un <select> lo pinta el sistema operativo, no la
-// página — en Windows siempre con fondo blanco, sin importar el tema oscuro
-// del sitio. Sin esto, las <option> heredaban dark:text-gray-100 (gris claro)
-// del <select>, casi invisible sobre ese fondo blanco nativo (bug reportado).
-// Se fuerza texto oscuro sobre fondo claro en las opciones, independiente del
-// tema de la página, para que el menú siempre sea legible.
-const optionClassName = "bg-white text-gray-900";
 
 export function LectorBiblia() {
   const {
@@ -50,50 +40,50 @@ export function LectorBiblia() {
     <div className="max-w-3xl mx-auto p-4 sm:p-6 bg-white dark:bg-surface-dark shadow-lg rounded-xl">
       <h1 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6">Biblia</h1>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
-        <div>
+      <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mb-4">
+        <div className="col-span-2 sm:col-span-1">
           <FieldLabel>Libro</FieldLabel>
-          <select
+          <Select
             value={libroId}
             onChange={(e) => cambiarLibro(Number(e.target.value))}
-            className={selectClassName}
+            className="text-sm truncate"
           >
             {LIBROS_BIBLIA.map((l) => (
-              <option key={l.id} value={l.id} className={optionClassName}>
+              <option key={l.id} value={l.id} className={selectOptionClassName}>
                 {l.nombre}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
 
         <div>
           <FieldLabel>Capítulo</FieldLabel>
-          <select
+          <Select
             value={capitulo}
             onChange={(e) => cambiarCapitulo(Number(e.target.value))}
-            className={selectClassName}
+            className="text-sm truncate"
           >
             {opcionesCapitulo.map((n) => (
-              <option key={n} value={n} className={optionClassName}>
+              <option key={n} value={n} className={selectOptionClassName}>
                 {n}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
 
         <div>
           <FieldLabel>Versión</FieldLabel>
-          <select
+          <Select
             value={version}
             onChange={(e) => cambiarVersion(e.target.value)}
-            className={selectClassName}
+            className="text-sm truncate"
           >
             {VERSIONES_BIBLIA.map((v) => (
-              <option key={v.value} value={v.value} className={optionClassName}>
+              <option key={v.value} value={v.value} className={selectOptionClassName}>
                 {v.label}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
       </div>
 
@@ -103,43 +93,43 @@ export function LectorBiblia() {
           de la página (lejos de los botones que la usan); se movió aquí,
           junto a Libro/Capítulo/Versión, porque quedaba poco práctico tener
           que bajar hasta el fondo solo para copiar un rango. */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+      <div className="grid grid-cols-2 gap-3 mb-4">
         <div>
           <FieldLabel>Desde (opcional)</FieldLabel>
-          <select
+          <Select
             value={versoInicio ?? ""}
             onChange={(e) => seleccionarVersoInicio(e.target.value ? Number(e.target.value) : null)}
             disabled={loading || opcionesVerso.length === 0}
-            className={`${selectClassName} disabled:opacity-60`}
+            className="text-sm truncate"
           >
-            <option value="" className={optionClassName}>
+            <option value="" className={selectOptionClassName}>
               Todo el capítulo
             </option>
             {opcionesVerso.map((n) => (
-              <option key={n} value={n} className={optionClassName}>
+              <option key={n} value={n} className={selectOptionClassName}>
                 Verso {n}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
 
         <div>
           <FieldLabel>Hasta (opcional)</FieldLabel>
-          <select
+          <Select
             value={versoFin ?? ""}
             onChange={(e) => seleccionarVersoFin(e.target.value ? Number(e.target.value) : null)}
             disabled={!versoInicio}
-            className={`${selectClassName} disabled:opacity-60`}
+            className="text-sm truncate"
           >
-            <option value="" className={optionClassName}>
-              Hasta el final / solo ese verso
+            <option value="" className={selectOptionClassName}>
+              Hasta el final
             </option>
             {opcionesVersoFin.map((n) => (
-              <option key={n} value={n} className={optionClassName}>
+              <option key={n} value={n} className={selectOptionClassName}>
                 Verso {n}
               </option>
             ))}
-          </select>
+          </Select>
         </div>
       </div>
 
