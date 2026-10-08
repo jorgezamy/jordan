@@ -1,12 +1,27 @@
 // Bump esta fecha cada vez que se publique algo nuevo — vuelve a mostrar
 // el modal a todos, incluso a quien ya vio una versión anterior.
-export const VERSION_NOVEDADES = "2026-10-02";
+export const VERSION_NOVEDADES = "2026-10-07";
 
 // Si nadie lo cierra activamente, deja de aparecer después de esta cantidad
 // de veces (para no insistir para siempre).
 export const NOVEDADES_MAX_VECES = 4;
 
 export const NOVEDADES = [
+  {
+    titulo: "Más versiones de la Biblia",
+    descripcion:
+      "Ahora puedes leer en Reina Valera 1960, Reina Valera 1909, NVI, La Biblia de las Américas, Nueva Traducción Viviente o Palabra de Dios para Todos.",
+  },
+  {
+    titulo: "Lectura más cómoda",
+    descripcion:
+      "Letra más grande y más espacio entre cada versículo en la Biblia. En el celular, los controles de libro, capítulo y versión ahora ocupan menos espacio.",
+  },
+  {
+    titulo: "Copia versículos mejor organizados",
+    descripcion:
+      "Al copiar varios versículos, cada uno queda ahora en su propia línea para que se lea mejor al compartirlo.",
+  },
   {
     titulo: "Directo a la petición",
     descripcion:
