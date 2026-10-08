@@ -54,8 +54,11 @@ export function construirTextoCopia(
     ? versiculos.filter((v) => v.numero >= versoInicio && v.numero <= (versoFin ?? versoInicio))
     : versiculos;
 
-  const cuerpo = seleccion.map((v) => `${v.numero}. ${v.texto}`).join(" ");
+  // Un verso por línea (no todo junto separado por espacios) para que se
+  // lea bien al pegarlo en WhatsApp/notas — un bloque de texto corrido era
+  // difícil de leer con varios versos seleccionados (reportado).
+  const cuerpo = seleccion.map((v) => `${v.numero}. ${v.texto}`).join("\n");
   const referencia = formatearReferencia(libroId, capitulo, versoInicio, versoFin);
 
-  return `${cuerpo}\n— ${referencia} (${version})`;
+  return `${cuerpo}\n\n— ${referencia} (${version})`;
 }
