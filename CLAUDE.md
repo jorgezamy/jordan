@@ -23,7 +23,7 @@ Production: **https://www.centrocristianojordan.com** — auto-deploys on every 
 
 Apply these on **every** new feature or change, not only when explicitly asked:
 
-- **Reuse before creating.** Check `src/components/ui/` (see [Component conventions](#component-conventions)) for an existing primitive — `Button`, `Alert`, `TextInput`, `SegmentedControl`, `Switch`, `LockIcon`, `GearIcon`, `ArrowLeftIcon`, `BackHomeLink`, `BellIcon`, `BookIcon`, `LogoutIcon`, `CloseIcon`, `SendIcon` — before writing new button/input/alert/pill-toggle/icon markup. If a UI pattern will appear more than once, extract it into `src/components/ui/` instead of duplicating it.
+- **Reuse before creating.** Check `src/components/ui/` (see [Component conventions](#component-conventions)) for an existing primitive — `Button`, `Alert`, `TextInput`, `Select`, `SegmentedControl`, `Switch`, `LockIcon`, `GearIcon`, `ArrowLeftIcon`, `BackHomeLink`, `BellIcon`, `BookIcon`, `LogoutIcon`, `CloseIcon`, `SendIcon` — before writing new button/input/select/alert/pill-toggle/icon markup. If a UI pattern will appear more than once, extract it into `src/components/ui/` instead of duplicating it.
 - **Colors always come from tokens.** Never hardcode a hex value (`bg-[#...]`) or use Tailwind's built-in palettes (`indigo-*`, `red-*`, `green-*`, etc.). Use the semantic tokens in `tailwind.config.ts` (see [Styling](#styling)); add a new token there if a genuinely new color is needed, so every future palette change happens in one file.
 - **No emojis in newer features.** Avisos, Citas Bíblicas, Configuración, Novedades, and the header/user-menu use plain text + SVG icons instead of emoji, for a more modern look (an explicit user request). `peticiones/` still uses its original emoji status badges (✅/⏳/🚫/↺/🗑) — that's pre-existing and intentionally left alone, not a pattern to extend elsewhere.
 - **Security first.** Validate and authorize on the server, not just the client — client-only checks (like the register secret word) are UX gates, not security boundaries, and should not be relied on for anything sensitive. Keep Firestore rules in sync with what the UI assumes is protected (see [Firestore collections & rules](#firestore-collections--rules)). Never expose admin-only fields (`telefono`, `correo`, the `eliminada`/"Cancelada" state) to unauthenticated users. Keep secrets in `.env.local`; server-only vars must never use the `NEXT_PUBLIC_` prefix.
@@ -33,7 +33,7 @@ Apply these on **every** new feature or change, not only when explicitly asked:
 
 ## Architecture
 
-This is a Next.js 16 (App Router) + TypeScript project for **Centro Cristiano Jordán**, a Christian church. The site is in a "coming soon" state for most content, but has several active features: prayer requests (peticiones de oración), church announcements (avisos), a daily Bible verse (cita bíblica), user-configurable push notifications/theme, and an in-app "what's new" announcement modal.
+This is a Next.js 16 (App Router) + TypeScript project for **Centro Cristiano Jordán**, a Christian church. The site is in a "coming soon" state for most content, but has several active features: prayer requests (peticiones de oración), church announcements (avisos), a daily Bible verse (cita bíblica), a full Bible reader in multiple translations, user-configurable push notifications/theme, and an in-app "what's new" announcement modal.
 
 ### Firebase integration
 
@@ -258,7 +258,7 @@ Lives in `src/components/citaBiblica/`, same split pattern.
 | `useCitaBiblica.ts` | Public read — `orderBy(fechaCreacion, desc) limit(1)`; only the single most recent cita is ever shown on the homepage |
 | `useCitasAdmin.ts` | Admin CRUD (create/edit/delete), same inline-confirm pattern as avisos; fires `/api/citas/notify` on create |
 | `CitaBiblicaCard.tsx` | Public "Dios te habla hoy" hero card on the homepage — decorative oversized quotation mark, serif italic verse text, `— Referencia (VERSIÓN)` |
-| `CitaForm.tsx` | Texto, referencia, versión (`<select>` over `VERSIONES_BIBLICAS`) |
+| `CitaForm.tsx` | Texto, referencia, versión (`ui/Select` over `VERSIONES_BIBLICAS`) |
 | `ListaCitasAdmin.tsx` | History list (all past citas; the most recent one is tagged "Actual") with edit/delete + inline confirm |
 
 The `Cita` document shape:
@@ -273,6 +273,31 @@ The `Cita` document shape:
 ```
 
 Editing an existing cita goes through `updateDoc`, covered by `allow update: if isAdmin();` in the `citas` match block (same as avisos/peticiones) — verified end-to-end with a real authenticated admin client, not just that the rules file compiles. "Current" is purely derived from `orderBy desc limit 1` — there's no separate "is this the active one" flag.
+
+### Biblia (Bible reader) feature
+
+Lives in `src/components/biblia/`, same split pattern as the other features — but unlike `peticiones/`/`avisos/`/`citaBiblica/`, **it's not backed by Firestore at all**: every read goes out to one of two external Bible-text providers, picked per translation.
+
+| File | Responsibility |
+|---|---|
+| `types.ts` | `Libro`, `Versiculo` |
+| `constants.ts` | `LIBROS_BIBLIA` (the 66-book canon: `id`, `nombre`, `capitulos`, `codigoApiBible`), `VERSIONES_BIBLIA`, `VERSION_POR_DEFECTO`, `PROVEEDOR_POR_VERSION` |
+| `utils.ts` | `obtenerLibro`, `esVersionValida`, `capituloSiguiente`/`capituloAnterior`, `formatearReferencia`, `construirTextoCopia` |
+| `useBiblia.ts` | Libro/capítulo/versión/rango-de-versos state, fetches the chapter from `/api/biblia/[version]/[libro]/[capitulo]`, `copiar()` (clipboard) |
+| `LectorBiblia.tsx` | `/biblia` page — Libro/Capítulo/Versión selects, the optional Desde/Hasta range selects, Anterior/Copiar/Siguiente, renders `CapituloTexto` |
+| `CapituloTexto.tsx` | Renders the chapter's verses, selection highlight, per-verse copy button |
+
+**Dual provider, per translation** (`PROVEEDOR_POR_VERSION` in `constants.ts`): each entry in `VERSIONES_BIBLIA` (`RV1960`, `RV1909`, `NVI`, `LBLA`, `NTV`, `PDT`) maps to either `"bolls"` (bolls.life, `src/lib/biblia/bollsClient.ts`, no key needed) or `"apibible"` (api.bible, `src/lib/biblia/apiBibleClient.ts`, needs `BIBLE_API_KEY`). `/api/biblia/[version]/[libro]/[capitulo]/route.ts` reads that map and dispatches to the matching client — currently `RV1960`/`LBLA`/`NTV`/`PDT` go through bolls.life and `NVI`/`RV1909` go through api.bible.
+
+- **Why two providers (2026-10-07):** bolls.life dropped RV1909 from its catalog entirely (`[]` for any chapter) and, separately, replaced NVI's text with a message from the site's own operator explaining that Biblica, Inc. legally forced them to stop distributing that translation — both still return HTTP 200, so this can't be detected client-side, only avoided by not offering broken versions. Both came back the same day via **api.bible** (American Bible Society's Digital Bible Platform, free non-commercial "Starter" plan: 5,000 calls/month, unlimited public-domain/CC Bibles + your choice of 3 copyrighted ones). NVI was only reachable by adding **"Biblica Global Bible Bundle (non-english)"** as one of those 3 picks — it bundles many of Biblica's non-English translations into a single slot. Within that bundle, the bibleId actually used is **`01c25b8715dbb632-01`**, "Nueva Versión Internacional 2025": the only full 66-book edition in Latin American Spanish grammar ("ustedes") that key has access to — the "NVI 2015" entry the same key sees is New-Testament-only (27 books), and "Spanish NVI"/"Castilian" uses Spain grammar ("vosotros"), confirmed by pulling real sample verses before picking.
+- `codigoApiBible` on each `LIBROS_BIBLIA` entry is the OSIS/USFM 3-letter book code (`GEN`…`REV`) api.bible requires to build a chapter id (`"GEN.1"`); bolls.life just takes the numeric `id` directly and ignores this field.
+- api.bible returns a chapter as one text blob with inline `[N]` verse markers (`content-type=text&include-verse-numbers=true`), not bolls.life's structured per-verse JSON array — `apiBibleClient.ts`'s `parsearVersiculos()` splits on `\[(\d+)\]` to produce the same `Versiculo[]` shape both clients return, so `LectorBiblia.tsx`/`useBiblia.ts` don't need to know which provider served a given chapter.
+- **`BIBLE_API_KEY`** (server-only env var, no `NEXT_PUBLIC_` prefix) is required for the `apibible`-routed versions — from a free api.bible Starter account (see above). Only read in `apiBibleClient.ts`. Must be set in both `.env.local` and Vercel's Project Settings for production, same pattern as `RESEND_API_KEY`.
+- Both clients cache aggressively (`next: { revalidate: 30 days }`) — Bible text never changes, bolls.life explicitly asks not to be hit for bulk downloads of full translations, and api.bible's free tier has a real monthly call cap worth protecting.
+- **Copy flow:** a per-verse copy button, plus one "Copiar capítulo"/"Copiar selección" button (label switches on whether a verse range is selected) up top next to the navigation. The optional Desde/Hasta range selects live next to Libro/Capítulo/Versión — not in their own section further down the page, which is where they used to live until a reported complaint that it was impractical to scroll all the way down just to copy a range; both default to "Todo el capítulo"/"Hasta el final" so they never block anything. `construirTextoCopia` joins each verse onto its own line (not space-joined into one paragraph) specifically so pasted text (e.g. into WhatsApp) reads as a list instead of a wall of text — a real reported bug.
+- Selected verses in `CapituloTexto.tsx` get a solid underline (`decoration-accent decoration-2`) plus `bg-accent/25`, not just a faint background tint — bumped for low-vision readability per real user feedback. Each verse renders as its own block-level `<p>` (`mb-3`), not an inline `<span>` — the container used to carry `prose prose-sm dark:prose-invert` classes that did **nothing** (`@tailwindcss/typography` was never installed in this project, `plugins: []` in `tailwind.config.ts`); don't reintroduce those classes expecting them to style anything.
+- Libro/Capítulo/Versión/Desde/Hasta lay out in a 2-column grid even on mobile (`grid-cols-2`, Libro spanning both via `col-span-2`) rather than stacking 5 full-width selects — a real reported complaint that the controls section felt too tall on phones.
+- `<option>` elements inside every `<select>` on this page use `ui/Select`'s exported `selectOptionClassName` (`bg-white text-gray-900`) — see [Component conventions](#component-conventions) for why that's needed on every `<select>` in the app, not just this one.
 
 ### Push notifications (FCM)
 
@@ -408,13 +433,14 @@ No longer a static "coming soon" page. Renders `<CitaBiblicaCard />` and `<Aviso
 - `reactStrictMode` is disabled in `next.config.ts` (intentional, related to TipTap SSR)
 - **Feature folders stay flat** (see `peticiones/`, `avisos/`, `citaBiblica/`: components, hooks, `types.ts`, `constants.ts`, `utils.ts` all directly inside the folder, no subfolders) as long as the folder is easy to scan at a glance. Don't preemptively add `components/`/`hooks/` subfolders — only introduce that split once a single feature folder grows considerably beyond its current size (rule of thumb: comfortably more than ~10-12 files) and flat listing genuinely gets hard to read. When that split does happen, keep `types.ts`, `constants.ts`, and `utils.ts` at the feature folder's root (they're shared by both components and hooks) and only move components into `components/` and hooks into `hooks/`.
 
-**Shared UI primitives** live in `src/components/ui/` (`ComponentName.tsx`, imported directly — not re-exported through `index.ts`). Reuse these instead of re-writing button/input/alert/toggle/icon markup:
+**Shared UI primitives** live in `src/components/ui/` (`ComponentName.tsx`, imported directly — not re-exported through `index.ts`). Reuse these instead of re-writing button/input/select/alert/toggle/icon markup:
 
 | Component | Purpose | Notes |
 |---|---|---|
 | `Button` | All colored buttons | `variant`: `primary` (default) / `secondary` / `success` / `danger`. Only supplies color + transition + disabled styling — pass padding/radius/width via `className` |
 | `Alert` | Success/error message boxes | `variant`: `success` / `danger`. Only supplies color + border + rounded + text size — pass padding/alignment via `className` |
 | `TextInput` | Text/email/password/date/time/url inputs | `variant`: `modal` (neutral gray border, used in `AuthModal`) / `form` (default, thicker primary-colored border, used in Peticiones/Avisos/Citas). Pass width/radius/padding via `className` |
+| `Select` | `<select>` dropdowns | Same "form" look as `TextInput`'s default variant (only one style needed so far, no `variant` prop). Exports `selectOptionClassName` — apply it to every `<option>` inside: the dropdown popup is painted by the OS (white on Windows regardless of the page's dark theme), so an `<option>` inheriting the page's light dark-mode text color becomes nearly invisible on that white popup otherwise (real reported bug). Used by `biblia/LectorBiblia.tsx` and `citaBiblica/CitaForm.tsx` — see [Biblia](#biblia-bible-reader-feature) |
 | `SegmentedControl<T>` | Pill toggle groups | Generic over `options`/`value`/`onChange`; pass container layout via `className` and per-option sizing via `optionClassName`. Assumes a light-surface container that flips with the page's `dark` class (see `Configuracion.tsx`'s Tema control) — don't use it inside a container that's permanently dark regardless of site theme, like the header's user-menu popover; build a manual pill row there instead |
 | `Switch` | On/off toggle | `role="switch"` button, not a styled checkbox. Optional `loading` prop shows a spinner and implies disabled — use for any async, multi-step toggle. Used throughout `Configuracion.tsx` |
 | `FieldLabel` | Form field label | The `text-sm font-medium text-gray-600 dark:text-gray-400 mb-1.5` label style used across `AuthModal`/`AvisoForm`/`CitaForm` |
