@@ -38,15 +38,15 @@ export function CapituloTexto({
   }
 
   return (
-    <div className="prose prose-sm sm:prose-base max-w-none dark:prose-invert leading-relaxed">
+    <div className="text-lg sm:text-xl leading-relaxed text-gray-800 dark:text-gray-100">
       {versiculos.map((v) => {
         const seleccionado =
           versoInicio != null && v.numero >= versoInicio && v.numero <= (versoFin ?? versoInicio);
 
         return (
-          <span
+          <p
             key={v.numero}
-            className={`inline-block mr-1.5 mb-1 rounded px-0.5 ${
+            className={`mb-3 -mx-1.5 rounded px-1.5 py-1 ${
               seleccionado
                 ? "bg-accent/25 underline decoration-accent decoration-2 underline-offset-4"
                 : ""
@@ -61,7 +61,7 @@ export function CapituloTexto({
             >
               <CopyIcon className="w-3 h-3" />
             </button>
-          </span>
+          </p>
         );
       })}
     </div>

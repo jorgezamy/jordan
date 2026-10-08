@@ -101,7 +101,7 @@ export const VERSIONES_BIBLIA: OpcionVersion[] = [
   { value: "PDT", label: "Palabra de Dios para Todos" },
 ];
 
-export const VERSION_POR_DEFECTO = "RV1960";
+export const VERSION_POR_DEFECTO = "NVI";
 
 export type Proveedor = "bolls" | "apibible";
 

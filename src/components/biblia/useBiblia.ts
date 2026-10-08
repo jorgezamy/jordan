@@ -98,10 +98,15 @@ export function useBiblia() {
     );
 
     try {
+      // navigator.clipboard no existe fuera de un contexto seguro (HTTPS o
+      // localhost) — p.ej. al probar desde el celular por IP de LAN en
+      // HTTP plano. console.warn en vez de console.error porque Next.js
+      // infla hasta los console.error ya atrapados a pantalla completa en
+      // dev; esto es un caso esperado, no un bug, y ya se maneja abajo.
       await navigator.clipboard.writeText(texto);
       mostrarCopiado("¡Copiado!");
     } catch (err) {
-      console.error("❌ Error copiando:", err);
+      console.warn("Error copiando:", err);
       mostrarCopiado("No se pudo copiar");
     }
   };
