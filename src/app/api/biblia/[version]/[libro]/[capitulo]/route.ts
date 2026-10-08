@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { obtenerCapitulo } from "../../../../../../lib/biblia/bollsClient";
-import { LIBROS_BIBLIA } from "../../../../../../components/biblia/constants";
+import { obtenerCapituloApiBible } from "../../../../../../lib/biblia/apiBibleClient";
+import { LIBROS_BIBLIA, PROVEEDOR_POR_VERSION } from "../../../../../../components/biblia/constants";
 import { esVersionValida } from "../../../../../../components/biblia/utils";
 
 interface Params {
@@ -23,7 +24,11 @@ export async function GET(_req: Request, { params }: Params) {
   }
 
   try {
-    const versiculos = await obtenerCapitulo(version, libroId, capituloNum);
+    const proveedor = PROVEEDOR_POR_VERSION[version];
+    const versiculos =
+      proveedor.proveedor === "apibible"
+        ? await obtenerCapituloApiBible(proveedor.apiBibleId!, libroInfo.codigoApiBible, capituloNum)
+        : await obtenerCapitulo(version, libroId, capituloNum);
     return NextResponse.json({ versiculos });
   } catch (error) {
     console.error("[api/biblia] error:", error);
