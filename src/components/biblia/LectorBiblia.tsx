@@ -12,6 +12,14 @@ import { obtenerLibro } from "./utils";
 const selectClassName =
   "w-full outline-none transition-colors border-2 border-primary/40 dark:border-white/40 bg-gray-50 dark:bg-white/5 shadow-sm focus:border-primary focus:dark:border-white focus:ring-2 focus:ring-primary focus:dark:ring-white rounded-lg px-3 py-2 text-gray-800 dark:text-gray-100";
 
+// El menú desplegable de un <select> lo pinta el sistema operativo, no la
+// página — en Windows siempre con fondo blanco, sin importar el tema oscuro
+// del sitio. Sin esto, las <option> heredaban dark:text-gray-100 (gris claro)
+// del <select>, casi invisible sobre ese fondo blanco nativo (bug reportado).
+// Se fuerza texto oscuro sobre fondo claro en las opciones, independiente del
+// tema de la página, para que el menú siempre sea legible.
+const optionClassName = "bg-white text-gray-900";
+
 export function LectorBiblia() {
   const {
     libroId,
@@ -51,7 +59,7 @@ export function LectorBiblia() {
             className={selectClassName}
           >
             {LIBROS_BIBLIA.map((l) => (
-              <option key={l.id} value={l.id}>
+              <option key={l.id} value={l.id} className={optionClassName}>
                 {l.nombre}
               </option>
             ))}
@@ -66,7 +74,7 @@ export function LectorBiblia() {
             className={selectClassName}
           >
             {opcionesCapitulo.map((n) => (
-              <option key={n} value={n}>
+              <option key={n} value={n} className={optionClassName}>
                 {n}
               </option>
             ))}
@@ -81,7 +89,7 @@ export function LectorBiblia() {
             className={selectClassName}
           >
             {VERSIONES_BIBLIA.map((v) => (
-              <option key={v.value} value={v.value}>
+              <option key={v.value} value={v.value} className={optionClassName}>
                 {v.label}
               </option>
             ))}
@@ -139,9 +147,11 @@ export function LectorBiblia() {
                 onChange={(e) => seleccionarVersoInicio(e.target.value ? Number(e.target.value) : null)}
                 className={selectClassName}
               >
-                <option value="">Selecciona un verso</option>
+                <option value="" className={optionClassName}>
+                  Selecciona un verso
+                </option>
                 {opcionesVerso.map((n) => (
-                  <option key={n} value={n}>
+                  <option key={n} value={n} className={optionClassName}>
                     {n}
                   </option>
                 ))}
@@ -156,9 +166,11 @@ export function LectorBiblia() {
                   onChange={(e) => seleccionarVersoFin(e.target.value ? Number(e.target.value) : null)}
                   className={selectClassName}
                 >
-                  <option value="">Solo este verso</option>
+                  <option value="" className={optionClassName}>
+                    Solo este verso
+                  </option>
                   {opcionesVersoFin.map((n) => (
-                    <option key={n} value={n}>
+                    <option key={n} value={n} className={optionClassName}>
                       {n}
                     </option>
                   ))}

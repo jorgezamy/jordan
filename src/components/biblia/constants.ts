@@ -80,11 +80,18 @@ export interface OpcionVersion {
 // Subconjunto de versiones que expone bolls.life — independiente de
 // VERSIONES_BIBLICAS (citaBiblica/constants.ts), que es una lista curada a
 // mano para citas escritas por el admin, no atada a ninguna API externa.
+//
+// RV1909 y NVI salieron de aquí (2026-10-07): bolls.life eliminó RV1909 por
+// completo de su catálogo (devuelve [] para cualquier capítulo), y para NVI
+// el dueño del sitio sustituyó el texto por un mensaje explicando que
+// Biblica, Inc. le prohibió legalmente seguir distribuyendo esa traducción
+// — en ambos casos la API sigue respondiendo 200, así que esto no se puede
+// detectar en el cliente, solo evitar ofreciendo versiones que sí funcionan.
 export const VERSIONES_BIBLIA: OpcionVersion[] = [
   { value: "RV1960", label: "Reina Valera 1960" },
-  { value: "RV1909", label: "Reina Valera 1909" },
-  { value: "NVI", label: "Nueva Versión Internacional" },
+  { value: "LBLA", label: "La Biblia de las Américas" },
   { value: "NTV", label: "Nueva Traducción Viviente" },
+  { value: "PDT", label: "Palabra de Dios para Todos" },
 ];
 
-export const VERSION_POR_DEFECTO = "NVI";
+export const VERSION_POR_DEFECTO = "RV1960";
