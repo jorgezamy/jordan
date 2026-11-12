@@ -1,6 +1,7 @@
 import { Alert } from "../ui/Alert";
 import { CopyIcon } from "../ui/CopyIcon";
 import { Versiculo } from "./types";
+import { idVerso } from "./utils";
 
 interface CapituloTextoProps {
   versiculos: Versiculo[];
@@ -9,6 +10,7 @@ interface CapituloTextoProps {
   versoInicio: number | null;
   versoFin: number | null;
   onCopiarVerso: (numero: number) => void;
+  claseTamano: string;
 }
 
 export function CapituloTexto({
@@ -18,6 +20,7 @@ export function CapituloTexto({
   versoInicio,
   versoFin,
   onCopiarVerso,
+  claseTamano,
 }: CapituloTextoProps) {
   if (loading) {
     return (
@@ -38,7 +41,7 @@ export function CapituloTexto({
   }
 
   return (
-    <div className="text-lg sm:text-xl leading-relaxed text-gray-800 dark:text-gray-100">
+    <div className={`${claseTamano} leading-relaxed text-gray-800 dark:text-gray-100`}>
       {versiculos.map((v) => {
         const seleccionado =
           versoInicio != null && v.numero >= versoInicio && v.numero <= (versoFin ?? versoInicio);
@@ -46,7 +49,8 @@ export function CapituloTexto({
         return (
           <p
             key={v.numero}
-            className={`mb-3 -mx-1.5 rounded px-1.5 py-1 ${
+            id={idVerso(v.numero)}
+            className={`scroll-mt-16 mb-3 -mx-1.5 rounded px-1.5 py-1 ${
               seleccionado
                 ? "bg-accent/25 underline decoration-accent decoration-2 underline-offset-4"
                 : ""
@@ -57,9 +61,9 @@ export function CapituloTexto({
             <button
               onClick={() => onCopiarVerso(v.numero)}
               aria-label={`Copiar versículo ${v.numero}`}
-              className="inline-flex align-middle w-4 h-4 items-center justify-center rounded text-gray-400 dark:text-gray-500 hover:text-primary hover:dark:text-white focus:text-primary focus:dark:text-white transition"
+              className="ml-1 inline-flex align-middle w-9 h-9 items-center justify-center rounded-full bg-gray-100 dark:bg-white/10 text-gray-700 dark:text-gray-200 hover:bg-accent/20 hover:text-primary hover:dark:text-white focus:text-primary focus:dark:text-white transition"
             >
-              <CopyIcon className="w-3 h-3" />
+              <CopyIcon className="w-5 h-5" />
             </button>
           </p>
         );

@@ -127,3 +127,23 @@ export const PROVEEDOR_POR_VERSION: Record<string, InfoProveedorVersion> = {
   NVI: { proveedor: "apibible", apiBibleId: "01c25b8715dbb632-01" },
   RV1909: { proveedor: "apibible", apiBibleId: "592420522e16049f-01" },
 };
+
+// localStorage: última cita abierta (libro/capítulo/versión/versos).
+export const BIBLIA_ESTADO_KEY = "biblia-estado";
+
+// localStorage: índice dentro de TAMANOS_LETRA elegido por el visitante.
+export const BIBLIA_TAMANO_LETRA_KEY = "biblia-tamano-letra";
+
+// Tamaños del texto del capítulo, de menor a mayor (móvil / escritorio).
+// El índice por defecto reproduce el tamaño que el lector tenía antes de
+// que existiera este control.
+export const TAMANOS_LETRA = [
+  "text-sm sm:text-base",
+  "text-base sm:text-lg",
+  "text-lg sm:text-xl",
+  "text-xl sm:text-2xl",
+  "text-2xl sm:text-3xl",
+  "text-3xl sm:text-4xl",
+];
+
+export const TAMANO_LETRA_POR_DEFECTO = 2;

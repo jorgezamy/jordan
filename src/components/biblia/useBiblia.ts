@@ -5,7 +5,14 @@ import { useEffect, useState } from "react";
 import { useMensajeTemporal } from "../../hooks/useMensajeTemporal";
 import { VERSION_POR_DEFECTO } from "./constants";
 import { Versiculo } from "./types";
-import { capituloAnterior, capituloSiguiente, construirTextoCopia } from "./utils";
+import {
+  capituloAnterior,
+  capituloSiguiente,
+  construirTextoCopia,
+  desplazarAVerso,
+  guardarEstadoLectura,
+  leerEstadoLectura,
+} from "./utils";
 
 export function useBiblia() {
   const [libroId, setLibroId] = useState(1);
@@ -16,9 +23,32 @@ export function useBiblia() {
   const [error, setError] = useState(false);
   const [versoInicio, setVersoInicio] = useState<number | null>(null);
   const [versoFin, setVersoFin] = useState<number | null>(null);
+  // false hasta leer localStorage al montar: sin esta espera se pediría
+  // Génesis 1 de más y, peor, se sobreescribiría la cita guardada con la de
+  // por defecto antes de restaurarla (bug reportado: al cambiar de página y
+  // volver, el lector regresaba a Génesis).
+  const [restaurado, setRestaurado] = useState(false);
   const { mensaje: mensajeCopiado, mostrarMensaje: mostrarCopiado } = useMensajeTemporal(2000);
 
   useEffect(() => {
+    const guardado = leerEstadoLectura();
+    if (guardado) {
+      setLibroId(guardado.libroId);
+      setCapitulo(guardado.capitulo);
+      setVersion(guardado.version);
+      setVersoInicio(guardado.versoInicio);
+      setVersoFin(guardado.versoFin);
+    }
+    setRestaurado(true);
+  }, []);
+
+  useEffect(() => {
+    if (!restaurado) return;
+    guardarEstadoLectura({ libroId, capitulo, version, versoInicio, versoFin });
+  }, [restaurado, libroId, capitulo, version, versoInicio, versoFin]);
+
+  useEffect(() => {
+    if (!restaurado) return;
     let cancelado = false;
     setLoading(true);
     setError(false);
@@ -43,7 +73,7 @@ export function useBiblia() {
     return () => {
       cancelado = true;
     };
-  }, [libroId, capitulo, version]);
+  }, [restaurado, libroId, capitulo, version]);
 
   const limpiarSeleccion = () => {
     setVersoInicio(null);
@@ -87,6 +117,10 @@ export function useBiblia() {
     setVersoFin(null);
   };
 
+  const irAVersoInicio = () => {
+    if (versoInicio) desplazarAVerso(versoInicio);
+  };
+
   const copiar = async (versoInicioForzado?: number) => {
     const texto = construirTextoCopia(
       versiculos,
@@ -128,6 +162,7 @@ export function useBiblia() {
     irAnterior,
     seleccionarVersoInicio,
     seleccionarVersoFin: setVersoFin,
+    irAVersoInicio,
     copiar,
   };
 }
