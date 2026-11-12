@@ -1,12 +1,27 @@
 // Bump esta fecha cada vez que se publique algo nuevo — vuelve a mostrar
 // el modal a todos, incluso a quien ya vio una versión anterior.
-export const VERSION_NOVEDADES = "2026-10-07";
+export const VERSION_NOVEDADES = "2026-11-12";
 
 // Si nadie lo cierra activamente, deja de aparecer después de esta cantidad
 // de veces (para no insistir para siempre).
 export const NOVEDADES_MAX_VECES = 4;
 
 export const NOVEDADES = [
+  {
+    titulo: "La Biblia recuerda dónde te quedaste",
+    descripcion:
+      "Si sales de la Biblia y regresas, sigues en el mismo capítulo y con los mismos versículos seleccionados.",
+  },
+  {
+    titulo: "Ajusta el tamaño de la letra",
+    descripcion:
+      "Usa los botones A− y A+ en la Biblia para hacer el texto más pequeño o más grande.",
+  },
+  {
+    titulo: "Ve directo a un versículo",
+    descripcion:
+      "Al elegir un versículo en \"Desde\", toca el botón \"Ir\" y la Biblia baja sola hasta él. Mientras lees, arriba siempre verás el libro y capítulo.",
+  },
   {
     titulo: "Más versiones de la Biblia",
     descripcion:
