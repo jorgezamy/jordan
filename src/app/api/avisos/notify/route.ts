@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import { getMessaging } from "firebase-admin/messaging";
 import { getAdminApp } from "../../../../lib/firebaseAdmin";
-import { TOPICS, NOTIFICATION_ICON_URL, NOTIFICATION_BADGE_URL } from "../../../../lib/fcm";
+import { TOPICS, NOTIFICATION_ICON_URL, NOTIFICATION_BADGE_URL, linkNotificacion } from "../../../../lib/fcm";
 import { checkRateLimit } from "../../../../lib/rateLimit";
 
 const MAX_AGE_MS = 30_000;
@@ -44,11 +44,11 @@ export async function POST(req: NextRequest) {
         title: data.importante ? `⭐ ${data.titulo}` : data.titulo,
         body: data.descripcion,
       },
-      data: { avisoId: id, link: "/" },
+      data: { avisoId: id, link: linkNotificacion("/") },
       webpush: {
         headers: { Urgency: "high" },
         notification: { icon: NOTIFICATION_ICON_URL, badge: NOTIFICATION_BADGE_URL },
-        fcmOptions: { link: "/" },
+        fcmOptions: { link: linkNotificacion("/") },
       },
     });
 

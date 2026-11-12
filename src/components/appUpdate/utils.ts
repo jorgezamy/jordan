@@ -1,4 +1,11 @@
-import { APP_PACKAGE_ID, APP_VERSION_PARAM, APP_VERSION_SESSION_KEY } from "./constants";
+import {
+  APP_PACKAGE_ID,
+  APP_VERSION_CONOCIDA_KEY,
+  APP_VERSION_PARAM,
+  APP_VERSION_SESSION_KEY,
+  ORIGEN_NOTIFICACION,
+  ORIGEN_PARAM,
+} from "./constants";
 
 function leerVersionGuardada(): number | null {
   try {
@@ -17,6 +24,23 @@ function guardarVersion(version: number) {
   } catch {}
 }
 
+function leerVersionConocida(): number | null {
+  try {
+    const raw = window.localStorage.getItem(APP_VERSION_CONOCIDA_KEY);
+    if (raw === null) return null;
+    const n = Number(raw);
+    return Number.isFinite(n) ? n : null;
+  } catch {
+    return null;
+  }
+}
+
+function guardarVersionConocida(version: number) {
+  try {
+    window.localStorage.setItem(APP_VERSION_CONOCIDA_KEY, String(version));
+  } catch {}
+}
+
 // Devuelve la versionCode de la app Android desde la que se abrió el sitio, o
 // `null` si se abrió en el navegador normal. Una app vieja que aún no manda
 // `appv` (se reconoce por el referrer `android-app://`) cuenta como versión 0.
@@ -25,7 +49,8 @@ function guardarVersion(version: number) {
 // almacenamiento con Chrome, así que localStorage marcaría como "app" a quien
 // después abra el sitio en el navegador.
 export function detectarVersionApp(): number | null {
-  const param = new URLSearchParams(window.location.search).get(APP_VERSION_PARAM);
+  const params = new URLSearchParams(window.location.search);
+  const param = params.get(APP_VERSION_PARAM);
   const desdeApp = document.referrer.startsWith(`android-app://${APP_PACKAGE_ID}`);
 
   // `appv` solo viaja en la URL del `startUrl` (home). Al refrescar cualquier
@@ -37,12 +62,26 @@ export function detectarVersionApp(): number | null {
     const parsed = parseInt(param, 10);
     const version = Number.isFinite(parsed) ? parsed : 0;
     guardarVersion(version);
+    guardarVersionConocida(version);
     return version;
   }
 
   if (desdeApp) {
     const guardada = leerVersionGuardada();
     if (guardada !== null) return guardada;
+
+    // Sesión nueva sin `appv` (p. ej. la app se abrió al tocar una
+    // notificación): si este dispositivo ya reportó antes su versión desde
+    // la app, esa es la referencia más confiable.
+    const conocida = leerVersionConocida();
+    if (conocida !== null) {
+      guardarVersion(conocida);
+      return conocida;
+    }
+
+    // Abierta desde una notificación y sin ningún dato previo: no hay forma
+    // de saber la versión, así que no se bloquea.
+    if (params.get(ORIGEN_PARAM) === ORIGEN_NOTIFICACION) return null;
 
     // Nada guardado todavía: el `startUrl` real de la app siempre apunta a
     // `/`, así que si justo aquí tampoco hay `appv` es una build vieja de

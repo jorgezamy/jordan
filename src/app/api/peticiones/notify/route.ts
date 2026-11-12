@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getFirestore, Timestamp } from "firebase-admin/firestore";
 import { getMessaging } from "firebase-admin/messaging";
 import { getAdminApp } from "../../../../lib/firebaseAdmin";
-import { TOPICS, NOTIFICATION_ICON_URL, NOTIFICATION_BADGE_URL } from "../../../../lib/fcm";
+import { TOPICS, NOTIFICATION_ICON_URL, NOTIFICATION_BADGE_URL, linkNotificacion } from "../../../../lib/fcm";
 import { checkRateLimit } from "../../../../lib/rateLimit";
 
 const MAX_AGE_MS = 30_000;
@@ -47,11 +47,11 @@ export async function POST(req: NextRequest) {
         title: "Nueva petición de oración",
         body: data.nombre ? `${data.nombre} envió una petición nueva.` : "Se envió una petición nueva.",
       },
-      data: { peticionId: id, link: `/peticiones?id=${id}` },
+      data: { peticionId: id, link: linkNotificacion(`/peticiones?id=${id}`) },
       webpush: {
         headers: { Urgency: "high" },
         notification: { icon: NOTIFICATION_ICON_URL, badge: NOTIFICATION_BADGE_URL },
-        fcmOptions: { link: `/peticiones?id=${id}` },
+        fcmOptions: { link: linkNotificacion(`/peticiones?id=${id}`) },
       },
     });
 

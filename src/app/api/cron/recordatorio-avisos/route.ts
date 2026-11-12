@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { DocumentReference, getFirestore, Timestamp, WriteResult } from "firebase-admin/firestore";
 import { getMessaging } from "firebase-admin/messaging";
 import { getAdminApp } from "../../../../lib/firebaseAdmin";
-import { TOPICS, NOTIFICATION_ICON_URL, NOTIFICATION_BADGE_URL } from "../../../../lib/fcm";
+import { TOPICS, NOTIFICATION_ICON_URL, NOTIFICATION_BADGE_URL, linkNotificacion } from "../../../../lib/fcm";
 
 const UNA_HORA_MS = 60 * 60 * 1000;
 // America/Mexico_City está fija en UTC-6 (sin DST). Re-revisar si eso llega a cambiar.
@@ -120,11 +120,11 @@ export async function GET(req: NextRequest) {
             title: `Recordatorio: ${item.titulo}`,
             body: formatTiempoRestante(item.minutosRestantes),
           },
-          data: { avisoId: item.ref.id, link: "/" },
+          data: { avisoId: item.ref.id, link: linkNotificacion("/") },
           webpush: {
             headers: { Urgency: "high" },
             notification: { icon: NOTIFICATION_ICON_URL, badge: NOTIFICATION_BADGE_URL },
-            fcmOptions: { link: "/" },
+            fcmOptions: { link: linkNotificacion("/") },
           },
         });
         await item.marcarEnviado();

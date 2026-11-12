@@ -29,3 +29,11 @@ export function leerPrefBooleana(key: string, defecto: boolean): boolean {
 export function guardarPrefBooleana(key: string, valor: boolean) {
   window.localStorage.setItem(key, valor ? "1" : "0");
 }
+
+// Todo link de notificación push pasa por aquí: la marca `origen=notificacion`
+// le avisa a `appUpdate/utils.ts` que la app se abrió desde una notificación
+// (sin `appv`), para no confundirla con una build vieja y bloquearla.
+export function linkNotificacion(ruta: string): string {
+  const separador = ruta.includes("?") ? "&" : "?";
+  return `${ruta}${separador}origen=notificacion`;
+}
