@@ -1,14 +1,14 @@
 "use client";
 
-import { Alert } from "../ui/Alert";
 import { ArrowDownIcon } from "../ui/ArrowDownIcon";
 import { Button } from "../ui/Button";
 import { CopyIcon } from "../ui/CopyIcon";
 import { FieldLabel } from "../ui/FieldLabel";
 import { Select, selectOptionClassName } from "../ui/Select";
+import { Toast } from "../ui/Toast";
 import { BarraCapituloFija } from "./BarraCapituloFija";
 import { CapituloTexto } from "./CapituloTexto";
-import { LIBROS_BIBLIA, VERSIONES_BIBLIA } from "./constants";
+import { LIBROS_BIBLIA, MENSAJE_ERROR_COPIA, VERSIONES_BIBLIA } from "./constants";
 import { ControlTamanoLetra } from "./ControlTamanoLetra";
 import { useBarraFija } from "./useBarraFija";
 import { useBiblia } from "./useBiblia";
@@ -186,9 +186,7 @@ export function LectorBiblia() {
       </div>
 
       {mensajeCopiado && (
-        <Alert variant="success" className="mb-4 px-4 py-2.5 text-center">
-          {mensajeCopiado}
-        </Alert>
+        <Toast mensaje={mensajeCopiado} variant={mensajeCopiado === MENSAJE_ERROR_COPIA ? "danger" : "success"} />
       )}
 
       <hr className="border-t border-primary/15 dark:border-white/15 mb-4" />

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 
 import { useMensajeTemporal } from "../../hooks/useMensajeTemporal";
-import { VERSION_POR_DEFECTO } from "./constants";
+import { MENSAJE_COPIADO, MENSAJE_ERROR_COPIA, VERSION_POR_DEFECTO } from "./constants";
 import { Versiculo } from "./types";
 import {
   capituloAnterior,
@@ -138,10 +138,10 @@ export function useBiblia() {
       // infla hasta los console.error ya atrapados a pantalla completa en
       // dev; esto es un caso esperado, no un bug, y ya se maneja abajo.
       await navigator.clipboard.writeText(texto);
-      mostrarCopiado("¡Copiado!");
+      mostrarCopiado(MENSAJE_COPIADO);
     } catch (err) {
       console.warn("Error copiando:", err);
-      mostrarCopiado("No se pudo copiar");
+      mostrarCopiado(MENSAJE_ERROR_COPIA);
     }
   };
 

@@ -460,6 +460,8 @@ No longer a static "coming soon" page. Renders `<CitaBiblicaCard />` and `<Aviso
 | `GearIcon` | Settings gear SVG | Header link to `/configuracion` |
 | `ArrowLeftIcon` | Back-arrow SVG | Used by `BackHomeLink` |
 | `ArrowDownIcon` | Down-arrow SVG | Used by the Biblia "Ir" button |
+| `CheckIcon` | Checkmark SVG | Used by `Toast` (success) |
+| `Toast` | Floating transient message (`fixed`, above `BottomNav` on mobile) | `variant`: `success` / `danger`. Render it only while a `useMensajeTemporal` message is set. Use it instead of an inline `Alert` for feedback on actions that can happen far down a long page (e.g. Biblia "¡Copiado!" — an inline Alert at the top went unseen when copying a verse further down, reported) |
 | `BackHomeLink` | "← Inicio" link | See [Back-to-home navigation](#back-to-home-navigation) |
 | `BellIcon` | Notification-bell SVG | Used for "Gestionar avisos" in the user menu |
 | `BookIcon` | Open-book SVG | Used for "Gestionar citas" in the user menu |
@@ -513,4 +515,4 @@ Tailwind CSS v3. No separate design system — styles are inline Tailwind classe
 
 **Minimum font size rule:** `text-sm` (14px) is the minimum for any readable text — labels, descriptions, dates, links, metadata. `text-xs` (12px) is reserved exclusively for compact UI chips/badges (e.g., the `#N` number badge, status pills) where the surrounding context makes them identifiable without needing to be read in full.
 
-**Animation keyframes** are defined by hand in `globals.css` (not a Tailwind plugin) and referenced via Tailwind's arbitrary-value `animate-[name_duration_easing]` syntax, e.g. `motion-safe:animate-[fade-in_0.35s_ease-out]`. Always prefix animations that aren't purely functional (autoplay progress bars, etc.) with `motion-safe:` so `prefers-reduced-motion` users don't get them. Current keyframes: `fade-in`, `fade-out`, `progress-bar` (carousel autoplay), `modal-in`, `modal-out` (Novedades modal), `pop-in` (Biblia "Ir" button), `slide-down` (Biblia fixed chapter bar).
+**Animation keyframes** are defined by hand in `globals.css` (not a Tailwind plugin) and referenced via Tailwind's arbitrary-value `animate-[name_duration_easing]` syntax, e.g. `motion-safe:animate-[fade-in_0.35s_ease-out]`. Always prefix animations that aren't purely functional (autoplay progress bars, etc.) with `motion-safe:` so `prefers-reduced-motion` users don't get them. Current keyframes: `fade-in`, `fade-out`, `progress-bar` (carousel autoplay), `modal-in`, `modal-out` (Novedades modal), `pop-in` (Biblia "Ir" button), `slide-down` (Biblia fixed chapter bar), `toast-in` (`ui/Toast`).

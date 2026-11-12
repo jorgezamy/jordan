@@ -147,3 +147,6 @@ export const TAMANOS_LETRA = [
 ];
 
 export const TAMANO_LETRA_POR_DEFECTO = 2;
+
+export const MENSAJE_COPIADO = "¡Copiado!";
+export const MENSAJE_ERROR_COPIA = "No se pudo copiar";
