@@ -461,7 +461,7 @@ No longer a static "coming soon" page. Renders `<CitaBiblicaCard />` and `<Aviso
 | `ArrowLeftIcon` | Back-arrow SVG | Used by `BackHomeLink` |
 | `ArrowDownIcon` | Down-arrow SVG | Used by the Biblia "Ir" button |
 | `CheckIcon` | Checkmark SVG | Used by `Toast` (success) |
-| `Toast` | Floating transient message (`fixed`, above `BottomNav` on mobile) | `variant`: `success` / `danger`. Render it only while a `useMensajeTemporal` message is set. Use it instead of an inline `Alert` for feedback on actions that can happen far down a long page (e.g. Biblia "¡Copiado!" — an inline Alert at the top went unseen when copying a verse further down, reported) |
+| `Toast` | Floating transient message (`fixed top-20`, below the Biblia fixed chapter bar; solid `accent` pill. At the bottom it was hidden behind Android's native "Copied." clipboard toast, reported) | `variant`: `success` / `danger`. Render it only while a `useMensajeTemporal` message is set. Use it instead of an inline `Alert` for feedback on actions that can happen far down a long page (e.g. Biblia "¡Copiado!" — an inline Alert at the top went unseen when copying a verse further down, reported) |
 | `BackHomeLink` | "← Inicio" link | See [Back-to-home navigation](#back-to-home-navigation) |
 | `BellIcon` | Notification-bell SVG | Used for "Gestionar avisos" in the user menu |
 | `BookIcon` | Open-book SVG | Used for "Gestionar citas" in the user menu |

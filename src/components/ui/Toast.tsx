@@ -8,30 +8,40 @@ interface ToastProps {
   variant?: ToastVariant;
 }
 
-const VARIANT_CLASSES: Record<ToastVariant, string> = {
-  success: "bg-primary-darker text-white",
-  danger: "bg-danger text-white",
+const VARIANT_CLASSES: Record<ToastVariant, { pill: string; icono: string }> = {
+  success: {
+    pill: "bg-accent text-primary-darker shadow-accent/40 ring-white/40",
+    icono: "bg-primary-darker text-accent",
+  },
+  danger: {
+    pill: "bg-danger text-white shadow-danger/40 ring-white/30",
+    icono: "bg-white text-danger",
+  },
 };
 
 // Mensaje flotante y breve (p. ej. "¡Copiado!") fijo sobre la pantalla, para
 // que se vea sin importar el scroll — un Alert dentro del flujo de la página
 // quedaba fuera de vista al copiar un versículo de más abajo (reportado).
-// Va por encima del BottomNav en móvil (bottom-20) y abajo al centro en
-// escritorio. Renderízalo solo mientras haya mensaje (useMensajeTemporal).
+// Va ARRIBA (debajo de la barra fija del capítulo, top-20): abajo quedaba
+// tapado por el aviso nativo de Android/Chrome "Copied." (reportado). Color
+// de acento sólido para que destaque sobre el tema oscuro.
+// Renderízalo solo mientras haya mensaje (useMensajeTemporal).
 export function Toast({ mensaje, variant = "success" }: ToastProps) {
   return (
-    <div className="fixed inset-x-0 bottom-20 sm:bottom-8 z-50 flex justify-center px-4 pointer-events-none">
+    <div className="fixed inset-x-0 top-20 z-50 flex justify-center px-4 pointer-events-none">
       <div
         key={mensaje}
         role="status"
         aria-live="polite"
-        className={`inline-flex items-center gap-2 rounded-full px-5 py-3 text-sm font-semibold shadow-2xl motion-safe:animate-[toast-in_0.3s_ease-out] ${VARIANT_CLASSES[variant]}`}
+        className={`inline-flex items-center gap-3 rounded-full py-2.5 pl-2.5 pr-6 text-base font-bold tracking-wide shadow-2xl ring-1 motion-safe:animate-[toast-in_0.35s_cubic-bezier(0.34,1.56,0.64,1)] ${VARIANT_CLASSES[variant].pill}`}
       >
-        {variant === "success" ? (
-          <CheckIcon className="w-5 h-5 text-accent" strokeWidth={3} />
-        ) : (
-          <CloseIcon className="w-5 h-5" strokeWidth={3} />
-        )}
+        <span className={`flex h-8 w-8 items-center justify-center rounded-full ${VARIANT_CLASSES[variant].icono}`}>
+          {variant === "success" ? (
+            <CheckIcon className="w-5 h-5" strokeWidth={3} />
+          ) : (
+            <CloseIcon className="w-5 h-5" strokeWidth={3} />
+          )}
+        </span>
         {mensaje}
       </div>
     </div>

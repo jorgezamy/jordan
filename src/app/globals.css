@@ -99,11 +99,11 @@ html, body {
   }
 }
 
-/* Toast flotante (ui/Toast.tsx): sube y aparece desde abajo. */
+/* Toast flotante (ui/Toast.tsx): baja desde arriba con un pequeño rebote. */
 @keyframes toast-in {
   from {
     opacity: 0;
-    transform: translateY(12px) scale(0.95);
+    transform: translateY(-16px) scale(0.9);
   }
   to {
     opacity: 1;
