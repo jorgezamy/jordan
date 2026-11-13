@@ -1,13 +1,19 @@
 import { FaWhatsapp } from "react-icons/fa";
 import { AvisosCarousel } from "../components/avisos/AvisosCarousel";
+import { AvisoVistaPrevia } from "../components/vistaPrevia/AvisoVistaPrevia";
+import { TituloCelebracion } from "../components/celebracion/TituloCelebracion";
 import { CitaBiblicaCard } from "../components/citaBiblica/CitaBiblicaCard";
+import { FondoAnimado } from "../components/fondoAnimado/FondoAnimado";
 import { SOCIAL_LINKS } from "./constants";
 
 export default function Home() {
   return (
-    <div className="flex flex-col items-center gap-12 px-8 py-12 sm:px-20 sm:py-16 font-[family-name:var(--font-geist-sans)]">
+    <div className="relative isolate flex flex-col items-center gap-12 px-8 py-12 sm:px-20 sm:py-16 font-[family-name:var(--font-geist-sans)]">
+      <FondoAnimado />
       <h1 className="sr-only">Centro Cristiano Jordán</h1>
       <div className="w-full max-w-2xl flex flex-col items-center gap-4">
+        <AvisoVistaPrevia />
+        <TituloCelebracion />
         <CitaBiblicaCard />
         <AvisosCarousel />
       </div>

@@ -1,8 +1,10 @@
 import Link from "next/link";
 import { BellIcon } from "../ui/BellIcon";
 import { BookIcon } from "../ui/BookIcon";
+import { DocumentIcon } from "../ui/DocumentIcon";
 import { LogoutIcon } from "../ui/LogoutIcon";
 import { SendIcon } from "../ui/SendIcon";
+import { MenuVistaPrevia } from "../vistaPrevia/MenuVistaPrevia";
 
 interface UserMenuContentProps {
   email: string;
@@ -51,6 +53,17 @@ export const UserMenuContent = ({ email, onLogout, onNavigate }: UserMenuContent
           <SendIcon className="w-4 h-4 text-white/60" />
           Enviar notificación
         </Link>
+
+        <Link
+          href="/documentacion"
+          onClick={onNavigate}
+          className="flex items-center gap-2.5 text-white text-sm rounded-lg px-2.5 py-2 hover:bg-white/10 transition"
+        >
+          <DocumentIcon className="w-4 h-4 text-white/60" />
+          Documentación
+        </Link>
+
+        <MenuVistaPrevia />
       </nav>
 
       <div className="h-px bg-white/10" />

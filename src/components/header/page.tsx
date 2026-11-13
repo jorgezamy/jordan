@@ -8,6 +8,8 @@ import { useAuth } from "../../context/AuthContext";
 import { useAutoSolicitarNotificaciones } from "../../hooks/useAutoSolicitarNotificaciones";
 import { useFcmForeground } from "../../hooks/useFcmForeground";
 import AuthModal from "../auth/AuthModal";
+import { IconoFestivo } from "../festivos/IconoFestivo";
+import { FondoHeader } from "../fondoAnimado/FondoHeader";
 import { Alert } from "../ui/Alert";
 import { CloseIcon } from "../ui/CloseIcon";
 import { GearIcon } from "../ui/GearIcon";
@@ -43,19 +45,23 @@ export const HeaderPage = () => {
 
   return (
     <>
-      <header className="bg-primary shadow-lg">
+      <header className="relative bg-primary shadow-lg">
+        <FondoHeader />
         <div className="relative z-50 max-w-6xl mx-auto px-4 sm:px-6 flex items-center justify-center sm:justify-between h-16">
 
           <div className="flex items-center gap-8">
-            <Link href="/" className="flex-shrink-0">
-              <Image
-                src="/logo-08-web.png"
-                width={150}
-                height={100}
-                alt="Logo Centro Cristiano Jordán"
-                className="h-10 w-auto"
-              />
-            </Link>
+            <div className="flex items-center gap-3">
+              <Link href="/" className="flex-shrink-0">
+                <Image
+                  src="/logo-08-web.png"
+                  width={150}
+                  height={100}
+                  alt="Logo Centro Cristiano Jordán"
+                  className="h-10 w-auto"
+                />
+              </Link>
+              <IconoFestivo />
+            </div>
 
             {/* Nav con etiquetas — solo desktop, en móvil vive en el nav inferior */}
             <nav className="hidden sm:flex items-center gap-6">

@@ -1,6 +1,6 @@
 # Centro Cristiano Jordán
 
-Sitio web de Centro Cristiano Jordán, construido con [Next.js](https://nextjs.org) (App Router) + TypeScript. Está en estado "próximamente" para la mayoría del contenido, pero ya tiene varias funcionalidades activas: peticiones de oración, avisos de la iglesia (con banner opcional), una cita bíblica del día, un lector de Biblia completo en varias versiones, notificaciones push configurables, tema claro/oscuro/sistema, y un modal de "novedades" para anunciar cada release.
+Sitio web de Centro Cristiano Jordán, construido con [Next.js](https://nextjs.org) (App Router) + TypeScript. Está en estado "próximamente" para la mayoría del contenido, pero ya tiene varias funcionalidades activas: peticiones de oración, avisos de la iglesia (con banner opcional), una cita bíblica del día, un lector de Biblia completo en varias versiones, notificaciones push configurables, tema claro/oscuro/sistema, un modal de "novedades" para anunciar cada release, y decoraciones automáticas por temporada y días festivos.
 
 Para el detalle de arquitectura (Firebase, autenticación, estructura de datos, convenciones de UI, etc.), consulta **[CLAUDE.md](./CLAUDE.md)** — es la referencia técnica completa del proyecto y debe mantenerse al día con cada cambio relevante.
 
@@ -59,15 +59,25 @@ npx firebase-tools deploy --only firestore:rules --project jordan-85626
 
 Todo cambio o funcionalidad nueva debe seguir estas reglas (detalladas en [CLAUDE.md → Development guidelines](./CLAUDE.md#development-guidelines)):
 
-- **Reutilizar componentes.** Antes de escribir un botón, input, select, alerta, toggle o ícono nuevo, revisa `src/components/ui/` (`Button`, `Alert`, `TextInput`, `Select`, `SegmentedControl`, `Switch`, `LockIcon`, `GearIcon`, `BackHomeLink`, `BellIcon`, `BookIcon`, `LogoutIcon`, `CloseIcon`, entre otros).
+- **Reutilizar componentes.** Antes de escribir un botón, input, select, alerta, toggle o ícono nuevo, revisa `src/components/ui/` (`Button`, `Alert`, `TextInput`, `Select`, `SegmentedControl`, `Switch`, `LockIcon`, `GearIcon`, `BackHomeLink`, `BellIcon`, `BookIcon`, `LogoutIcon`, `CloseIcon`, `DocumentIcon`, `SparkleIcon`, entre otros).
 - **Colores desde tokens.** Nunca usar valores hex sueltos ni paletas por defecto de Tailwind — siempre los tokens semánticos definidos en `tailwind.config.ts` (incluye `accent`, el teal usado en las secciones modernizadas).
 - **Sin emojis en las funcionalidades nuevas.** Avisos, Citas Bíblicas, Configuración, Novedades y el menú de usuario usan texto simple + íconos SVG en vez de emoji. `peticiones/` conserva sus emojis originales — es una excepción intencional, no un patrón a extender.
 - **Seguridad primero.** Ninguna validación del lado del cliente reemplaza autorización real del lado del servidor / reglas de Firestore. No exponer datos sensibles (`telefono`, `correo`, peticiones canceladas) a usuarios no autenticados.
 - Verificar con `npx tsc --noEmit` (y `npm run build` en cambios grandes) antes de dar por terminado un cambio, y desplegar `firestore.rules` si se tocó.
 
+## Decoraciones de temporada
+
+El sitio se decora solo según la fecha del visitante; no hay que activar nada:
+
+- **Fondos animados** (detrás del inicio y dentro del header en todas las páginas): nieve del 10 nov al 31 dic, fuegos artificiales del 1 al 10 ene, y ~10 días al entrar la primavera (flores), el verano (soles y destellos) y el otoño (hojas).
+- **Íconos en el header**, solo ese día: Año Nuevo, Día del Niño, Día de las Madres, Día del Padre (tercer domingo de junio), 16 de septiembre y Navidad (un nacimiento).
+- **Título de celebración** arriba de "Dios te habla hoy": el saludo del festivo o el nombre de la temporada ("Entrada del otoño", "Temporada navideña", etc.).
+
+Para verlas sin esperar su fecha: menú **Cuenta → Probar decoraciones** (simula el día completo), o la página **Cuenta → Documentación** (`/documentacion`), que muestra todo en vivo y dice en qué archivo se cambia cada cosa. A mano: `/?fecha=AAAA-MM-DD`. No se muestran con "reducir movimiento" activado en el dispositivo. Detalle técnico en [CLAUDE.md → Seasonal decorations](./CLAUDE.md#seasonal-decorations-fondoanimado-festivos-celebracion-documentacion).
+
 ## SEO
 
-Metadata (Open Graph, Twitter card, JSON-LD `Church`), `sitemap.ts` y `robots.ts` están configurados para indexar solo `/`, `/peticiones` y `/politica-privacidad` — las páginas admin-only (`avisos`, `citas`, `alertas`, `configuracion`) están marcadas `noindex`. Detalle completo en [CLAUDE.md → SEO](./CLAUDE.md#seo).
+Metadata (Open Graph, Twitter card, JSON-LD `Church`), `sitemap.ts` y `robots.ts` están configurados para indexar solo `/`, `/peticiones` y `/politica-privacidad` — las páginas admin-only (`avisos`, `citas`, `alertas`, `configuracion`, `documentacion`) están marcadas `noindex`. Detalle completo en [CLAUDE.md → SEO](./CLAUDE.md#seo).
 
 ## Aprender más
 

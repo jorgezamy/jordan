@@ -5,11 +5,57 @@
 :root {
   --background: #ffffff;
   --foreground: #003241;
+
+  /* Fondos animados de temporada (components/fondoAnimado) — sobre fondo claro */
+  --fondo-nieve: #5fb4cc;
+  --fondo-fuegos-1: #c58b00;
+  --fondo-fuegos-2: #db2777;
+  --fondo-fuegos-3: #0d9488;
+  --fondo-fuegos-brillo: #f59e0b;
+  --fondo-petalo-1: #f472b6;
+  --fondo-petalo-2: #f9a8d4;
+  --fondo-flor-centro: #f59e0b;
+  --fondo-verano-1: #f59e0b;
+  --fondo-verano-2: #fbbf24;
+  --fondo-hoja-1: #d9622b;
+  --fondo-hoja-2: #b8441f;
+  --fondo-hoja-3: #e0a030;
+  --fondo-contorno: rgba(0, 50, 65, 0.35);
+
+  /* Degradados del título de celebración del inicio (components/celebracion) */
+  --celebracion-rojo: #dc2626;
+  --celebracion-verde: #15803d;
+  --celebracion-azul: #2563eb;
 }
 
 .dark {
   --background: #001820;
   --foreground: #eaf4f7;
+  --celebracion-rojo: #f87171;
+  --celebracion-verde: #4ade80;
+  --celebracion-azul: #93c5fd;
+}
+
+/*
+ * Fondos animados sobre fondo oscuro: modo oscuro, y siempre en el header
+ * (`fondo-oscuro`), que es bg-primary en ambos temas.
+ */
+.dark,
+.fondo-oscuro {
+  --fondo-nieve: #ffffff;
+  --fondo-fuegos-1: #ffd98a;
+  --fondo-fuegos-2: #f9a8d4;
+  --fondo-fuegos-3: #5eead4;
+  --fondo-fuegos-brillo: #ffffff;
+  --fondo-petalo-1: #f9a8d4;
+  --fondo-petalo-2: #fbcfe8;
+  --fondo-flor-centro: #fde68a;
+  --fondo-verano-1: #fcd34d;
+  --fondo-verano-2: #fde68a;
+  --fondo-hoja-1: #fb923c;
+  --fondo-hoja-2: #ef6a3a;
+  --fondo-hoja-3: #fbbf24;
+  --fondo-contorno: transparent;
 }
 
 html, body {
@@ -108,5 +154,26 @@ html, body {
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
+  }
+}
+
+/* Ícono de día festivo del header (components/festivos): entra con rebote y flota. */
+@keyframes festivo-flotar {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-3px) rotate(2deg);
+  }
+}
+
+/* Título de celebración del inicio: el degradado se desliza lentamente. */
+@keyframes celebracion-brillo {
+  from {
+    background-position: 0% 50%;
+  }
+  to {
+    background-position: 200% 50%;
   }
 }
