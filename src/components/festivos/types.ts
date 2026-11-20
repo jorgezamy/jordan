@@ -1,15 +1,28 @@
 export type NombreFestivo =
   | "anoNuevo"
+  | "diaDeReyes"
   | "diaDelNino"
+  | "diaDeLaMujer"
   | "diaDeLasMadres"
   | "diaDelPadre"
   | "independencia"
-  | "navidad";
+  | "diaDelHombre"
+  | "navidad"
+  | "diaDelAmor"
+  | "diaDeLaConstitucion"
+  | "diaDeLaBandera"
+  | "natalicioJuarez"
+  | "diaDeLaFamilia"
+  | "diaDelTrabajo"
+  | "diaDelMaestro"
+  | "diaDelEstudiante"
+  | "diaDeLaJuventud"
+  | "diaDelAbuelo"
+  | "revolucion";
 
 /** Fecha fija (`mes` 1-12) o "n-ésimo domingo del mes" (p. ej. Día del Padre). */
 export type FechaFestivo =
-  | { tipo: "fija"; mes: number; dia: number }
-  | { tipo: "domingo"; mes: number; numero: number };
+  { tipo: "fija"; mes: number; dia: number } | { tipo: "domingo"; mes: number; numero: number };
 
 export interface Festivo {
   nombre: NombreFestivo;

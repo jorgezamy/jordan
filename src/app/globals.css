@@ -26,6 +26,7 @@
   --celebracion-rojo: #dc2626;
   --celebracion-verde: #15803d;
   --celebracion-azul: #2563eb;
+  --celebracion-morado: #7c3aed;
 }
 
 .dark {
@@ -34,6 +35,7 @@
   --celebracion-rojo: #f87171;
   --celebracion-verde: #4ade80;
   --celebracion-azul: #93c5fd;
+  --celebracion-morado: #c4b5fd;
 }
 
 /*

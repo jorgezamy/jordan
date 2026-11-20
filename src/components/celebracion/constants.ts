@@ -24,6 +24,7 @@ const ETIQUETA_TEMPORADA = "Temporada";
 const ROJO = "--celebracion-rojo";
 const VERDE = "--celebracion-verde";
 const AZUL = "--celebracion-azul";
+const MORADO = "--celebracion-morado";
 
 const festivo = (nombre: NombreFestivo, colores: string[]): InfoCelebracion => ({
   etiqueta: ETIQUETA_FESTIVO,
@@ -39,11 +40,25 @@ const temporada = (titulo: string, colores: string[]): InfoCelebracion => ({
 
 export const INFO_CELEBRACION: Record<NombreCelebracion, InfoCelebracion> = {
   anoNuevo: festivo("anoNuevo", ["--fondo-fuegos-1", "--fondo-fuegos-2", "--fondo-fuegos-3"]),
+  diaDeLaMujer: festivo("diaDeLaMujer", [MORADO, "--fondo-petalo-1"]),
   diaDelNino: festivo("diaDelNino", [ROJO, "--fondo-fuegos-1", AZUL]),
   diaDeLasMadres: festivo("diaDeLasMadres", ["--fondo-petalo-1", "--fondo-fuegos-2"]),
   diaDelPadre: festivo("diaDelPadre", [AZUL, "--fondo-fuegos-3"]),
   independencia: festivo("independencia", [VERDE, ROJO]),
+  diaDelHombre: festivo("diaDelHombre", [AZUL, "--fondo-fuegos-3"]),
   navidad: festivo("navidad", [ROJO, VERDE]),
+  diaDeReyes: festivo("diaDeReyes", ["--fondo-fuegos-1", ROJO]),
+  diaDeLaConstitucion: festivo("diaDeLaConstitucion", [VERDE, ROJO]),
+  diaDelAmor: festivo("diaDelAmor", [ROJO, "--fondo-petalo-1"]),
+  diaDeLaBandera: festivo("diaDeLaBandera", [VERDE, ROJO]),
+  diaDeLaFamilia: festivo("diaDeLaFamilia", ["--fondo-hoja-1", "--fondo-petalo-1"]),
+  natalicioJuarez: festivo("natalicioJuarez", [AZUL, VERDE]),
+  diaDelTrabajo: festivo("diaDelTrabajo", [AZUL, "--fondo-verano-1"]),
+  diaDelMaestro: festivo("diaDelMaestro", [ROJO, VERDE]),
+  diaDelEstudiante: festivo("diaDelEstudiante", [AZUL, "--fondo-fuegos-1"]),
+  diaDeLaJuventud: festivo("diaDeLaJuventud", [MORADO, "--fondo-fuegos-3"]),
+  diaDelAbuelo: festivo("diaDelAbuelo", ["--fondo-hoja-1", "--fondo-petalo-1"]),
+  revolucion: festivo("revolucion", [ROJO, VERDE]),
   bienvenidaAno: temporada("¡Bienvenido {año}!", ["--fondo-fuegos-1", "--fondo-fuegos-2", "--fondo-fuegos-3"]),
   primavera: temporada("Entrada de la primavera", ["--fondo-petalo-1", "--fondo-flor-centro"]),
   verano: temporada("Entrada del verano", ["--fondo-verano-1", "--fondo-hoja-1"]),
